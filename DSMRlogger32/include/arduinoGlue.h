@@ -66,8 +66,12 @@ void _debugBOL(const char *fn, int line);
                            Debugf(__VA_ARGS__);                \
                            DebugFlush();                       \
                         })
-#define _NEO_PIXELS_COUNT      2
-#define _NEO_PIN              23
+#define _NEO_PIXELS_COUNT        2
+#ifdef ESP32_WROVER
+#define _NEO_PIN                23    //                 hardware
+#else //ESP32 S2 mini
+#define _NEO_PIN                18    //                 hardware
+#endif
 #define _NEO_CHANNEL           0
 #define SKIP_MISSED_TICKS             0
 #define SKIP_MISSED_TICKS_WITH_SYNC   1
@@ -138,13 +142,24 @@ void _debugBOL(const char *fn, int line);
 #define  CalendarYrToTm(Y)   ((Y) - 1970)
 #define _DEFAULT_HOSTNAME     "DSMR-ESP32"
 #define _REMOTE_UPDATESERVER  "https://www.aandewiel.nl/updates/DSMRlogger32/"
-#define SMRX                    18 
-#define SMTX                    -1
 #define _PULSE_TIME           5000
-#define _PIN_WD_RESET            0    //-- GPIO00
-#define _PIN_HEARTBEAT           4
-#define _DTR_ENABLE              5
-#define LED_BUILTIN             15    //-- esp32
+#ifdef ESP32_WROVER
+#define SMRX                    18    //                 hardware                  
+#define SMTX                    -1    //                 hardware
+#define _PIN_WD_RESET            0    //-- GPIO00        hardware
+#define _PIN_HEARTBEAT           4    //                 hardware
+#define _DTR_ENABLE              5    //                 hardware
+#define LED_BUILTIN             15    //-- esp32         hardware
+#else //ESP32 S2 mini
+#define SMRX                    37    //   GPIO37        hardware data in, can be any IO               
+#define SMTX                    -1    //                 hardware
+#define _PIN_WD_RESET            0    //-- GPIO00        hardware
+#define _PIN_HEARTBEAT           3    //                 hardware alive pulses for WD
+#define _DTR_ENABLE              5    //                 hardware request data frame
+#define LED_BUILTIN             15    //-- GPIO15        hardware
+//      SDA                                GPIO33        hardware for OLED display
+//      SCL                                GPIO35        hardware for OLED display
+#endif
 #define _SHIELD_TIME            10
 #define _TLGRM_LEN           10000    //-- probably a bit to long
 #define _JSONBUFF_LEN       200000    //-- 60000 is needed for 190 Hour History
