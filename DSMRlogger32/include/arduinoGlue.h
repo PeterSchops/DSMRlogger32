@@ -157,8 +157,8 @@ void _debugBOL(const char *fn, int line);
 #define _PIN_HEARTBEAT           3    //                 hardware alive pulses for WD
 #define _DTR_ENABLE              5    //                 hardware request data frame
 #define LED_BUILTIN             15    //-- GPIO15        hardware
-//      SDA                                GPIO33        hardware for OLED display
-//      SCL                                GPIO35        hardware for OLED display
+//      SDA                                GPIO08        hardware for OLED display
+//      SCL                                GPIO09        hardware for OLED display
 #endif
 #define _SHIELD_TIME            10
 #define _TLGRM_LEN           10000    //-- probably a bit to long
