@@ -32,7 +32,6 @@ extern time_t       now;                                               //-- from
 #define   MAXLINELENGTH     500   // longest normal line is 47 char (+3 for \r\n\0)
 #define I2C_ADDRESS 0x3C
 #define RST_PIN -1
-//#define _FW_VERSION "v5.0.5 (24-04-2023)"
 #define _SPIFFS
 #define FORMAT_SPIFFS_IF_FAILED true
 //-- from Debug.h -----------
@@ -191,9 +190,9 @@ void _debugBOL(const char *fn, int line);
 #define RNG_DAYS          2
 #define RNG_MONTHS        3
 #define RNG_YEARS         4
-#define DATA_FORMAT       "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;"
-#define DATA_CSV_HEADER   "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;#%5d"
-#define DATA_RECLEN       75  //-- compatible with reclen API firmware
+#define DATA_FORMAT       "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;"
+#define DATA_CSV_HEADER   "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;       WDT;#%5d"
+#define DATA_RECLEN       83  //-- compatible with reclen API firmware
 #define HOURS_FILE        "/RINGhours.csv"
 #define _NO_HOUR_SLOTS_   (48 +1)
 #define DAYS_FILE         "/RINGdays.csv"
@@ -251,9 +250,11 @@ struct settingSmStruct
   float     EDT2;
   float     ERT1;
   float     ERT2;
-  float     GDT;
+  float     GDT; //gas delivered
+  float     WDT; //water delivered
   float     ENBK;
-  float     GNBK;
+  float     GNBK;//gas network cost
+  float     WNBK;//water network cost
 };
 
 //-- from DSMRlogger32.h
@@ -302,7 +303,8 @@ struct actualDataStruct
   float     power_returned_l1;
   float     power_returned_l2;
   float     power_returned_l3;
-  float     gas_delivered;
+  float     gas_delivered;//gas
+  float     water_delivered;//water
   uint8_t   relay_state;  //-- 1=on, 0=off
 };
 
@@ -583,6 +585,7 @@ extern bool            filesysMounted;                    		//-- from DSMRlogger
 extern const char*     flashMode[];                       		//-- from DSMRlogger32
 //-- used in handleTestdata.cpp, restAPI.cpp, FSYSstuff.cpp, helperStuff.cpp, handleSlimmeMeter.cpp
 extern float           gasDelivered;                      		//-- from DSMRlogger32
+extern float           waterDelivered;                    		//-- from DSMRlogger32
 //-- used in helperStuff.cpp
 extern uint32_t        glowTimer0;                        		//-- from DSMRlogger32
 //-- used in DSMRlogger32.cpp, handleSlimmeMeter.cpp, FSYSstuff.cpp
@@ -687,7 +690,8 @@ extern float           ERT1;                              		//-- from restAPI
 //-- used in settingsStuff.cpp, FSYSstuff.cpp
 extern float           ERT2;                              		//-- from restAPI
 //-- used in settingsStuff.cpp, FSYSstuff.cpp
-extern float           GDT;                               		//-- from restAPI
+extern float           GDT;                               		//-- from restAPI gas delivered
+extern float           WDT;                               		//-- from restAPI water delivered
 //-- used in restAPI.cpp, FSYSstuff.cpp
 extern char            buffer[];            		              //-- from restAPI
 //-- used in restAPI.cpp, handleSlimmeMeter.cpp
@@ -732,7 +736,7 @@ void processSlimmemeter();
 //-- Used in: handleTestdata.cpp, handleSlimmeMeter.cpp
 void modifySmFaseInfo();                                    
 //-- Used in: handleTestdata.cpp, handleSlimmeMeter.cpp
-float modifyMbusDelivered();                                
+float modifyMbusDelivered(int mbusType);                                
 //-- from timeStuff.ino -----------
 //-- Used in: DSMRlogger32.cpp, timeStuff.cpp
 void logNtpTime();                                          

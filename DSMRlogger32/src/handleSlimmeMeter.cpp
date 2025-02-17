@@ -144,7 +144,8 @@ void processSlimmemeter()
       }
 
       //-- handle mbus delivered values
-      gasDelivered = modifyMbusDelivered();
+      gasDelivered   = modifyMbusDelivered(3);
+      waterDelivered = modifyMbusDelivered(7);
 
       processTelegram();
       if (Verbose2)
@@ -202,9 +203,12 @@ void modifySmFaseInfo()
 
 
 //==================================================================================
-float modifyMbusDelivered()
+//mbusType
+//3: GAS
+//7: WATER
+float modifyMbusDelivered(int mbusType)
 {
-  float tmpGasDelivered = 0;
+  float tmpDelivered = 0;
 
   if (tlgrmData.mbus1_delivered_ntc_present)
     tlgrmData.mbus1_delivered = tlgrmData.mbus1_delivered_ntc;
@@ -214,10 +218,10 @@ float modifyMbusDelivered()
   tlgrmData.mbus1_delivered_ntc_present = false;
   tlgrmData.mbus1_delivered_dbl_present = false;
   //dbg if (smSetting->Mbus1Type > 0) DebugTf("mbus1_delivered [%.3f]\r\n", (float)tlgrmData.mbus1_delivered);
-  if ( (smSetting->Mbus1Type == 3) && (tlgrmData.mbus1_device_type == 3) )
+  if ( (smSetting->Mbus1Type == mbusType) && (tlgrmData.mbus1_device_type == mbusType) )
   {
-    tmpGasDelivered = (float)(tlgrmData.mbus1_delivered * 1.0);
-    //dbg DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
+    tmpDelivered = (float)(tlgrmData.mbus1_delivered * 1.0);
+    //dbg DebugTf("Delivered .. [%.3f]\r\n", tmpDelivered);
   }
 
   if (tlgrmData.mbus2_delivered_ntc_present)
@@ -228,10 +232,10 @@ float modifyMbusDelivered()
   tlgrmData.mbus2_delivered_ntc_present = false;
   tlgrmData.mbus2_delivered_dbl_present = false;
   if (smSetting->Mbus2Type > 0) DebugTf("mbus2_delivered [%.3f]\r\n", (float)tlgrmData.mbus2_delivered);
-  if ( (smSetting->Mbus2Type == 3) && (tlgrmData.mbus2_device_type == 3) )
+  if ( (smSetting->Mbus2Type == mbusType) && (tlgrmData.mbus2_device_type == mbusType) )
   {
-    tmpGasDelivered = (float)(tlgrmData.mbus2_delivered * 1.0);
-    //dbg DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
+    tmpDelivered = (float)(tlgrmData.mbus2_delivered * 1.0);
+    //dbg DebugTf("Delivered .. [%.3f]\r\n", tmpDelivered);
   }
 
   if (tlgrmData.mbus3_delivered_ntc_present)
@@ -242,10 +246,10 @@ float modifyMbusDelivered()
   tlgrmData.mbus3_delivered_ntc_present = false;
   tlgrmData.mbus3_delivered_dbl_present = false;
   if (smSetting->Mbus3Type > 0) DebugTf("mbus3_delivered [%.3f]\r\n", (float)tlgrmData.mbus3_delivered);
-  if ( (smSetting->Mbus3Type == 3) && (tlgrmData.mbus3_device_type == 3) )
+  if ( (smSetting->Mbus3Type == mbusType) && (tlgrmData.mbus3_device_type == mbusType) )
   {
-    tmpGasDelivered = (float)(tlgrmData.mbus3_delivered * 1.0);
-    //dbg DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
+    tmpDelivered = (float)(tlgrmData.mbus3_delivered * 1.0);
+    //dbg DebugTf("Delivered .. [%.3f]\r\n", tmpDelivered);
   }
 
   if (tlgrmData.mbus4_delivered_ntc_present)
@@ -256,14 +260,13 @@ float modifyMbusDelivered()
   tlgrmData.mbus4_delivered_ntc_present = false;
   tlgrmData.mbus4_delivered_dbl_present = false;
   if (smSetting->Mbus4Type > 0) DebugTf("mbus4_delivered [%.3f]\r\n", (float)tlgrmData.mbus4_delivered);
-  if ( (smSetting->Mbus4Type == 3) && (tlgrmData.mbus4_device_type == 3) )
+  if ( (smSetting->Mbus4Type == mbusType) && (tlgrmData.mbus4_device_type == mbusType) )
   {
-    tmpGasDelivered = (float)(tlgrmData.mbus4_delivered * 1.0);
-    //dbg DebugTf("gasDelivered .. [%.3f]\r\n", tmpGasDelivered);
+    tmpDelivered = (float)(tlgrmData.mbus4_delivered * 1.0);
+    //dbg DebugTf("Delivered .. [%.3f]\r\n", tmpDelivered);
   }
 
-  return tmpGasDelivered;
-
+  return tmpDelivered;
 } //  modifyMbusDelivered()
 
 /***************************************************************************

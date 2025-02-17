@@ -343,6 +343,8 @@ void pushToActualStore(const char *cName, float fValue)
         actualStore[actualStoreSlot].power_returned_l3  = round3(fValue);
   else if (strcmp(cName, "gas_delivered") == 0)
         actualStore[actualStoreSlot].gas_delivered      = round3(fValue);
+  else if (strcmp(cName, "water_delivered") == 0)
+        actualStore[actualStoreSlot].water_delivered    = round3(fValue);
   
 } //  pushToActualStore(char, float)
 
@@ -359,6 +361,7 @@ void pushTlgrmToActualStore()
   
   tlgrmData.applyEach(addSmToActualStore());
   pushToActualStore("gas_delivered", gasDelivered);
+  pushToActualStore("water_delivered", waterDelivered);
 
   actualStoreCount++;
 
@@ -367,15 +370,12 @@ void pushTlgrmToActualStore()
     for (int i=0; i< _MAX_ACTUAL_STORE; i++)
     {
       int s = (i+actualStoreSlot+1) % _MAX_ACTUAL_STORE;
-      Debugf("[%3d][%5d][%-12.12s] PwrDel[%10.3f] PwrRet[%10.3f] GasDel[%10.3f]\r\n"
-              , i, actualStore[s].count, actualStore[s].timestamp
-                                       , (actualStore[s].power_delivered_l1
-                                          + actualStore[s].power_delivered_l2
-                                          + actualStore[s].power_delivered_l3)
-                                       , (actualStore[s].power_returned_l1
-                                          + actualStore[s].power_returned_l2
-                                          + actualStore[s].power_returned_l3)
-                                       , actualStore[s].gas_delivered);
+      Debugf("[%3d][%5d][%-12.12s] PwrDel[%10.3f] PwrRet[%10.3f] GasDel[%10.3f] waterDel[%10.3f]\r\n",
+              i, actualStore[s].count, actualStore[s].timestamp,
+              (actualStore[s].power_delivered_l1 + actualStore[s].power_delivered_l2 + actualStore[s].power_delivered_l3),
+              (actualStore[s].power_returned_l1  + actualStore[s].power_returned_l2  + actualStore[s].power_returned_l3),
+              actualStore[s].gas_delivered,
+              actualStore[s].water_delivered);
     }
   }
  

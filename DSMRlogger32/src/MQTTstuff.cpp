@@ -191,6 +191,7 @@ void sendMQTTData()
   onlyIfPresent   = false;
   tlgrmData.applyEach(buildJsonV2ApiSm());
   addToTable("gas_delivered", gasDelivered);
+  addToTable("water_delivered", waterDelivered);
 
   for(int i=0; i<fieldTableCount; i++)
   {

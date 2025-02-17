@@ -2,7 +2,8 @@
 ***************************************************************************
 **  Program  : DSMRlogger32 (restAPI)
 */
-const char* _FW_VERSION = "v5.4.2 (18-11-2024)";
+//     _FW_VERSION format "vx.y.z (dd-mm-yyyy)
+const char* _FW_VERSION = "v5.4.3 (16-02-2025)";
 /*
 **  Copyright (c) 2022, 2023, 2024 Willem Aandewiel
 **
@@ -195,7 +196,7 @@ void setup()
   neoPixOff(1);
 
   runAPmode = !digitalRead(_FLASH_BUTTON);
-  if (runAPmode) DebugTln("run in AP mode requested by user!");
+  if (runAPmode) { DebugTln("run in AP mode requested by user!"); }
   
   //------ initialize File System --------------------------
   setupFileSystem();
@@ -207,8 +208,7 @@ void setup()
   readShieldSettings(true);
 
 
-  if (devSetting->runAPmode > 0)
-  {
+  if (devSetting->runAPmode > 0) {
     runAPmode = true;
     DebugTln("device setting: run as AP!");
   }
@@ -218,16 +218,14 @@ void setup()
   Serial.println(">>DSMR-logger32<<");
   Serial.println("Verbinden met WiFi...");
 
-  if (devSetting->OledType > 0)
-  {
-    if (devSetting->OledFlip)  oled_Init();  // only if true restart(init) oled screen
+  if (devSetting->OledType > 0) {
+    if (devSetting->OledFlip) { oled_Init(); }  // only if true restart(init) oled screen
     oled_Clear();                       // clear the screen
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
     oled_Print_Msg(1, "Verbinden met WiFi", 500);
   }
   digitalWrite(LED_BUILTIN, LED_ON);
-  if (!runAPmode)
-  {
+  if (!runAPmode) {
     startWiFi(devSetting->Hostname, 240, false);  // timeout 4 minuten
     myWiFi.ipWiFi    = WiFi.localIP();
     myWiFi.ipGateway = WiFi.gatewayIP();
@@ -236,11 +234,9 @@ void setup()
   
     WiFi.onEvent(WiFiEvent);
   }
-  else
-  {
-    if (devSetting->runAPmode)
-          writeToSysLog("run in AP mode by system setting!");
-    else  writeToSysLog("run in AP mode requested by user!");
+  else {
+    if (devSetting->runAPmode) { writeToSysLog("run in AP mode by system setting!"); }
+    else                       { writeToSysLog("run in AP mode requested by user!"); }
     WiFi.softAP(devSetting->Hostname);
     DebugT("AP IP address: ");
     Debugln(WiFi.softAPIP());
@@ -250,19 +246,17 @@ void setup()
   //--- Read more: http://www.esp32learning.com/code/esp32-true-random-number-generator-example.php
   esp_random();
 
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
-    if (runAPmode)  oled_Print_Msg(1, devSetting->Hostname, 0);
-    else            oled_Print_Msg(1, WiFi.SSID(), 0);
-    if (runAPmode)  snprintf(gMsg,  _GMSG_LEN, "IP %s", WiFi.softAPIP().toString().c_str());
-    else            snprintf(gMsg,  _GMSG_LEN, "IP %s", WiFi.localIP().toString().c_str());
+    if (runAPmode) { oled_Print_Msg(1, devSetting->Hostname, 0); }
+    else           { oled_Print_Msg(1, WiFi.SSID(), 0); }
+    if (runAPmode) { snprintf(gMsg,  _GMSG_LEN, "IP %s", WiFi.softAPIP().toString().c_str()); }
+    else           { snprintf(gMsg,  _GMSG_LEN, "IP %s", WiFi.localIP().toString().c_str()); }
     oled_Print_Msg(2, gMsg, 1500);
   }
   
   startTelnet();
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
     oled_Print_Msg(3, "telnet (poort 23)", 2500);
   }
@@ -271,28 +265,25 @@ void setup()
 
   Debugln();
   DebugT ("Connected to " );
-  if (runAPmode)  Debugln(devSetting->Hostname);
-  else            Debugln(myWiFi.SSID);
+  if (runAPmode) { Debugln(devSetting->Hostname); }
+  else           { Debugln(myWiFi.SSID); }
   DebugT ("IP address: " );
-  if (runAPmode)  Debugln(WiFi.softAPIP());
-  else            Debugln(myWiFi.ipWiFi);
-  if (!runAPmode)
-  {
+  if (runAPmode) { Debugln(WiFi.softAPIP()); }
+  else           { Debugln(myWiFi.ipWiFi); }
+  if (!runAPmode) {
     DebugT ("IP gateway: " );
     Debugln (myWiFi.ipGateway);
   }
   Debugln();
 
-  for (int L=0; L < 4; L++)
-  {
+  for (int L=0; L < 4; L++) {
     digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
     delay(200);
   }
   digitalWrite(LED_BUILTIN, LED_OFF);
 
   startMDNS(devSetting->Hostname);
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     oled_Print_Msg(3, "mDNS gestart", 1500);
   }
 
@@ -314,62 +305,53 @@ void setup()
   timeSync.setup();
   timeSync.sync(100);
   time(&now);
-  DebugTf("===> lastTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n"
-                                      , lastTlgrmTime.Timestamp
-                                      , nrReboots++
-                                      , slotErrors);
+  DebugTf("===> lastTimestamp[%s]-> nrReboots[%u] - Errors[%u]\r\n\n",
+                                      lastTlgrmTime.Timestamp,
+                                      nrReboots++,
+                                      slotErrors);
 
   readSmSettings(true);
   
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     oled_Init();
     oled_Clear();  // clear the screen so we can paint the menu.
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
     int8_t sPos = String(_FW_VERSION).indexOf(' ');
-    snprintf(gMsg,  _GMSG_LEN, "(c)2022..2024 [%s]", String(_FW_VERSION).substring(0, sPos).c_str());
+    snprintf(gMsg,  _GMSG_LEN, "(c)2024..2025 [%s]", String(_FW_VERSION).substring(0, sPos).c_str());
     oled_Print_Msg(1, gMsg, 0);
-    oled_Print_Msg(2, " Willem Aandewiel", 0);
+    oled_Print_Msg(2, " Peter Schops", 0);
     oled_Print_Msg(3, " >> Have fun!! <<", 1000);
     yield();
   }
-  else     // don't blink if oled-screen attatched
-  {
-    for(int I=0; I<2; I++)
-    {
+  else {   // don't blink if oled-screen attatched
+    for(int I=0; I<2; I++) {
       digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
       delay(250);
     }
   }
   digitalWrite(LED_BUILTIN, LED_OFF);  // HIGH is OFF
 
-  if (filesysMounted)
-  {
-    if (devSetting->OledType > 0)
-    {
+  if (filesysMounted) {
+    if (devSetting->OledType > 0) {
       oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
       oled_Print_Msg(3, "Filesystm mounted", 1500);
     }
   }
-  else
-  {
-    if (devSetting->OledType > 0)
-    {
+  else {
+    if (devSetting->OledType > 0) {
       oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
       oled_Print_Msg(3, "MOUNT FS FAILED!", 2000);
     }
   }
 
-  while(!psramFound())
-  {
+  while(!psramFound()) {
     DebugTln("*******************************************");
     DebugTln("**   This module does not have PSRAM!!   **");
     DebugTln("** Firmware will not run on this module! **");
     DebugTln("*******************************************\r\n");
     //-- send heartbeat for 2 minutes
     uint32_t waitTimer = millis();
-    while((millis()-waitTimer) < 120000) 
-    { 
+    while((millis()-waitTimer) < 120000) { 
       pulseHeart();
       delay(10000);
     }
@@ -395,34 +377,31 @@ void setup()
   writeToSysLog("last Reset Reason CPU[1] - %s", lastResetCPU1);  
 
 
-  if (!runAPmode)
-  {
+  if (!runAPmode) {
     //================ startNTP =========================================
-    if (devSetting->OledType > 0)
-    {
+    if (devSetting->OledType > 0) {
       oled_Print_Msg(3, "setup NTP server", 100);
     }
     time(&now);
     DebugTln(F("NTP server set!\r\n\r"));
-    DebugTf("NTP Date/Time: %02d-%02d-%04d %02d:%02d:%02d\r\n"
-                                            , localtime(&now)->tm_mday 
-                                            , localtime(&now)->tm_mon+1 
-                                            , localtime(&now)->tm_year+1900  
-                                            , localtime(&now)->tm_hour 
-                                            , localtime(&now)->tm_min
-                                            , localtime(&now)->tm_sec 
+    DebugTf("NTP Date/Time: %02d-%02d-%04d %02d:%02d:%02d\r\n",
+                                            localtime(&now)->tm_mday, 
+                                            localtime(&now)->tm_mon+1, 
+                                            localtime(&now)->tm_year+1900,  
+                                            localtime(&now)->tm_hour, 
+                                            localtime(&now)->tm_min,
+                                            localtime(&now)->tm_sec 
             );
-    writeToSysLog("NTP Date/Time: %02d-%02d-%04d %02d:%02d:%02d"
-                                            , localtime(&now)->tm_mday 
-                                            , localtime(&now)->tm_mon+1 
-                                            , localtime(&now)->tm_year+1900  
-                                            , localtime(&now)->tm_hour 
-                                            , localtime(&now)->tm_min
-                                            , localtime(&now)->tm_sec 
+    writeToSysLog("NTP Date/Time: %02d-%02d-%04d %02d:%02d:%02d",
+                                            localtime(&now)->tm_mday, 
+                                            localtime(&now)->tm_mon+1, 
+                                            localtime(&now)->tm_year+1900,  
+                                            localtime(&now)->tm_hour, 
+                                            localtime(&now)->tm_min,
+                                            localtime(&now)->tm_sec 
             );
 
-    if (devSetting->OledType > 0)
-    {
+    if (devSetting->OledType > 0) {
       oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
       oled_Print_Msg(3, "NTP gestart", 1500);
     }
@@ -440,17 +419,15 @@ void setup()
   //writeToSysLog(lastReset);                         
   
   Serial.print("\nGebruik 'telnet ");
-  if (runAPmode)  Serial.print (WiFi.softAPIP());
-  else            Serial.print (WiFi.localIP());
+  if (runAPmode) { Serial.print (WiFi.softAPIP()); }
+  else           { Serial.print (WiFi.localIP()); }
   Serial.println("' voor verdere debugging\r\n");
 
   //=============now test if FS is correct populated!============
   filesysNotPopulated = setupIsFsPopulated();
 
-  if (devSetting->OledType > 0)
-  {
-    snprintf(gMsg,  _GMSG_LEN, "DT: %02d%02d%02d%02d0101x", thisYear
-                                            , thisMonth, thisDay, thisHour);
+  if (devSetting->OledType > 0) {
+    snprintf(gMsg, _GMSG_LEN, "DT: %02d%02d%02d%02d0101x", thisYear, thisMonth, thisDay, thisHour);
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
     oled_Print_Msg(3, gMsg, 1500);
   }
@@ -458,33 +435,28 @@ void setup()
   //================ Start MQTT  ======================================
 
   connectMQTT();
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
     oled_Print_Msg(3, "MQTT server set!", 1500);
   }
 
   //================ Start HTTP Server ================================
 
-  if (!filesysNotPopulated)
-  {
+  if (!filesysNotPopulated) {
     DebugTln(F("Filesystem correct populated -> normal operation!\r"));
-    if (devSetting->OledType > 0)
-    {
+    if (devSetting->OledType > 0) {
       oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
       oled_Print_Msg(1, "OK, FS correct", 0);
       oled_Print_Msg(2, "Verder met normale", 0);
       oled_Print_Msg(3, "Verwerking ;-)", 2500);
     }
-    if (hasAlternativeIndex)
-    {
+    if (hasAlternativeIndex) {
       httpServer.serveStatic("/",                 _FSYS, devSetting->IndexPage);
       httpServer.serveStatic("/index",            _FSYS, devSetting->IndexPage);
       httpServer.serveStatic("/index.html",       _FSYS, devSetting->IndexPage);
       httpServer.serveStatic("/DSMRindex.html",   _FSYS, devSetting->IndexPage);
     }
-    else
-    {
+    else {
       httpServer.serveStatic("/",                 _FSYS, "/DSMRindex.html");
       httpServer.serveStatic("/DSMRindex.html",   _FSYS, "/DSMRindex.html");
       httpServer.serveStatic("/index",            _FSYS, "/DSMRindex.html");
@@ -494,12 +466,10 @@ void setup()
       httpServer.serveStatic("/DSMRgraphics.js",  _FSYS, "/DSMRgraphics.js");
     }
   }
-  else
-  {
+  else {
     DebugTln(F("Oeps! not all files found on FS -> Start FSmanager!\r"));
     filesysNotPopulated = true;
-    if (devSetting->OledType > 0)
-    {
+    if (devSetting->OledType > 0) {
       oled_Print_Msg(0, "!OEPS! niet alle", 0);
       oled_Print_Msg(1, "files op FS", 0);
       oled_Print_Msg(2, "gevonden! (fout!)", 0);
@@ -515,9 +485,7 @@ void setup()
 
   httpServer.begin();
   DebugTln( "HTTP server gestart\r" );
-  if (devSetting->OledType > 0)                                  //HAS_OLED
-  {
-    //HAS_OLED
+  if (devSetting->OledType > 0) {                           //HAS_OLED
     oled_Clear();                                           //HAS_OLED
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);              //HAS_OLED
     oled_Print_Msg(2, "HTTP server ..", 0);                 //HAS_OLED
@@ -531,8 +499,7 @@ void setup()
   DebugTf("Startup complete! lastTlgrmTime[%s]\r\n", lastTlgrmTime.Timestamp);
   writeToSysLog("Startup complete! lastTlgrmTime[%s]", lastTlgrmTime.Timestamp);
 
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
     oled_Print_Msg(1, "Startup complete", 0);
     oled_Print_Msg(2, "Wait for first", 0);
@@ -540,20 +507,20 @@ void setup()
   }
 
   //================ Start Shield =====================================
-  relay0.setup(shieldSetting[0]->GPIOpin, shieldSetting[0]->inversed
-                            , shieldSetting[0]->activeStart
-                            , shieldSetting[0]->activeStop
-                            , shieldSetting[0]->onThreshold
-                            , shieldSetting[0]->offThreshold
-                            , shieldSetting[0]->onDelay
-                            , shieldSetting[0]->offDelay);
-  relay1.setup(shieldSetting[1]->GPIOpin, shieldSetting[1]->inversed
-                            , shieldSetting[1]->activeStart
-                            , shieldSetting[1]->activeStop
-                            , shieldSetting[1]->onThreshold
-                            , shieldSetting[1]->offThreshold
-                            , shieldSetting[1]->onDelay
-                            , shieldSetting[1]->offDelay);
+  relay0.setup(shieldSetting[0]->GPIOpin, shieldSetting[0]->inversed,
+                            shieldSetting[0]->activeStart,
+                            shieldSetting[0]->activeStop,
+                            shieldSetting[0]->onThreshold,
+                            shieldSetting[0]->offThreshold,
+                            shieldSetting[0]->onDelay,
+                            shieldSetting[0]->offDelay);
+  relay1.setup(shieldSetting[1]->GPIOpin, shieldSetting[1]->inversed,
+                            shieldSetting[1]->activeStart,
+                            shieldSetting[1]->activeStop,
+                            shieldSetting[1]->onThreshold,
+                            shieldSetting[1]->offThreshold,
+                            shieldSetting[1]->onDelay,
+                            shieldSetting[1]->offDelay);
 
 
   //================ Start Slimme Meter ===============================
@@ -561,8 +528,7 @@ void setup()
   DebugTln(F("Enable slimmeMeter..\r"));
 
   DebugTln("Setup serial port for Smart Meter reading");
-  if (smSetting->PreDSMR40 == 0)
-  {
+  if (smSetting->PreDSMR40 == 0) {
     DebugTf("SMserial is set to 115200 baud / 8N1 (RX=%d, TX=%d)\r\n", SMRX, SMTX);
     DebugFlush();
     SMserial.end();
@@ -570,8 +536,7 @@ void setup()
     SMserial.begin (115200, SERIAL_8N1, SMRX, SMTX);
     slimmeMeter.doChecksum(true);
   }
-  else
-  {
+  else {
     //PRE40
     DebugTf("SMserial is set to 9600 baud / 7E1 (RX=%d, TX=%d)\r\n", SMRX, SMTX);
     DebugFlush();
@@ -589,7 +554,6 @@ void setup()
   slimmeMeter.enable(true); 
 
   DebugTln("reached end of setup()!");
-
 } // setup()
 
 
@@ -599,8 +563,7 @@ void delayms(unsigned long delay_ms)
 {
   CHANGE_INTERVAL_MS(timer_delay_ms, delay_ms);
   RESTART_TIMER(timer_delay_ms);
-  while (!DUE(timer_delay_ms))
-  {
+  while (!DUE(timer_delay_ms)) {
     doSystemTasks();
   }
 
@@ -621,26 +584,22 @@ void doTaskShield()
   }
   if (DUE(shieldTimer))
   {
-    if (Verbose1) DebugTln("doTaskShield..");
-    if (relay0.isActive(thisTimeMinutes))
-    {
+    if (Verbose1) { DebugTln("doTaskShield.."); }
+    if (relay0.isActive(thisTimeMinutes)) {
       //-- do whats needed for the Shield
       actPower = (int)(tlgrmData.power_returned *1000) + (int)(tlgrmData.power_delivered *-1000);
       relay0.loop(actPower);
     }
-    else
-    {
+    else {
       DebugTln("Relay[0] is inactive");
       relay0.setRelayState(LOW);
     }
-    if (relay1.isActive(thisTimeMinutes))
-    {
+    if (relay1.isActive(thisTimeMinutes)) {
       //-- do whats needed for the Shield
       actPower = (int)(tlgrmData.power_returned *1000) + (int)(tlgrmData.power_delivered *-1000);
       relay1.loop(actPower);
     }
-    else
-    {
+    else {
       DebugTln("Relay[1] is inactive");
       relay1.setRelayState(LOW);
     }
@@ -652,16 +611,13 @@ void doTaskShield()
 //==[ Do Telegram Processing ]===============================================================
 void doTaskTelegram()
 {
-  if (DUE(nextTelegram))
-  {
-    if (Verbose1) 
-      DebugTln("doTaskTelegram");
+  if (DUE(nextTelegram)) {
+    if (Verbose1) { DebugTln("doTaskTelegram"); }
     //-- enable DTR to read a telegram from the Slimme Meter
     slimmeMeter.enable(true); 
     slimmeMeter.loop();
     handleSlimmemeter();
   }
-  
 } //  doTaskTelegram()
 
 
@@ -676,13 +632,11 @@ void doSystemTasks()
   httpServer.handleClient();
 
   wait4KeyInput();
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     checkFlashButton();
   }
 
-  if ((millis() - glowTimer1) > _GLOW_TIME)
-  {
+  if ((millis() - glowTimer1) > _GLOW_TIME) {
     neoPixOn(1, neoPixGreenLow);
   }
   //if (ntpEventId == 0)
@@ -707,28 +661,23 @@ void loop ()
   loopCount++;
 
   //--- if an OLED screen attached, display the status
-  if (devSetting->OledType > 0)
-  {
-    if (DUE(updateDisplay))
-    {
+  if (devSetting->OledType > 0) {
+    if (DUE(updateDisplay)) {
       displayStatus();
     }
   }
 
   //--- if connection lost, try to reconnect to WiFi
-  if ( lostWiFiConnection )
-  {
+  if (lostWiFiConnection) {
     neoPixOn(0, neoPixRed);
-    if (firstConnectionLost)
-    {
+    if (firstConnectionLost) {
       //writeToSysLog("Watchdog timer reset ...");
       firstConnectionLost = false;
       resetWatchdog();
     }
 
     glowTimer0 = millis() + 2000;
-    if ((lostWiFiCount % 25) == 0)
-    {
+    if ((lostWiFiCount % 25) == 0) {
       DebugTf("Reconnect wifi with [%s]...\r\n", devSetting->Hostname);
       writeToSysLog("Reconnect wifi with [%s]...", devSetting->Hostname);
     }
@@ -737,35 +686,29 @@ void loop ()
     delay(1000);
     WiFi.begin(myWiFi.SSID, myWiFi.password);
     delay(1000);
-    if (WiFi.status() != WL_CONNECTED)
-    {
-      if (lostWiFiConnection && (lostWiFiCount % 25) == 0)
-      {
+    if (WiFi.status() != WL_CONNECTED) {
+      if (lostWiFiConnection && (lostWiFiCount % 25) == 0) {
         DebugTln("Wifi still not connected!");
         writeToSysLog("Wifi still not connected!");
       }
     }
-    else
-    {
-      snprintf(gMsg,  _GMSG_LEN, "IP:[%s], Gateway:[%s]"
-                                      , WiFi.localIP().toString().c_str()
-                                      , WiFi.gatewayIP().toString().c_str());
+    else {
+      snprintf(gMsg,  _GMSG_LEN, "IP:[%s], Gateway:[%s]",
+                                      WiFi.localIP().toString().c_str(),
+                                      WiFi.gatewayIP().toString().c_str());
       DebugTf("%s\r\n", gMsg);
       writeToSysLog("%s", gMsg);
       startMDNS(devSetting->Hostname);
     }
   } //  lostWiFiConnection
-  else
-  {
+  else {
     //-- set NEO 0 to Green
-    if ((millis() - glowTimer0) > _GLOW_TIME)
-    {
+    if ((millis() - glowTimer0) > _GLOW_TIME) {
       neoPixOn(0, neoPixGreenLow);
     }
   }
   
   yield();
-
 } // loop()
 
 

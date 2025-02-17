@@ -843,7 +843,13 @@ void sendSMsettings()
 
   nestedRec = doc["settings"].createNestedObject();
   nestedRec["name"]   = "gd_tariff";
-  nestedRec["value"]  =  round3(smSetting->GDT);
+  nestedRec["value"]  =  round3(smSetting->GDT);//gas delivered
+  nestedRec["type"]   = "f"; 
+  nestedRec["min"] = 0; nestedRec["max"] = 10; nestedRec["dec"] = 5;
+
+  nestedRec = doc["settings"].createNestedObject();
+  nestedRec["name"]   = "wd_tariff";
+  nestedRec["value"]  =  round3(smSetting->WDT);//water delivered
   nestedRec["type"]   = "f"; 
   nestedRec["min"] = 0; nestedRec["max"] = 10; nestedRec["dec"] = 5;
 
@@ -855,7 +861,13 @@ void sendSMsettings()
 
   nestedRec = doc["settings"].createNestedObject();
   nestedRec["name"]   = "gas_netw_costs";
-  nestedRec["value"]  =  round3(smSetting->GNBK);
+  nestedRec["value"]  =  round3(smSetting->GNBK);//gas network cost
+  nestedRec["type"]   = "f"; 
+  nestedRec["min"] = 0; nestedRec["max"] = 100; nestedRec["dec"] = 2;
+
+  nestedRec = doc["settings"].createNestedObject();
+  nestedRec["name"]   = "water_netw_costs";
+  nestedRec["value"]  =  round3(smSetting->WNBK);//water network cost
   nestedRec["type"]   = "f"; 
   nestedRec["min"] = 0; nestedRec["max"] = 100; nestedRec["dec"] = 2;
 
@@ -1200,6 +1212,7 @@ void sendJsonV2smApi(const char *firstLevel)
   {
     time(&now);
     addToTable("gas_delivered", gasDelivered);
+    addToTable("water_delivered", waterDelivered);
     uint16_t nowMinutes = (localtime(&now)->tm_hour*60) + localtime(&now)->tm_min;
     DebugTf("[%02d:%02d] >>>> nowMinutes[%d]\r\n", localtime(&now)->tm_hour, localtime(&now)->tm_min, nowMinutes);
     addToTable("relay_active0", (int)relay0.isActive(nowMinutes));
@@ -1296,18 +1309,20 @@ void sendJsonActualHist()
     nestedRec["actual"]["power_returned_l2"]  = round3(actualStore[s].power_returned_l2);
     nestedRec["actual"]["power_returned_l3"]  = round3(actualStore[s].power_returned_l3);
     nestedRec["actual"]["gas_delivered"]      = round3(actualStore[s].gas_delivered);
+    nestedRec["actual"]["water_delivered"]    = round3(actualStore[s].water_delivered);
 
     if (Verbose2)
     {
-      Debugf("[%3d][%5d][%-12.12s] PwrDel[%10.3f] PwrRet[%10.3f] GasDel[%10.3f]\r\n"
-              , i, actualStore[s].count, actualStore[s].timestamp
-                                       , (actualStore[s].power_delivered_l1
+      Debugf("[%3d][%5d][%-12.12s] PwrDel[%10.3f] PwrRet[%10.3f] GasDel[%10.3f] WaterDel[%10.3f]\r\n",
+              i, actualStore[s].count, actualStore[s].timestamp,
+                                        (actualStore[s].power_delivered_l1
                                           + actualStore[s].power_delivered_l2
-                                          + actualStore[s].power_delivered_l3)
-                                       , (actualStore[s].power_returned_l1
+                                          + actualStore[s].power_delivered_l3),
+                                       (actualStore[s].power_returned_l1
                                           + actualStore[s].power_returned_l2
-                                          + actualStore[s].power_returned_l3)
-                                       , actualStore[s].gas_delivered);
+                                          + actualStore[s].power_returned_l3),
+                                          actualStore[s].gas_delivered,
+                                          actualStore[s].water_delivered);
     }
   
   } //  for i...
@@ -1338,7 +1353,7 @@ void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uin
   char      typeApi[10] = {0};
   char      buffer[DATA_RECLEN +2] = {0};
   char      recID[10]  = {0};
-  float     EDT1, EDT2, ERT1, ERT2, GDT;
+  float     EDT1, EDT2, ERT1, ERT2, GDT, WDT;
 
   memset(jsonBuff, 0, _JSONBUFF_LEN);
 
@@ -1432,8 +1447,8 @@ void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uin
       else  // all is OK
       {
         //Debug(" all OK ");
-        sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID
-                       , &EDT1, &EDT2, &ERT1, &ERT2, &GDT);
+        sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID,
+                       &EDT1, &EDT2, &ERT1, &ERT2, &GDT, &WDT);
         JsonObject nestedRec = doc[typeApi].createNestedObject();
         nestedRec["recnr"]  = recNr++;
         nestedRec["recid"]  = recID;
@@ -1442,7 +1457,8 @@ void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uin
         nestedRec["edt2"]   = round3(EDT2);
         nestedRec["ert1"]   = round3(ERT1);
         nestedRec["ert2"]   = round3(ERT2);
-        nestedRec["gdt"]    = round3(GDT);
+        nestedRec["gdt"]    = round3(GDT);//gas delivered
+        nestedRec["wdt"]    = round3(WDT);//water delivered
       }
 
     } //  desc ...
@@ -1471,8 +1487,8 @@ void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uin
       else  // all is OK
       {
         //Debug(" all OK ");
-        sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID
-                       , &EDT1, &EDT2, &ERT1, &ERT2, &GDT);
+        sscanf(buffer, "%[^;];%f;%f;%f;%f;%f;%f", recID,
+                       &EDT1, &EDT2, &ERT1, &ERT2, &GDT, &WDT);
         JsonObject nestedRec = doc[typeApi].createNestedObject();
         nestedRec["recnr"]  = recNr++;
         nestedRec["recid"]  = recID;
@@ -1481,7 +1497,8 @@ void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uin
         nestedRec["edt2"]   = round3(EDT2);
         nestedRec["ert1"]   = round3(ERT1);
         nestedRec["ert2"]   = round3(ERT2);
-        nestedRec["gdt"]    = round3(GDT);
+        nestedRec["gdt"]    = round3(GDT);//gas delivered
+        nestedRec["wdt"]    = round3(WDT);//water delivered
       }
 
     } //  asc ...

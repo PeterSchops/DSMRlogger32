@@ -1,8 +1,6 @@
 #ifndef DSMRLOGGER32_H
 #define DSMRLOGGER32_H
 
-
-
 /*
 ***************************************************************************
 **  Program  : DSMRlogger32.h - definitions for DSMRlogger32
@@ -178,6 +176,7 @@ bool        tmpAlterRingSlots = false;
 bool        showRaw = false;
 int8_t      showRawCount = 0;
 float       gasDelivered;
+float       waterDelivered;
 uint32_t    antiWearTimer = 0;
 bool        updatedRINGfiles = false;
 
@@ -186,41 +185,40 @@ char fieldName[40] = "";
 char fieldsArray[50][35] = {{0}}; // to lookup fields
 int  fieldsElements      = 0;
 
-char actualTableArray[][35] = { "timestamp"
-                           , "power_delivered_l1", "power_delivered_l2", "power_delivered_l3"
-                           , "power_returned_l1", "power_returned_l2", "power_returned_l3"
-                           , "gas_delivered"
-                           , "\0"
+char actualTableArray[][35] = { "timestamp",
+                          "power_delivered_l1", "power_delivered_l2", "power_delivered_l3",
+                          "power_returned_l1", "power_returned_l2", "power_returned_l3",
+                          "gas_delivered", "water_delivered", "\0"
                          };
 
 int  actualTableElements = (sizeof(actualTableArray)/sizeof(actualTableArray[0]))-1;
 
-char actualArray[][35] = { "timestamp"
-                           , "energy_delivered_tariff1", "energy_delivered_tariff2"
-                           , "energy_returned_tariff1", "energy_returned_tariff2"
-                           , "power_delivered", "power_returned"
-                           , "voltage_l1", "voltage_l2", "voltage_l3"
-                           , "current_l1", "current_l2", "current_l3"
-                           , "power_delivered_l1", "power_delivered_l2", "power_delivered_l3"
-                           , "power_returned_l1", "power_returned_l2", "power_returned_l3"
-                           , "mbus1_delivered"
-                           , "mbus2_delivered"
-                           , "mbus3_delivered"
-                           , "mbus4_delivered"
-                           , "relay_state"
-                           , "\0"
+char actualArray[][35] = { "timestamp",
+                           "energy_delivered_tariff1", "energy_delivered_tariff2",
+                           "energy_returned_tariff1", "energy_returned_tariff2",
+                           "power_delivered", "power_returned",
+                           "voltage_l1", "voltage_l2", "voltage_l3",
+                           "current_l1", "current_l2", "current_l3",
+                           "power_delivered_l1", "power_delivered_l2", "power_delivered_l3",
+                           "power_returned_l1", "power_returned_l2", "power_returned_l3",
+                           "mbus1_delivered",
+                           "mbus2_delivered",
+                           "mbus3_delivered",
+                           "mbus4_delivered",
+                           "relay_state",
+                           "\0"
                          };
 
 int  actualElements = (sizeof(actualArray)/sizeof(actualArray[0]))-1;
 
-char infoArray[][35]   = { "identification", "p1_version", "p1_version_be"
-                           , "equipment_id"
-                           , "electricity_tariff"
-                           , "mbus1_device_type", "mbus1_equipment"
-                           , "mbus2_device_type", "mbus2_equipment"
-                           , "mbus3_device_type", "mbus3_equipment"
-                           , "mbus4_device_type", "mbus4_equipment"
-                           , "\0"
+char infoArray[][35]   = { "identification", "p1_version", "p1_version_be",
+                           "equipment_id",
+                           "electricity_tariff",
+                           "mbus1_device_type", "mbus1_equipment",
+                           "mbus2_device_type", "mbus2_equipment",
+                           "mbus3_device_type", "mbus3_equipment",
+                           "mbus4_device_type", "mbus4_equipment",
+                           "\0"
                          };
 
 int  infoElements = (sizeof(infoArray)/sizeof(infoArray[0]))-1;
@@ -258,7 +256,7 @@ uint32_t  glowTimer0, glowTimer1;
 //===========================================================================================
 // setup timers
 DECLARE_TIMER_SEC(updateDisplay,       5);
-DECLARE_TIMER_MIN(updateTlgrmCount, 4560);  //-- iedere zes uur
+DECLARE_TIMER_MIN(updateTlgrmCount, 4560);  //-- every 6 hours
 DECLARE_TIMER_MIN(reconnectWiFi,      30);
 DECLARE_TIMER_SEC(nextTelegram,       10);
 DECLARE_TIMER_MIN(reconnectMQTTtimer,  2);  //-- try reconnecting cyclus timer

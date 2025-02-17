@@ -108,12 +108,13 @@ void buildDataRecordFromSM(char *recIn, timeStruct useTime)
   uint16_t recSlot = (useTime.Hours % devSetting->NoHourSlots);
   strCpyFrm(key, 10, useTime.Timestamp, 0, 8);
 
-  snprintf(record, sizeof(record), (char *)DATA_FORMAT, key
-                      , (float)tlgrmData.energy_delivered_tariff1
-                      , (float)tlgrmData.energy_delivered_tariff2
-                      , (float)tlgrmData.energy_returned_tariff1
-                      , (float)tlgrmData.energy_returned_tariff2
-                      , (float)gasDelivered);
+  snprintf(record, sizeof(record), (char *)DATA_FORMAT, key,
+                      (float)tlgrmData.energy_delivered_tariff1,
+                      (float)tlgrmData.energy_delivered_tariff2,
+                      (float)tlgrmData.energy_returned_tariff1,
+                      (float)tlgrmData.energy_returned_tariff2,
+                      (float)gasDelivered,
+                      (float)waterDelivered);
   
   if (Verbose2) DebugTf("record[%s]\r\n", record);
   
@@ -134,7 +135,8 @@ uint16_t buildDataRecordFromJson(char *recIn, int recLen, String jsonIn)
   float     uEDT2     = 0.0;
   float     uERT1     = 0.0;
   float     uERT2     = 0.0;
-  float     uGDT      = 0.0;
+  float     uGDT      = 0.0;//gas delivered
+  float     uWDT      = 0.0;//water delivered
   uint16_t  recSlot;
 
   DebugTln(jsonIn);
@@ -151,11 +153,13 @@ uint16_t buildDataRecordFromJson(char *recIn, int recLen, String jsonIn)
   uERT1 = doc["ert1"];
   uERT2 = doc["ert2"];
   uGDT  = doc["gdt"];
-  snprintf(record, sizeof(record), (char *)DATA_FORMAT, uKey, (float)uEDT1
-                                                            , (float)uEDT2
-                                                            , (float)uERT1
-                                                            , (float)uERT2
-                                                            , (float)uGDT);
+  uWDT  = doc["wdt"];
+  snprintf(record, sizeof(record), (char *)DATA_FORMAT, uKey, (float)uEDT1,
+                                                              (float)uEDT2,
+                                                              (float)uERT1,
+                                                              (float)uERT2,
+                                                              (float)uGDT,
+                                                              (float)uWDT);
   Debugln(record);
   
   strlcat(uKey, "0101X", _TIMESTAMP_LEN);
@@ -166,11 +170,12 @@ uint16_t buildDataRecordFromJson(char *recIn, int recLen, String jsonIn)
   recSlot = (thisTimestamp.Months % devSetting->NoMonthSlots);
 
   DebugTf("MONTHS: Write [%s] to slot[%02d] in %s\r\n", uKey, recSlot, MONTHS_FILE);
-  snprintf(record, sizeof(record), (char *)DATA_FORMAT, uKey, (float)uEDT1
-                                                            , (float)uEDT2
-                                                            , (float)uERT1
-                                                            , (float)uERT2
-                                                            , (float)uGDT);
+  snprintf(record, sizeof(record), (char *)DATA_FORMAT, uKey, (float)uEDT1,
+                                                              (float)uEDT2,
+                                                              (float)uERT1,
+                                                              (float)uERT2,
+                                                              (float)uGDT,
+                                                              (float)uWDT);
 
   // DATA + \n + \0
   fillRecord(record, DATA_RECLEN);
@@ -293,7 +298,7 @@ void readOneSlot(char *record, const char *fileName
 {
   uint16_t  slot, offset;
   char      buffer[DATA_RECLEN +1] = {0};
-  float     EDT1, EDT2, ERT1, ERT2, GDT;
+  float     EDT1, EDT2, ERT1, ERT2, GDT, WDT;
 
   if (!_FSYS.exists(fileName))
   {
