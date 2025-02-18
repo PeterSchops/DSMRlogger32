@@ -8,6 +8,8 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
+/* jshint esversion: 8 */
+/* jshint multistr: true */
 const APIGW=window.location.protocol+'//'+window.location.host+'/api/';
 
 "use strict";
@@ -33,18 +35,21 @@ var ed_tariff2            = 0;
 var er_tariff1            = 0;
 var er_tariff2            = 0;
 var gd_tariff             = 0;
+var wd_tariff             = 0;
 var electr_netw_costs     = 0;
 var gas_netw_costs        = 0;
+var water_netw_costs      = 0;
 var hostName              = "-";
 var pre_dsmr40            = 0;
 var dailyreboot           = 0;
 var mbus_nr_gas           = 1;
+var mbus_nr_water         = 2;
 
 var data       = [];
                 
 let monthType        = "ED";
 let settingBgColor   = 'deepskyblue';
-let settingFontColor = 'white'
+let settingFontColor = 'white';
                   
 var monthNames = [ "indxNul","Januari","Februari","Maart","April","Mei","Juni"
                   ,"Juli","Augustus","September","Oktober","November","December"
@@ -183,7 +188,8 @@ function openTab(tabName)
   }
   //--- hide canvas -------
   document.getElementById("dataChart").style.display = "none";
-  document.getElementById("gasChart").style.display  = "none";
+  document.getElementById("gasChart").style.display = "none";
+  document.getElementById("waterChart").style.display = "none";
   //--- hide all tab's -------
   x = document.getElementsByClassName("tabName");
   for (i = 0; i < x.length; i++) 
@@ -453,66 +459,59 @@ function refreshDevTime()
 function refreshSmActual()
 {
   console.log("refreshSmActual: presentationType["+presentationType+"]");
-  if (presentationType == "GRAPH" && (actualHist == false))
-  {
+  if ((presentationType == "GRAPH") && (actualHist == false)) {
+    //Actual graph update
+    //console.log("hist/actual-->start");
     fetch(APIGW+"v2/hist/actual")
       .then(response => response.json())
       .then(json => {
-          //console.log("parsing fields in ["+ JSON.stringify(json)+"]");
-          store = json.store;
-          for (var key in store) 
-          {
-            if (store.hasOwnProperty(key)) 
-            {
-              num = json.store[key];
-              //console.log("["+key+"] parsed ==> ["+ JSON.stringify(num)+"]");
-              for (var actual in num) 
-              {
-                //console.log("Found ["+JSON.stringify(num[actual].actual)+"]");
-                data   = num[actual].actual;
-                copyActualToChart(data);
-              }
+        //console.log("parsing fields in ["+ JSON.stringify(json)+"]");
+        store = json.store;
+        for (var key in store) {
+          if (store.hasOwnProperty(key)) {
+            num = json.store[key];
+            //console.log("["+key+"] parsed ==> ["+ JSON.stringify(num)+"]");
+            for (var actual in num) {
+              //console.log("Found ["+JSON.stringify(num[actual].actual)+"]");
+              data   = num[actual].actual;
+              copyActualToChart(data);
             }
           }
-          actualHist = true;
-          if (presentationType == "TAB")
-                showActualTable(data);
-          else  showActualGraph(data);
-          //console.log("-->done..");
+        }
+        actualHist = true;
+        if (presentationType == "TAB")
+              showActualTable(data);
+        else  showActualGraph(data);
+        //console.log("hist/actual-->done..");
       })
-      .catch(function(error) 
-      {
+      .catch(function (error) {
+        console.log("refreshSmActual:graph-->error");
         var p = document.createElement('p');
-        p.appendChild(
-          document.createTextNode('Error: ' + error.message)
-        );
+        p.appendChild(document.createTextNode('Error: ' + error.message));
       });
   }
-  else
-  {
+  else {
+    //Actual table update
     fetch(APIGW+"v2/sm/actual")
       .then(response => response.json())
       .then(json => {
-          //console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
-          data = json.actual;
-          copyActualToChart(data);
-          if (presentationType == "TAB")
-          {
-            actualHist = false;
-            showActualTable(data);
-          }
-          else  showActualGraph(data);
-          //console.log("-->done..");
+        //console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
+        data = json.actual;
+        copyActualToChart(data);
+        if (presentationType == "TAB") {
+          actualHist = false;
+          showActualTable(data);
+        }
+        else  showActualGraph(data);
+        //console.log("sm/actual-->done..");
       })
-      .catch(function(error) 
-      {
+      .catch(function(error) {
+        console.log("refreshSmActual:table-->error");
         var p = document.createElement('p');
-        p.appendChild(
-          document.createTextNode('Error: ' + error.message)
-        );
+        p.appendChild(document.createTextNode('Error: ' + error.message));
       });
   } 
-};  // refreshSmActual()
+}  // refreshSmActual()
 
 
 //============================================================================  
@@ -521,85 +520,73 @@ function refreshSmFields()
   fetch(APIGW+"v2/sm/fields")
     .then(response => response.json())
     .then(json => {
-        data = json.fields;
-        let fldValue;
+      data = json.fields;
+      let fldValue;
       
-        for( let field in data )
-        {
-          bName = translateToHuman(field);
-          humanName = bName.replace("<2>", "<br>");
-          fldValue = data[field];
-          console.log("bName["+field+"], fldValue["+fldValue+"]")
-          var tableRef = document.getElementById('fieldsTable').getElementsByTagName('tbody')[0];
-          if( ( document.getElementById("fieldsTable_"+field)) == null )
-          {
-            var newRow   = tableRef.insertRow();
-            newRow.setAttribute("id", "fieldsTable_"+field, 0);
-            var newCell  = newRow.insertCell(0);                  // name
-            var newText  = document.createTextNode('');
-            newCell.appendChild(newText);
-            newCell  = newRow.insertCell(1);                      // humanName
-            newCell.appendChild(newText);
-            newCell  = newRow.insertCell(2);                      // value
-            newCell.appendChild(newText);
-            //newCell  = newRow.insertCell(3);                      // unit
-            //newCell.appendChild(newText);
-          }
-          tableCells = document.getElementById("fieldsTable_"+field).cells;
-          tableCells[0].innerHTML = field;
-          tableCells[1].innerHTML = humanName;
-          if (field == "electricity_failure_log" && fldValue.length > 50) 
-          {
-            tableCells[2].innerHTML = fldValue.substring(0,50);
-            var lLine = fldValue.substring(50);
-            while (lLine.length > 50)
-            {
-              tableCells[2].innerHTML += "<br>" + lLine.substring(0,50);
-              lLine = lLine.substring(50);
-            }
-            tableCells[2].innerHTML += "<br>" + lLine;
-            tableCells[0].setAttribute("style", "vertical-align: top");
-            tableCells[1].setAttribute("style", "vertical-align: top");
-          }
-          else
-          {
-            if (field.includes("equipment"))
-            {
-              tableCells[2].innerHTML = fldValue;
-            }
-            //-- format floats and voltage_lx
-            else if (isFloat(fldValue))
-            {
-              if (field.includes("voltage"))
-              {
-                tableCells[2].innerHTML = fldValue.toFixed(1);
-                tableCells[2].style.textAlign = "right";
-              }
-              else  
-              {
-                tableCells[2].innerHTML = fldValue.toFixed(3);
-                tableCells[2].style.textAlign = "right";
-              }
-            }
-            //-- format integers
-            else if (!isNaN(fldValue))
-            {
-                tableCells[2].innerHTML = fldValue;
-                tableCells[2].style.textAlign = "right";
-            }
-            else  tableCells[2].innerHTML = fldValue;
-          }
+      for (let field in data) {
+        bName = translateToHuman(field);
+        humanName = bName.replace("<2>", "<br>");
+        fldValue = data[field];
+        //console.log("bName["+field+"], fldValue["+fldValue+"]");
+        var tableRef = document.getElementById('fieldsTable').getElementsByTagName('tbody')[0];
+        if ((document.getElementById("fieldsTable_"+field)) == null) {
+          var newRow   = tableRef.insertRow();
+          newRow.setAttribute("id", "fieldsTable_"+field, 0);
+          var newCell  = newRow.insertCell(0);                  // name
+          var newText  = document.createTextNode('');
+          newCell.appendChild(newText);
+          newCell  = newRow.insertCell(1);                      // humanName
+          newCell.appendChild(newText);
+          newCell  = newRow.insertCell(2);                      // value
+          newCell.appendChild(newText);
+          //newCell  = newRow.insertCell(3);                      // unit
+          //newCell.appendChild(newText);
         }
-        //console.log("-->done..");
+        tableCells = document.getElementById("fieldsTable_"+field).cells;
+        tableCells[0].innerHTML = field;
+        tableCells[1].innerHTML = humanName;
+        if ((field == "electricity_failure_log") && (fldValue.length > 50)) {
+          tableCells[2].innerHTML = fldValue.substring(0,50);
+          var lLine = fldValue.substring(50);
+          while (lLine.length > 50) {
+            tableCells[2].innerHTML += "<br>" + lLine.substring(0,50);
+            lLine = lLine.substring(50);
+          }
+          tableCells[2].innerHTML += "<br>" + lLine;
+          tableCells[0].setAttribute("style", "vertical-align: top");
+          tableCells[1].setAttribute("style", "vertical-align: top");
+        }
+        else {
+          if (field.includes("equipment")) {
+            tableCells[2].innerHTML = fldValue;
+          }
+          //-- format floats and voltage_lx
+          else if (isFloat(fldValue)) {
+            if (field.includes("voltage")) {
+              tableCells[2].innerHTML = fldValue.toFixed(1);
+              tableCells[2].style.textAlign = "right";
+            }
+            else {
+              tableCells[2].innerHTML = fldValue.toFixed(3);
+              tableCells[2].style.textAlign = "right";
+            }
+          }
+          //-- format integers
+          else if (!isNaN(fldValue)) {
+            tableCells[2].innerHTML = fldValue;
+            tableCells[2].style.textAlign = "right";
+          }
+          else  tableCells[2].innerHTML = fldValue;
+        }
+      }
+      //console.log("-->done..");
     })
-    .catch(function(error) 
-    {
+    .catch(function(error) {
+      console.log("refreshSmFields-->error");
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     }); 
-};  // refreshSmFields()
+}  // refreshSmFields()
 
 
 //============================================================================  
@@ -618,12 +605,10 @@ function refreshHours()
             showHistTable(data, "Hours");
       else  showHistGraph(data, "Hours");
     })
-    .catch(function(error) 
-    {
+    .catch(function(error) {
+      console.log("refreshHours-->error");
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     }); 
 } // resfreshHours()
 
@@ -641,12 +626,10 @@ function refreshDays()
             showHistTable(data, "Days");
       else  showHistGraph(data, "Days");
     })
-    .catch(function(error) 
-    {
+    .catch(function(error) {
+      console.log("refreshDays-->error");
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });
 } // resfreshDays()
 
@@ -661,20 +644,17 @@ function refreshMonths()
       //console.log(response);
       data = json.months;
       expandData(data);
-      if (presentationType == "TAB")
-      {
+      if (presentationType == "TAB") {
         if (document.getElementById('mCOST').checked)
               showMonthsCosts(data);
         else  showMonthsHist(data);
       }
       else  showMonthsGraph(data);
     })
-    .catch(function(error) 
-    {
+    .catch(function(error) {
+      console.log("refreshMonths-->error");
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });
 } // resfreshMonths()
 
@@ -688,24 +668,21 @@ function refreshSmTelegram()
       //console.log("parsed .., data is ["+ response+"]");
       //console.log('-------------------');
       var divT = document.getElementById('rawTelegram');
-      if ( document.getElementById("TelData") == null )
-      {
-          console.log("CreateElement(pre)..");
-          var preT = document.createElement('pre');
-          preT.setAttribute("id", "TelData", 0);
-          preT.setAttribute('class', 'telegram');
-          preT.textContent = response;
-          divT.appendChild(preT);
+      if (document.getElementById("TelData") == null) {
+        console.log("CreateElement(pre)..");
+        var preT = document.createElement('pre');
+        preT.setAttribute("id", "TelData", 0);
+        preT.setAttribute('class', 'telegram');
+        preT.textContent = response;
+        divT.appendChild(preT);
       }
-      preT = document.getElementById("TelData");
+      preT = document.getElementById("TelData");//preT use out of scope
       preT.textContent = response;
     })
-    .catch(function(error) 
-    {
+    .catch(function(error) {
+      console.log("refreshSmTelegram-->error");
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
 } // refreshSmTelegram()
 
@@ -719,24 +696,21 @@ function refreshDevSyslog()
       //console.log("parsed .., data is ["+ response+"]");
       //console.log('-------------------');
       var divT = document.getElementById('rawSyslog');
-      if ( document.getElementById("LogData") == null )
-      {
-          console.log("CreateElement(pre)..");
-          var preT = document.createElement('pre');
-          preT.setAttribute("id", "LogData", 0);
-          preT.setAttribute('class', 'syslog');
-          preT.textContent = response;
-          divT.appendChild(preT);
+      if (document.getElementById("LogData") == null) {
+        console.log("CreateElement(pre)..");
+        var preT = document.createElement('pre');
+        preT.setAttribute("id", "LogData", 0);
+        preT.setAttribute('class', 'syslog');
+        preT.textContent = response;
+        divT.appendChild(preT);
       }
-      preT = document.getElementById("LogData");
+      preT = document.getElementById("LogData");//preT use out of scope
       preT.textContent = response;
     })
-    .catch(function(error) 
-    {
+    .catch(function(error) {
+      console.log("refreshDevSyslog-->error");
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
 } // refreshDevSyslog()
 
@@ -745,74 +719,75 @@ function refreshDevSyslog()
 function expandData(data)
 {
   //--- first check op volgordelijkheid ------    
-  if (activeTab == "HoursTab") 
-  {  
-    for(let i=0; i<data.length-1; i++)
-    {
-      if (data[i].edt1 < data[i+1].edt1 || data[i].edt2 < data[i+1].edt2)
-      {
+  if (activeTab == "HoursTab") {  
+    for(let i=0; i<data.length-1; i++) {
+      if (data[i].edt1 < data[i+1].edt1 || data[i].edt2 < data[i+1].edt2) {
         data[i].edt1 = data[i+1].edt1 * 1.0;
         data[i].edt2 = data[i+1].edt2 * 1.0;
         data[i].ert1 = data[i+1].ert1 * 1.0;
         data[i].ert2 = data[i+1].ert2 * 1.0;
         data[i].gdt  = data[i+1].gdt  * 1.0;
+        data[i].wdt  = data[i+1].wdt  * 1.0;
       }
     } // for ...
     console.log("done with for .. hours");
   } // hours
   
   console.log("calculate costs ..");
-  for (let i=0; i<data.length; i++)
-  {
+  for (let i=0; i<data.length; i++) {
     var     costs     = 0;
     data[i].p_ed      = {};
     data[i].p_edw     = {};
     data[i].p_er      = {};
     data[i].p_erw     = {};
     data[i].p_gd      = {};
+    data[i].p_wd      = {};
     data[i].costs_e   = {};
     data[i].costs_g   = {};
+    data[i].costs_w   = {};
     data[i].costs_nw  = {};
     data[i].costs_tt  = {};
 
-    if (i < (data.length -1))
-    {
-      data[i].p_ed  = ((data[i].edt1 +data[i].edt2)-(data[i+1].edt1 +data[i+1].edt2)).toFixed(3);
+    if (i < (data.length -1)) {
+      data[i].p_ed  = ((data[i].edt1 + data[i].edt2)-(data[i+1].edt1 + data[i+1].edt2)).toFixed(3);
       data[i].p_edw = (data[i].p_ed * 1000).toFixed(0);
-      data[i].p_er  = ((data[i].ert1 +data[i].ert2)-(data[i+1].ert1 +data[i+1].ert2)).toFixed(3);
+      data[i].p_er  = ((data[i].ert1 + data[i].ert2)-(data[i+1].ert1 + data[i+1].ert2)).toFixed(3);
       data[i].p_erw = (data[i].p_er * 1000).toFixed(0);
-      data[i].p_gd  = (data[i].gdt  -data[i+1].gdt).toFixed(3);
+      data[i].p_gd  = (data[i].gdt - data[i+1].gdt).toFixed(3);
+      data[i].p_wd  = (data[i].wdt - data[i+1].wdt).toFixed(3);
       //-- calculate Energy Delivered costs
-      costs = ( (data[i].edt1 - data[i+1].edt1) * ed_tariff1 );
-      costs = costs + ( (data[i].edt2 - data[i+1].edt2) * ed_tariff2 );
+      costs = ((data[i].edt1 - data[i+1].edt1) * ed_tariff1);
+      costs = costs + ((data[i].edt2 - data[i+1].edt2) * ed_tariff2);
       //-- subtract Energy Returned costs
-      costs = costs - ( (data[i].ert1 - data[i+1].ert1) * er_tariff1 );
-      costs = costs - ( (data[i].ert2 - data[i+1].ert2) * er_tariff2 );
+      costs = costs - ((data[i].ert1 - data[i+1].ert1) * er_tariff1);
+      costs = costs - ((data[i].ert2 - data[i+1].ert2) * er_tariff2);
       data[i].costs_e = costs;
       //-- add Gas Delivered costs
-      data[i].costs_g = ( (data[i].gdt  - data[i+1].gdt)  * gd_tariff );
+      data[i].costs_g = ((data[i].gdt - data[i+1].gdt) * gd_tariff);
+      //-- add Water Delivered costs
+      data[i].costs_w = ((data[i].wdt - data[i+1].wdt) * wd_tariff);      
       //-- compute network costs
-      data[i].costs_nw = (electr_netw_costs + gas_netw_costs);
+      data[i].costs_nw = (electr_netw_costs + gas_netw_costs + water_netw_costs);
       //-- compute total costs
-      data[i].costs_tt = ( (data[i].costs_e + data[i].costs_g + data[i].costs_nw) * 1.0);
+      data[i].costs_tt = ((data[i].costs_e + data[i].costs_g + data[i].costs_w + data[i].costs_nw) * 1.0);
     }
-    else
-    {
+    else {
       costs             = 0;
-      data[i].p_ed      = (data[i].edt1 +data[i].edt2).toFixed(3);
+      data[i].p_ed      = (data[i].edt1 + data[i].edt2).toFixed(3);
       data[i].p_edw     = (data[i].p_ed * 1000).toFixed(0);
-      data[i].p_er      = (data[i].ert1 +data[i].ert2).toFixed(3);
+      data[i].p_er      = (data[i].ert1 + data[i].ert2).toFixed(3);
       data[i].p_erw     = (data[i].p_er * 1000).toFixed(0);
       data[i].p_gd      = (data[i].gdt).toFixed(3);
+      data[i].p_wd      = (data[i].wdt).toFixed(3);
       data[i].costs_e   = 0.0;
-      data[i].costs_g   = 0.0;
+      data[i].costs_g   = 0.0;//costs gas
+      data[i].costs_w   = 0.0;//costs water
       data[i].costs_nw  = 0.0;
       data[i].costs_tt  = 0.0;
     }
   } // for i ..
   console.log("Total Costs ["+data[0].costs_tt+"]");
   console.log("leaving expandData() ..");
-
 } // expandData()
 
   
@@ -821,15 +796,13 @@ function showActualTable(data)
 { 
   if (activeTab != "ActualTab") return;
 
-  console.log("showActual()");
+  console.log("showActualTable(data)");
 
-  for (var field in data) 
-  {
+  for (var field in data) {
     fldValue = data[field];
     humanName = translateToHuman(field);
     var tableRef = document.getElementById('actualTable').getElementsByTagName('tbody')[0];
-    if( ( document.getElementById("actualTable_"+field)) == null )
-    {
+    if ((document.getElementById("actualTable_"+field)) == null) {
       var newRow   = tableRef.insertRow();
       newRow.setAttribute("id", "actualTable_"+field, 0);
       // Insert a cell in the row at index 0
@@ -843,27 +816,27 @@ function showActualTable(data)
     }
     tableCells = document.getElementById("actualTable_"+field).cells;
     tableCells[0].innerHTML = humanName;
-    if (isFloat(fldValue))
-    {
+    if (isFloat(fldValue)) {
       if (field.includes("voltage"))
-            tableCells[1].innerHTML = fldValue.toFixed(1);
-      else  tableCells[1].innerHTML = fldValue.toFixed(3);
+        tableCells[1].innerHTML = fldValue.toFixed(1);
+      else tableCells[1].innerHTML = fldValue.toFixed(3);
       tableCells[1].style.textAlign = "right";
     }
-    else if(!isNaN(fldValue))
-    {
+    else if (!isNaN(fldValue)) {
       tableCells[1].innerHTML = fldValue;
       tableCells[1].style.textAlign = "right";
     }
-    else tableCells[1].innerHTML = fldValue;
+    else {
+      tableCells[1].innerHTML = fldValue;
+    }
   }
 
   //--- hide canvas
-  document.getElementById("dataChart").style.display = "none";
-  document.getElementById("gasChart").style.display  = "none";
+  document.getElementById("dataChart").style.display  = "none";
+  document.getElementById("gasChart").style.display   = "none";
+  document.getElementById("waterChart").style.display = "none";
   //--- show table
-  document.getElementById("actual").style.display    = "block";
-
+  document.getElementById("actual").style.display     = "block";
 } // showActualTable()
 
   
@@ -872,26 +845,25 @@ function showHistTable(data, type)
 { 
   console.log("showHistTable("+type+")");
   // the last element has the metervalue, so skip it
-  for (let i=0; i<(data.length -1); i++)
-  {
+  for (let i=0; i<(data.length -1); i++) {
     var tableRef = document.getElementById('last'+type+'Table').getElementsByTagName('tbody')[0];
-    if( ( document.getElementById(type +"Table_"+type+"_R"+i)) == null )
-    {
+    if ((document.getElementById(type +"Table_"+type+"_R"+i)) == null) {
       var newRow   = tableRef.insertRow();
       newRow.setAttribute("id", type+"Table_"+type+"_R"+i, 0);
       // Insert a cell in the row at index 0
-      var newCell  = newRow.insertCell(0);
+      var newCell  = newRow.insertCell(0);//Date/Time
       var newText  = document.createTextNode('-');
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(1);
+      newCell = newRow.insertCell(1);//Energie verbruik
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(2);
+      newCell = newRow.insertCell(2);//Energie teruglevering
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(3);
+      newCell = newRow.insertCell(3);//Gas
       newCell.appendChild(newText);
-      if (type == "Days")
-      {
-        newCell  = newRow.insertCell(4);
+      newCell = newRow.insertCell(4);//Water
+      newCell.appendChild(newText);
+      if (type == "Days") {
+        newCell = newRow.insertCell(5);//Kosten
         newCell.appendChild(newText);
       }
     }
@@ -911,20 +883,23 @@ function showHistTable(data, type)
     if (data[i].p_gd >= 0)
           tableCells[3].innerHTML = data[i].p_gd;
     else  tableCells[3].innerHTML = "-";
-    if (type == "Days")
-    {
-      tableCells[4].style.textAlign = "right";
-      tableCells[4].innerHTML = ( (data[i].costs_e + data[i].costs_g) * 1.0).toFixed(2);
+    tableCells[4].style.textAlign = "right";
+    if (data[i].p_wd >= 0)
+          tableCells[4].innerHTML = data[i].p_wd;
+    else  tableCells[4].innerHTML = "-";
+    if (type == "Days") {
+      tableCells[5].style.textAlign = "right";
+      tableCells[5].innerHTML = ((data[i].costs_e + data[i].costs_g + data[i].costs_w) * 1.0).toFixed(2);
     }
-  };
+  }
 
   //--- hide canvas
-  document.getElementById("dataChart").style.display = "none";
-  document.getElementById("gasChart").style.display  = "none";
+  document.getElementById("dataChart").style.display  = "none";
+  document.getElementById("gasChart").style.display   = "none";
+  document.getElementById("waterChart").style.display = "none";
   //--- show table
   document.getElementById("lastHours").style.display = "block";
   document.getElementById("lastDays").style.display  = "block";
-
 } // showHistTable()
 
   
@@ -939,46 +914,56 @@ function showMonthsHist(data)
   var delivered_1 = 0;
   var gas_0       = 0;
   var gas_1       = 0;
+  var water_0     = 0;
+  var water_1     = 0;
+  
   if (data.length > 24) showRows = 12;
   else                  showRows = data.length / 2;
   //console.log("showRows is ["+showRows+"]");
-  for (let i=0; i<showRows; i++)
-  {
+  for (let i=0; i<showRows; i++) {
     //console.log("showMonthsHist(): data["+i+"] => data["+i+"].name["+data[i].recid+"]");
     var tableRef = document.getElementById('lastMonthsTable').getElementsByTagName('tbody')[0];
-    if( ( document.getElementById("lastMonthsTable_R"+i)) == null )
-    {
+    if ((document.getElementById("lastMonthsTable_R"+i)) == null) {
       var newRow   = tableRef.insertRow();
       newRow.setAttribute("id", "lastMonthsTable_R"+i, 0);
       // Insert a cell in the row at index 0
       var newCell  = newRow.insertCell(0);          // maand
       var newText  = document.createTextNode('-');
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(1);              // jaar
+      newCell = newRow.insertCell(1);              // jaar
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(2);              // verbruik
+      newCell = newRow.insertCell(2);              // verbruik
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(3);              // jaar
+      newCell = newRow.insertCell(3);              // jaar
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(4);              // verbruik
+      newCell = newRow.insertCell(4);              // verbruik
       newCell.appendChild(newText);
 
-      newCell  = newRow.insertCell(5);              // jaar
+      newCell = newRow.insertCell(5);              // jaar
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(6);              // opgewekt
+      newCell = newRow.insertCell(6);              // opgewekt
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(7);              // jaar
+      newCell = newRow.insertCell(7);              // jaar
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(8);             // opgewekt
+      newCell = newRow.insertCell(8);              // opgewekt
       newCell.appendChild(newText);
       
-      newCell  = newRow.insertCell(9);             // jaar
+      newCell = newRow.insertCell(9);              // jaar
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(10);             // gas
+      newCell = newRow.insertCell(10);             // gas
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(11);             // jaar
+      newCell = newRow.insertCell(11);             // jaar
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(12);             // gas
+      newCell = newRow.insertCell(12);             // gas
+      newCell.appendChild(newText);
+
+      newCell = newRow.insertCell(13);             // jaar
+      newCell.appendChild(newText);
+      newCell = newRow.insertCell(14);             // water
+      newCell.appendChild(newText);
+      newCell = newRow.insertCell(15);             // jaar
+      newCell.appendChild(newText);
+      newCell = newRow.insertCell(16);             // water
       newCell.appendChild(newText);
     }
     var mmNr = parseInt(data[i].recid.substring(2,4), 10);
@@ -1026,18 +1011,31 @@ function showMonthsHist(data)
           tableCells[12].innerHTML = data[i+12].p_gd;                     // gas
     else  tableCells[12].innerHTML = "-";     
 
+    tableCells[13].style.textAlign = "center";
+    tableCells[13].innerHTML = "20"+data[i].recid.substring(0,2);         // jaar
+    tableCells[14].style.textAlign = "right";
+    if (data[i].p_wd >= 0)
+          tableCells[14].innerHTML = data[i].p_wd;                        // water
+    else  tableCells[14].innerHTML = "-";     
+    tableCells[15].style.textAlign = "center";
+    tableCells[15].innerHTML = "20"+data[i+12].recid.substring(0,2);      // jaar
+    tableCells[16].style.textAlign = "right";
+    if (data[i+12].p_wd >= 0)
+          tableCells[16].innerHTML = data[i+12].p_wd;                     // water
+    else  tableCells[16].innerHTML = "-";     
+
     delivered_0 += (data[i].p_ed *1);
     received_0  += (data[i].p_er *1);
     gas_0       += (data[i].p_gd *1);
+    water_0     += (data[i].p_wd *1);
     delivered_1 += (data[i+12].p_ed *1);
     received_1  += (data[i+12].p_er *1);
     gas_1       += (data[i+12].p_gd *1);
-    
-  };
+    water_1     += (data[i+12].p_wd *1);
+  }
 
-  if( ( document.getElementById("12MonthsTotal")) == null )
-  {
-    var newRow   = tableRef.insertRow();          // add new row
+  if ((document.getElementById("12MonthsTotal")) == null) {
+    var newRow   = tableRef.insertRow();          // add new row     tableRef used out of scope
     newRow.setAttribute("id", "12MonthsTotal", 0);
     // Insert a cell in the row at index 0
     var newCell  = newRow.insertCell(0);          // totaal
@@ -1067,13 +1065,21 @@ function showMonthsHist(data)
     newCell.appendChild(newText);
     newCell  = newRow.insertCell(12);             // Gas +12
     newCell.appendChild(newText);
+    newCell  = newRow.insertCell(13);             // Spare
+    newCell.appendChild(newText);
+    newCell  = newRow.insertCell(14);             // Water +0
+    newCell.appendChild(newText);
+    newCell  = newRow.insertCell(15);             // Spare
+    newCell.appendChild(newText);
+    newCell  = newRow.insertCell(16);             // Water +12
+    newCell.appendChild(newText);
   }
 
   console.log("del["+delivered_0+"] rec["+received_0+"]");
   tableCells = document.getElementById("12MonthsTotal").cells;
   tableCells[0].style.textAlign = "right";
   tableCells[0].style.fontWeight = 'bold';
-  tableCells[0].innerHTML = "Totaal"
+  tableCells[0].innerHTML = "Totaal";
   //tableCells[1].innerHTML = ""
   tableCells[2].style.textAlign = "right";
   tableCells[2].style.fontWeight = 'bold';
@@ -1098,10 +1104,17 @@ function showMonthsHist(data)
   tableCells[12].style.textAlign = "right";
   tableCells[12].style.fontStyle = 'italic';
   tableCells[12].innerHTML = gas_1.toFixed(3);
+  //tableCells[13].innerHTML = ""
+  tableCells[14].style.textAlign = "right";
+  tableCells[14].style.fontWeight = 'bold';
+  tableCells[14].innerHTML = water_0.toFixed(3);
+  //tableCells[15].innerHTML = ""
+  tableCells[16].style.textAlign = "right";
+  tableCells[16].style.fontStyle = 'italic';
+  tableCells[16].innerHTML = water_1.toFixed(3);
 
-  if( ( document.getElementById("12MonthsSaldo")) == null )
-  {
-    var newRow   = tableRef.insertRow();                                // voorschot regel
+  if ((document.getElementById("12MonthsSaldo")) == null) {
+    var newRow   = tableRef.insertRow();        // voorschot regel tableRef used out os scope
     newRow.setAttribute("id", "12MonthsSaldo", 0);
     // Insert a cell in the row at index 0
     var newCell  = newRow.insertCell(0);          // Saldo
@@ -1116,8 +1129,8 @@ function showMonthsHist(data)
   tableCells = document.getElementById("12MonthsSaldo").cells;
   tableCells[0].style.textAlign = "right";
   tableCells[0].style.fontWeight = 'bold';
-  tableCells[0].innerHTML = "Saldo"
-  tableCells[1].innerHTML = ""
+  tableCells[0].innerHTML = "Saldo";
+  tableCells[1].innerHTML = "";
   tableCells[2].style.textAlign = "right";
   tableCells[2].style.fontWeight = 'bold';
   tableCells[2].innerHTML = (delivered_0 - received_0).toFixed(3);
@@ -1130,9 +1143,9 @@ function showMonthsHist(data)
   //--- hide canvas
   document.getElementById("dataChart").style.display  = "none";
   document.getElementById("gasChart").style.display   = "none";
+  document.getElementById("waterChart").style.display = "none";
   //--- show table
   document.getElementById("lastMonths").style.display = "block";
-
 } // showMonthsHist()
 
   
@@ -1146,38 +1159,40 @@ function showMonthsCosts(data)
   if (data.length > 24) showRows = 12;
   else                  showRows = data.length / 2;
   //console.log("showRows is ["+showRows+"]");
-  for (let i=0; i<showRows; i++)
-  {
+  for (let i=0; i<showRows; i++) {
     //console.log("showMonthsHist(): data["+i+"] => data["+i+"].name["+data[i].recid+"]");
     var tableRef = document.getElementById('lastMonthsTableCosts').getElementsByTagName('tbody')[0];
-    if( ( document.getElementById("lastMonthsTableCosts_R"+i)) == null )
-    {
+    if ((document.getElementById("lastMonthsTableCosts_R"+i)) == null) {
       var newRow   = tableRef.insertRow();
       newRow.setAttribute("id", "lastMonthsTableCosts_R"+i, 0);
       // Insert a cell in the row at index 0
       var newCell  = newRow.insertCell(0);          // maand
       var newText  = document.createTextNode('-');
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(1);              // jaar
+      newCell = newRow.insertCell(1);              // jaar
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(2);              // kosten electra
+      newCell = newRow.insertCell(2);              // kosten electra
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(3);              // kosten gas
+      newCell = newRow.insertCell(3);              // kosten gas
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(4);              // vast recht
+      newCell = newRow.insertCell(4);              // kosten water      
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(5);              // kosten totaal
+      newCell = newRow.insertCell(5);              // vast recht
+      newCell.appendChild(newText);
+      newCell = newRow.insertCell(6);              // kosten totaal
       newCell.appendChild(newText);
 
-      newCell  = newRow.insertCell(6);              // jaar
+      newCell = newRow.insertCell(7);              // jaar
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(7);              // kosten electra
+      newCell = newRow.insertCell(8);              // kosten electra
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(8);              // kosten gas
+      newCell = newRow.insertCell(9);              // kosten gas
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(9);              // vast recht
+      newCell = newRow.insertCell(10);             // kosten water      
       newCell.appendChild(newText);
-      newCell  = newRow.insertCell(10);              // kosten totaal
+      newCell = newRow.insertCell(11);             // vast recht
+      newCell.appendChild(newText);
+      newCell = newRow.insertCell(12);             // kosten totaal
       newCell.appendChild(newText);
     }
     var mmNr = parseInt(data[i].recid.substring(2,4), 10);
@@ -1189,37 +1204,39 @@ function showMonthsCosts(data)
     tableCells[1].style.textAlign = "center";
     tableCells[1].innerHTML = "20"+data[i].recid.substring(0,2);          // jaar
     tableCells[2].style.textAlign = "right";
-    tableCells[2].innerHTML = (data[i].costs_e *1).toFixed(2);            // kosten electra
+    tableCells[2].innerHTML = (data[i].costs_e * 1).toFixed(2);           // kosten electra
     tableCells[3].style.textAlign = "right";
-    tableCells[3].innerHTML = (data[i].costs_g *1).toFixed(2);            // kosten gas
+    tableCells[3].innerHTML = (data[i].costs_g * 1).toFixed(2);           // kosten gas
     tableCells[4].style.textAlign = "right";
-    tableCells[4].innerHTML = (data[i].costs_nw *1).toFixed(2);           // netw kosten
+    tableCells[4].innerHTML = (data[i].costs_w * 1).toFixed(2);           // kosten water
     tableCells[5].style.textAlign = "right";
-    tableCells[5].style.fontWeight = 'bold';
-    tableCells[5].innerHTML = "€ " + (data[i].costs_tt *1).toFixed(2);    // kosten totaal
+    tableCells[5].innerHTML = (data[i].costs_nw *1).toFixed(2);           // netw kosten
+    tableCells[6].style.textAlign = "right";
+    tableCells[6].style.fontWeight = 'bold';
+    tableCells[6].innerHTML = "€ " + (data[i].costs_tt *1).toFixed(2);    // kosten totaal
     //--- omdat de actuele maand net begonnen kan zijn tellen we deze
     //--- niet mee, maar tellen we de laatste maand van de voorgaand periode
     if (i > 0)
           totalCost += data[i].costs_tt;
     else  totalCost += data[i+12].costs_tt;
 
-    tableCells[6].style.textAlign = "center";
-    tableCells[6].innerHTML = "20"+data[i+12].recid.substring(0,2);         // jaar
-    tableCells[7].style.textAlign = "right";
-    tableCells[7].innerHTML = (data[i+12].costs_e *1).toFixed(2);           // kosten electra
+    tableCells[7].style.textAlign = "center";
+    tableCells[7].innerHTML = "20"+data[i+12].recid.substring(0,2);         // jaar
     tableCells[8].style.textAlign = "right";
-    tableCells[8].innerHTML = (data[i+12].costs_g *1).toFixed(2);           // kosten gas
+    tableCells[8].innerHTML = (data[i+12].costs_e * 1).toFixed(2);          // kosten electra
     tableCells[9].style.textAlign = "right";
-    tableCells[9].innerHTML = (data[i+12].costs_nw *1).toFixed(2);          // netw kosten
+    tableCells[9].innerHTML = (data[i+12].costs_g * 1).toFixed(2);          // kosten gas
     tableCells[10].style.textAlign = "right";
-    tableCells[10].style.fontWeight = 'bold';
-    tableCells[10].innerHTML = "€ " + (data[i+12].costs_tt *1).toFixed(2);  // kosten totaal
+    tableCells[10].innerHTML = (data[i+12].costs_w * 1).toFixed(2);         // kosten water
+    tableCells[11].style.textAlign = "right";
+    tableCells[11].innerHTML = (data[i+12].costs_nw *1).toFixed(2);         // netw kosten
+    tableCells[12].style.textAlign = "right";
+    tableCells[12].style.fontWeight = 'bold';
+    tableCells[12].innerHTML = "€ " + (data[i+12].costs_tt *1).toFixed(2);  // kosten totaal
     totalCost_1 += data[i+12].costs_tt;
+  }
 
-  };
-
-  if( ( document.getElementById("periodicCosts")) == null )
-  {
+  if ((document.getElementById("periodicCosts")) == null) {
     var newRow   = tableRef.insertRow();                                // voorschot regel
     newRow.setAttribute("id", "periodicCosts", 0);
     // Insert a cell in the row at index 0
@@ -1239,31 +1256,29 @@ function showMonthsCosts(data)
   }
   tableCells = document.getElementById("periodicCosts").cells;
   tableCells[1].style.textAlign = "right";
-  tableCells[1].innerHTML = "Voorschot Bedrag"
+  tableCells[1].innerHTML = "Voorschot Bedrag";
   tableCells[2].style.textAlign = "right";
   tableCells[2].innerHTML = "€ " + (totalCost / 12).toFixed(2);
   tableCells[3].style.textAlign = "right";
-  tableCells[3].innerHTML = "Voorschot Bedrag"
+  tableCells[3].innerHTML = "Voorschot Bedrag";
   tableCells[4].style.textAlign = "right";
   tableCells[4].innerHTML = "€ " + (totalCost_1 / 12).toFixed(2);
 
   
   //--- hide canvas
   document.getElementById("dataChart").style.display  = "none";
-  document.getElementById("gasChart").style.display   = "none";
+  document.getElementById("gasChart").style.display = "none";
+  document.getElementById("waterChart").style.display = "none";
   //--- show table
-  if (document.getElementById('mCOST').checked)
-  {
+  if (document.getElementById('mCOST').checked) {
     document.getElementById("lastMonthsTableCosts").style.display = "block";
     document.getElementById("lastMonthsTable").style.display = "none";
   }
-  else
-  {
+  else {
     document.getElementById("lastMonthsTable").style.display = "block";
     document.getElementById("lastMonthsTableCosts").style.display = "none";
   }
   document.getElementById("lastMonths").style.display = "block";
-
 } // showMonthsCosts()
 
 
@@ -1274,54 +1289,25 @@ function getSmSettings()
     .then(response => response.json())
     .then(json => {
       //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
-      for( let i in json.settings )
-      {
-          if (json.settings[i].name == "ed_tariff1")
-          {
-            ed_tariff1 = json.settings[i].value;
-          }
-          else if (json.settings[i].name == "ed_tariff2")
-          {
-            ed_tariff2 = json.settings[i].value;
-          }
-          else if (json.settings[i].name == "er_tariff1")
-          {
-            er_tariff1 = json.settings[i].value;
-          }
-          else if (json.settings[i].name == "er_tariff2")
-          {
-            er_tariff2 = json.settings[i].value;
-          }
-          else if (json.settings[i].name == "gd_tariff")
-          {
-            gd_tariff = json.settings[i].value;
-          }
-          else if (json.settings[i].name == "electr_netw_costs")
-          {
-            electr_netw_costs = json.settings[i].value;
-          }
-          else if (json.settings[i].name == "gas_netw_costs")
-          {
-            gas_netw_costs = json.settings[i].value;
-          }
-          else if (json.settings[i].name == "mbus_nr_gas")
-          {
-            mbus_nr_gas = json.settings[i].value;
-          }
-          else if (json.settings[i].name == "pre_dsmr40")
-          {
-            pre_dsmr40 = json.settings[i].value;
-          }
-        }
+      for (let i in json.settings) {
+        if      (json.settings[i].name == "ed_tariff1")        {        ed_tariff1 = json.settings[i].value; }
+        else if (json.settings[i].name == "ed_tariff2")        {        ed_tariff2 = json.settings[i].value; }
+        else if (json.settings[i].name == "er_tariff1")        {        er_tariff1 = json.settings[i].value; }
+        else if (json.settings[i].name == "er_tariff2")        {        er_tariff2 = json.settings[i].value; }
+        else if (json.settings[i].name == "gd_tariff")         {         gd_tariff = json.settings[i].value; }
+        else if (json.settings[i].name == "wd_tariff")         {         wd_tariff = json.settings[i].value; }
+        else if (json.settings[i].name == "electr_netw_costs") { electr_netw_costs = json.settings[i].value; }
+        else if (json.settings[i].name == "gas_netw_costs")    {    gas_netw_costs = json.settings[i].value; }
+        else if (json.settings[i].name == "water_netw_costs")  {  water_netw_costs = json.settings[i].value; }              
+        else if (json.settings[i].name == "mbus_nr_gas")       {       mbus_nr_gas = json.settings[i].value; }
+        else if (json.settings[i].name == "mbus_nr_water")     {     mbus_nr_water = json.settings[i].value; }
+        else if (json.settings[i].name == "pre_dsmr40")        {        pre_dsmr40 = json.settings[i].value; }
+      }
     })
-    .catch(function(error) 
-    {
+    .catch(function(error) {
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
-    
 } // getSmSettings()
 
 
@@ -1332,26 +1318,16 @@ function getDevSettings()
     .then(response => response.json())
     .then(json => {
       //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
-      for( let i in json.settings )
-      {
-        if (json.settings[i].name == "dailyreboot")
-        {
-          dailyreboot = json.settings[i].value;
-        }
-        else if (json.settings[i].name == "hostname")
-        {
-          hostName = json.settings[i].value;
-        }
+      for (let i in json.settings) {
+        if      (json.settings[i].name == "dailyreboot") { dailyreboot = json.settings[i].value; }
+        else if (json.settings[i].name == "hostname")    {    hostName = json.settings[i].value; }
       }
     })
-    .catch(function(error) 
-    {
+    .catch(function(error) {
+      console.log("getDevSettings-->error");
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
-    
 } // getDevSettings()
 
 
@@ -1362,24 +1338,15 @@ function getDevSystem()
     .then(response => response.json())
     .then(json => {
       console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
-      for( let i in json.system )
-      {
-        if (json.system[i].name == "hostname")
-        {
-          hostName = json.system[i].value;
-        }
-        else if (json.settings[i].name == "dailyreboot")
-        {
-          dailyreboot = json.settings[i].value;
-        }
+      for (let i in json.system) {
+        if      (json.system[i].name == "hostname")    {    hostName = json.system[i].value; }
+        else if (json.system[i].name == "dailyreboot") { dailyreboot = json.system[i].value; }
       }
     })
-    .catch(function(error) 
-    {
+    .catch(function(error) {
+      console.log("getDevSystem-->error");
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
 } // getDevSystem()
 
@@ -1402,8 +1369,8 @@ function setPresentationType(pType)
     document.getElementById('mCOST').checked  = false;
     document.getElementById("lastMonthsTable").style.display      = "block";
     document.getElementById("lastMonthsTableCosts").style.display = "none";
-
-  } else if (pType == "TAB") {
+  }
+  else if (pType == "TAB") {
     console.log("Set presentationType to Tabular mode!");
     presentationType = pType;
     document.getElementById('aTAB').checked   = true;
@@ -1415,19 +1382,18 @@ function setPresentationType(pType)
     document.getElementById('mTAB').checked   = true;
     document.getElementById('mGRAPH').checked = false;
     document.getElementById('mCOST').checked  = false;
-
-  } else {
+  }
+  else {
     console.log("setPresentationType to ["+pType+"] is quite shitty! Set to TAB");
     presentationType = "TAB";
   }
 
   document.getElementById("APIdocTab").style.display = "none";
 
-  if (activeTab == "ActualTab")  refreshSmActual();
-  if (activeTab == "HoursTab")   refreshHours();
-  if (activeTab == "DaysTab")    refreshDays();
-  if (activeTab == "MonthsTab")  refreshMonths();
-
+  if (activeTab == "ActualTab") { refreshSmActual(); }
+  if (activeTab == "HoursTab")  { refreshHours(); }
+  if (activeTab == "DaysTab")   { refreshDays(); }
+  if (activeTab == "MonthsTab") { refreshMonths(); }
 } // setPresenationType()
 
   
@@ -1435,24 +1401,20 @@ function setPresentationType(pType)
 function setMonthTableType() 
 {
   console.log("Set Month Table Type");
-  if (presentationType == 'GRAPH') 
-  {
+  if (presentationType == 'GRAPH') {
     document.getElementById('mCOST').checked = false;
     return;
   }
-  if (document.getElementById('mCOST').checked)
-  {
+  if (document.getElementById('mCOST').checked) {
     document.getElementById("lastMonthsTableCosts").style.display = "block";
     document.getElementById("lastMonthsTable").style.display      = "none";
   }
-  else
-  {
+  else {
     document.getElementById("lastMonthsTable").style.display      = "block";
     document.getElementById("lastMonthsTableCosts").style.display = "none";
   }
   document.getElementById('lastMonthsTableCosts').getElementsByTagName('tbody').innerHTML = "";
   refreshMonths();
-    
 } // setMonthTableType()
 
   
@@ -1497,8 +1459,7 @@ http://DSMR-ESP32.local/api/v2/sm/settings</pre>", false);
 //============================================================================  
 function addAPIdoc(restAPI, description, linkURL) 
 {
-  if (document.getElementById(restAPI) == null)
-  {
+  if (document.getElementById(restAPI) == null) {
     var topDiv = document.getElementById("APIdocTab");
     var br = document.createElement("BR"); 
     br.setAttribute("id", restAPI, 0);
@@ -1886,7 +1847,7 @@ function showMonths(data, type)
                     function() { setNewValue(i, "EEYY", "em_YY_"+i); }, false);
             span2.appendChild(sInput);
             //--- create input for months
-            var sInput = document.createElement("INPUT");
+            sInput = document.createElement("INPUT");
             sInput.setAttribute("id", "em_MM_"+i);
             sInput.setAttribute("type", "number");
             sInput.setAttribute("min", 1);
@@ -1918,13 +1879,18 @@ function showMonths(data, type)
               sInput.addEventListener('change',
                   function() { setNewValue(i, "gdt", "em_in1_"+i); }, false);
             }
-            
+            else if (type == "WD")
+            {
+              sInput.addEventListener('change',
+                  function() { setNewValue(i, "wdt", "em_in1_"+i); }, false);
+            }
+              
             span2.appendChild(sInput);
             //--- if not GD create input for data column 2
             if (type == "ED")
             {
               //console.log("add input for edt2..");
-              var sInput = document.createElement("INPUT");
+              sInput = document.createElement("INPUT");
               sInput.setAttribute("id", "em_in2_"+i);
               sInput.setAttribute("type", "number");
               sInput.setAttribute("step", 0.001);
@@ -1936,7 +1902,7 @@ function showMonths(data, type)
             else if (type == "ER")
             {
               //console.log("add input for ert2..");
-              var sInput = document.createElement("INPUT");
+              sInput = document.createElement("INPUT");
               sInput.setAttribute("id", "em_in2_"+i);
               sInput.setAttribute("type", "number");
               sInput.setAttribute("step", 0.001);
@@ -1975,7 +1941,12 @@ function showMonths(data, type)
       document.getElementById("em_in1_"+i).style.background = "white";
       document.getElementById("em_in1_"+i).value = (data[i].gdt *1).toFixed(3);
     }
-    
+    else if (type == "WD")
+    {
+      document.getElementById("em_in1_"+i).style.background = "white";
+      document.getElementById("em_in1_"+i).value = (data[i].wdt *1).toFixed(3);
+    }
+      
   } // for all elements in data
   
   console.log("Now sequence EEYY/MM values ..(data.length="+data.length+")");
@@ -2411,7 +2382,19 @@ function validateReadings(type)
         withErrors = true;
       }
     }
-    
+    else if (type == "WD")
+    {
+      if (getBackGround("em_in1_"+(i+1)) == "red")
+      {
+        setBackGround("em_in1_"+(i+1), "lightgray");
+      }
+      if (data[i].wdt < data[i+1].wdt)
+      {
+        setBackGround("em_in1_"+(i+1), "red");
+        withErrors = true;
+      }
+    }
+      
   }
   if (withErrors)  return false;
 
@@ -2439,7 +2422,7 @@ function sendPostReading(i, row)
   console.log("send["+i+"] => ["+recId+"]");
   
   const jsonString = {"recid": recId, "edt1": row[i].edt1, "edt2": row[i].edt2,
-                       "ert1": row[i].ert1,  "ert2": row[i].ert2, "gdt":  row[i].gdt };
+                       "ert1": row[i].ert1,  "ert2": row[i].ert2, "gdt":  row[i].gdt, "wdt":  row[i].wdt };
 
   const other_params = {
       headers : { "content-type" : "application/json; charset=UTF-8"},
@@ -2507,17 +2490,22 @@ function setEditType(eType)
   if (eType == "ED") {
     console.log("Edit Energy Delivered!");
     monthType = eType;
-    getMonths()
+    getMonths();
     showMonths(data, monthType);
   } else if (eType == "ER") {
     console.log("Edit Energy Returned!");
     monthType = eType;
-    getMonths()
+    getMonths();
     showMonths(data, monthType);
   } else if (eType == "GD") {
     console.log("Edit Gas Delivered!");
     monthType = eType;
-    getMonths()
+    getMonths();
+    showMonths(data, monthType);
+  } else if (eType == "WD") {
+    console.log("Edit Water Delivered!");
+    monthType = eType;
+    getMonths();
     showMonths(data, monthType);
   } else {
     console.log("setEditType to ["+eType+"] is quit shitty!");
@@ -2539,6 +2527,7 @@ function setNewValue(i, dField, field)
   else if (dField == "ert1")  data[i].ert1 = document.getElementById(field).value;
   else if (dField == "ert2")  data[i].ert2 = document.getElementById(field).value;
   else if (dField == "gdt")   data[i].gdt  = document.getElementById(field).value;
+  else if (dField == "wdt")   data[i].wdt  = document.getElementById(field).value;
   
 } // setNewValue()
 
@@ -2564,14 +2553,12 @@ function getBackGround(field)
 function validateNumber(field) 
 {
   console.log("validateNumber(): ["+field+"]");
-  if (field == "EDT1" || field == "EDT2" || field == "ERT1" || field == "ERT2" || field == "GAS") 
+  var pattern = /^\d{1,2}(\.\d{1,2})?$/;
+  var max = 99.99;
+  if (field == "EDT1" || field == "EDT2" || field == "ERT1" || field == "ERT2" || field == "GAS" || field == "WATER") 
   {
-    var pattern = /^\d{1,1}(\.\d{1,5})?$/;
-    var max = 1.99999;
-  } else 
-  {
-    var pattern = /^\d{1,2}(\.\d{1,2})?$/;
-    var max = 99.99;
+    pattern = /^\d{1,1}(\.\d{1,5})?$/;
+    max = 1.99999;
   }
   var newVal = document.getElementById(field).value;
   newVal = newVal.replace( /[^0-9.]/g, '' );
@@ -2600,13 +2587,12 @@ function translateToHuman(longName)
 {
   for(var index = 0; index < translateFields.length; index++) 
   {
-      if (translateFields[index][0] == longName)
-      {
-        return translateFields[index][1];
-      }
-  };
+    if (translateFields[index][0] == longName)
+    {
+      return translateFields[index][1];
+    }
+  }
   return longName;
-  
 } // translateToHuman()
 
 
@@ -2684,172 +2670,173 @@ function isFloat(x)
   
 //============================================================================  
 var translateFields = [
-         [ "author",                    "Auteur" ]
-        ,[ "boardtype",                 "Board Type" ]
-        ,[ "chip_model",                "Chip type" ]
-        ,[ "chipid",                    "Chip ID" ]
-        ,[ "compile_options",           "Compiler Opties" ]
-        ,[ "compiled",                  "Gecompileerd" ]
-        ,[ "coreversion",               "Core Versie" ]
-        ,[ "cpu_freq",                  "CPU Frequency [MHz]" ]
-        ,[ "current_l1",                "Current l1" ]
-        ,[ "current_l2",                "Current l2" ]
-        ,[ "current_l3",                "Current l3" ]
-        ,[ "daily_reboot",               "Dagelijkse Reboot [0=Nee, 1=Ja]" ]
+      [ "author",                    "Auteur" ],
+      [ "boardtype",                 "Board Type" ],
+      [ "chip_model",                "Chip type" ],
+      [ "chipid",                    "Chip ID" ],
+      [ "compile_options",           "Compiler Opties" ],
+      [ "compiled",                  "Gecompileerd" ],
+      [ "coreversion",               "Core Versie" ],
+      [ "cpu_freq",                  "CPU Frequency [MHz]" ],
+      [ "current_l1",                "Current l1" ],
+      [ "current_l2",                "Current l2" ],
+      [ "current_l3",                "Current l3" ],
+      [ "daily_reboot",               "Dagelijkse Reboot [0=Nee, 1=Ja]" ],
         
-        ,[ "ed_tariff1",                "Energie Verbruik Tarief-1/kWh" ]
-        ,[ "ed_tariff2",                "Energie Verbruik Tarief-2/kWh" ]
-        ,[ "electr_netw_costs",         "Netwerkkosten Energie/maand" ]
-        ,[ "electricity_failure_log",   "Electricity Failure log" ]
-        ,[ "electricity_failures",      "Electricity Failures" ]
-        ,[ "electricity_long_failures", "Electricity Long Failures" ]
-        ,[ "electricity_sags_l1",       "Electricity Sags l1" ]
-        ,[ "electricity_sags_l2",       "Electricity Sags l2" ]
-        ,[ "electricity_sags_l3",       "Electricity Sags l3" ]
-        ,[ "electricity_swells_l1",     "Electricity Swells l1" ]
-        ,[ "electricity_swells_l2",     "Electricity Swells l2" ]
-        ,[ "electricity_swells_l3",     "Electricity Swells l3" ]
-        ,[ "electricity_switch_position","Electricity Switch Position" ]
-        ,[ "electricity_tariff",        "Electriciteit tarief" ]
-        ,[ "electricity_threshold",     "Electricity Threshold" ]
-        ,[ "energy_delivered_tariff1",  "Energie Gebruikt tarief 1" ]
-        ,[ "energy_delivered_tariff2",  "Energie Gebruikt tarief 2" ]
-        ,[ "energy_returned_tariff1",   "Energie Opgewekt tarief 1" ]
-        ,[ "energy_returned_tariff2",   "Energie Opgewekt tarief 2" ]
-        ,[ "er_tariff1",                "Energie Opgewekt Tarief-1/kWh" ]
-        ,[ "er_tariff2",                "Energie Opgewekt Tarief-2/kWh" ]
+      [ "ed_tariff1",                "Energie Verbruik Tarief-1/kWh" ],
+      [ "ed_tariff2",                "Energie Verbruik Tarief-2/kWh" ],
+      [ "electr_netw_costs",         "Netwerkkosten Energie/maand" ],
+      [ "electricity_failure_log",   "Electricity Failure log" ],
+      [ "electricity_failures",      "Electricity Failures" ],
+      [ "electricity_long_failures", "Electricity Long Failures" ],
+      [ "electricity_sags_l1",       "Electricity Sags l1" ],
+      [ "electricity_sags_l2",       "Electricity Sags l2" ],
+      [ "electricity_sags_l3",       "Electricity Sags l3" ],
+      [ "electricity_swells_l1",     "Electricity Swells l1" ],
+      [ "electricity_swells_l2",     "Electricity Swells l2" ],
+      [ "electricity_swells_l3",     "Electricity Swells l3" ],
+      [ "electricity_switch_position","Electricity Switch Position" ],
+      [ "electricity_tariff",        "Electriciteit tarief" ],
+      [ "electricity_threshold",     "Electricity Threshold" ],
+      [ "energy_delivered_tariff1",  "Energie Gebruikt tarief 1" ],
+      [ "energy_delivered_tariff2",  "Energie Gebruikt tarief 2" ],
+      [ "energy_returned_tariff1",   "Energie Opgewekt tarief 1" ],
+      [ "energy_returned_tariff2",   "Energie Opgewekt tarief 2" ],
+      [ "er_tariff1",                "Energie Opgewekt Tarief-1/kWh" ],
+      [ "er_tariff2",                "Energie Opgewekt Tarief-2/kWh" ],
         
-        ,[ "filesystem_type",           "File Systeem" ]
-        ,[ "filesystem_size",           "Grootte littleFS [bytes]" ]
-        ,[ "flashchip_mode",            "Flash Chip Mode" ]
-        ,[ "flashchip_speed",           "Flash Chip Freq. [Hz]" ]
-        ,[ "flashchipid",               "Flash Chip ID" ]
-        ,[ "flashchiprealsize",         "Flash Chip Real Size" ]
-        ,[ "flashchipsize",             "Flash Chip Size" ]
-        ,[ "free_heap",                 "Free Heap Space [bytes]" ]
-        ,[ "free_psram_size",           "Free Psram [SPI-RAM] [bytes]" ]
-        ,[ "free_sketch_space",         "Free Sketch Space [bytes]" ]
-        ,[ "fwversion",                 "Firmware Versie" ]
+      [ "filesystem_type",           "File Systeem" ],
+      [ "filesystem_size",           "Grootte littleFS [bytes]" ],
+      [ "flashchip_mode",            "Flash Chip Mode" ],
+      [ "flashchip_speed",           "Flash Chip Freq. [Hz]" ],
+      [ "flashchipid",               "Flash Chip ID" ],
+      [ "flashchiprealsize",         "Flash Chip Real Size" ],
+      [ "flashchipsize",             "Flash Chip Size" ],
+      [ "free_heap",                 "Free Heap Space [bytes]" ],
+      [ "free_psram_size",           "Free Psram [SPI-RAM] [bytes]" ],
+      [ "free_sketch_space",         "Free Sketch Space [bytes]" ],
+      [ "fwversion",                 "Firmware Versie" ],
         
-        ,[ "gas_delivered",             "Gas Gebruikt" ]
-        ,[ "gas_netw_costs",            "Netwerkkosten Gas/maand" ]
-        ,[ "gd_tariff" ,                "Gas Verbruik Tarief/m3" ]
-        ,[ "hostname",                  "HostName" ]
-        ,[ "identification",            "Slimme Meter ID" ]
-        ,[ "index_page",                "Te Gebruiken index.html Pagina" ]
-        ,[ "indexfile",                 "Te Gebruiken index.html Pagina" ]
-        ,[ "ipaddress",                 "IP adres" ]
-        ,[ "last_reset",                "Laatste Reset reden" ]
+      [ "gas_delivered",             "Gas Gebruikt" ],
+      [ "gas_netw_costs",            "Netwerkkosten Gas/maand" ],
+      [ "gd_tariff" ,                "Gas Verbruik Tarief/m3" ],
+      [ "water_delivered",           "Water Gebruikt" ],
+      [ "water_netw_costs",          "Netwerkkosten Water/maand" ],
+      [ "wd_tariff" ,                "Water Verbruik Tarief/m3" ],
+      [ "hostname",                  "HostName" ],
+      [ "identification",            "Slimme Meter ID" ],
+      [ "index_page",                "Te Gebruiken index.html Pagina" ],
+      [ "indexfile",                 "Te Gebruiken index.html Pagina" ],
+      [ "ipaddress",                 "IP adres" ],
+      [ "last_reset",                "Laatste Reset reden" ],
         
-        ,[ "macaddress",                "MAC adres" ]
-        ,[ "mbus1_delivered",           "MBus-1 Gebruikt" ]
-        ,[ "mbus1_delivered_dbl",       "MBus-1 Gebruikt" ]
-        ,[ "mbus1_delivered_ntc",       "MBus-1 Gebruikt [ntc]" ]
-        ,[ "mbus1_device_type",         "MBus-1 Type meter [0=geen]" ]
-        ,[ "mbus1_equipment_id_ntc",    "MBus-1 Equipm. ID [ntc]" ]
-        ,[ "mbus1_equipment_id_tc",     "MBus-1 Equipm. ID [tc]" ]
-        ,[ "mbus1_type",                "MBus-1 Type meter [0=geen]" ]
-        ,[ "mbus1_valve_position",      "MBus-1 Klep Positie" ]
-        ,[ "mbus2_delivered",           "MBus-2 Gebruikt" ]
-        ,[ "mbus2_delivered_dbl",       "MBus-2 Gebruikt" ]
-        ,[ "mbus2_delivered_ntc",       "MBus-2 Gebruikt [ntc]" ]
-        ,[ "mbus2_device_type",         "MBus-2 Type meter [0=geen]" ]
-        ,[ "mbus2_equipment_id_ntc",    "MBus-2 Equipm. ID [ntc]" ]
-        ,[ "mbus2_equipment_id_tc",     "MBus-2 Equipm. ID [tc]" ]
-        ,[ "mbus2_type",                "MBus-2 Type meter [0=geen]" ]
-        ,[ "mbus2_valve_position",      "MBus-2 Klep Positie" ]
-        ,[ "mbus3_delivered",           "MBus-3 Gebruikt" ]
-        ,[ "mbus3_delivered_dbl",       "MBus-3 Gebruikt" ]
-        ,[ "mbus3_delivered_ntc",       "MBus-3 Gebruikt [ntc]" ]
-        ,[ "mbus3_device_type",         "MBus-3 Type meter [0=geen]" ]
-        ,[ "mbus3_equipment_id_ntc",    "MBus-3 Equipm. ID [ntc]" ]
-        ,[ "mbus3_equipment_id_tc",     "MBus-3 Equipm. ID [tc]" ]
-        ,[ "mbus3_type",                "MBus-3 Type meter [0=geen]" ]
-        ,[ "mbus3_valve_position",      "MBus-3 Klep Positie" ]
-        ,[ "mbus4_delivered",           "MBus-4 Gebruikt" ]
-        ,[ "mbus4_delivered_dbl",       "MBus-4 Gebruikt" ]
-        ,[ "mbus4_delivered_ntc",       "MBus-4 Gebruikt [ntc]" ]
-        ,[ "mbus4_device_type",         "MBus-4 Type meter [0=geen]" ]
-        ,[ "mbus4_equipment_id_ntc",    "MBus-4 Equipm. ID [ntc]" ]
-        ,[ "mbus4_equipment_id_tc",     "MBus-4 Equipm. ID [tc]" ]
-        ,[ "mbus4_type",                "MBus-4 Type meter [0=geen]" ]
-        ,[ "mbus4_valve_position",      "MBus-4 Klep Positie" ]
-        ,[ "message_long",              "Lange Boodschap" ]
-        ,[ "message_short",             "Korte Boodschap" ]
-        ,[ "min_free_heap",             "Min. Free Heap ever [bytes]" ]
-        ,[ "mqtt_broker",               "MQTT Broker IP/URL" ]
-        ,[ "mqtt_broker_connected",     "MQTT broker connected [1=Ja]" ]
-        ,[ "mqtt_broker_port",          "MQTT Broker Poort" ]
-        ,[ "mqtt_interval",             "Verzend MQTT Berichten [Sec.]" ]
-        ,[ "mqtt_passwd",               "Password MQTT Gebruiker" ]
-        ,[ "mqtt_toptopic",             "MQTT Top Topic" ]
-        ,[ "mqtt_user",                 "MQTT Gebruiker" ]
-        ,[ "mqttbroker",                "MQTT Broker IP/URL" ]
-        ,[ "mqttbrokerport",            "MQTT Broker Poort" ]
-        ,[ "mqttinterval",              "Verzend MQTT Berichten [Sec.]" ]
-        ,[ "mqttpasswd",                "Password MQTT Gebruiker" ]
-        ,[ "mqtttoptopic",              "MQTT Top Topic" ]
-        ,[ "mqttuser",                  "MQTT Gebruiker" ]
+      [ "macaddress",                "MAC adres" ],
+      [ "mbus1_delivered",           "MBus-1 Gebruikt" ],
+      [ "mbus1_delivered_dbl",       "MBus-1 Gebruikt" ],
+      [ "mbus1_delivered_ntc",       "MBus-1 Gebruikt [ntc]" ],
+      [ "mbus1_device_type",         "MBus-1 Type meter [0=geen]" ],
+      [ "mbus1_equipment_id_ntc",    "MBus-1 Equipm. ID [ntc]" ],
+      [ "mbus1_equipment_id_tc",     "MBus-1 Equipm. ID [tc]" ],
+      [ "mbus1_type",                "MBus-1 Type meter [0=geen]" ],
+      [ "mbus1_valve_position",      "MBus-1 Klep Positie" ],
+      [ "mbus2_delivered",           "MBus-2 Gebruikt" ],
+      [ "mbus2_delivered_dbl",       "MBus-2 Gebruikt" ],
+      [ "mbus2_delivered_ntc",       "MBus-2 Gebruikt [ntc]" ],
+      [ "mbus2_device_type",         "MBus-2 Type meter [0=geen]" ],
+      [ "mbus2_equipment_id_ntc",    "MBus-2 Equipm. ID [ntc]" ],
+      [ "mbus2_equipment_id_tc",     "MBus-2 Equipm. ID [tc]" ],
+      [ "mbus2_type",                "MBus-2 Type meter [0=geen]" ],
+      [ "mbus2_valve_position",      "MBus-2 Klep Positie" ],
+      [ "mbus3_delivered",           "MBus-3 Gebruikt" ],
+      [ "mbus3_delivered_dbl",       "MBus-3 Gebruikt" ],
+      [ "mbus3_delivered_ntc",       "MBus-3 Gebruikt [ntc]" ],
+      [ "mbus3_device_type",         "MBus-3 Type meter [0=geen]" ],
+      [ "mbus3_equipment_id_ntc",    "MBus-3 Equipm. ID [ntc]" ],
+      [ "mbus3_equipment_id_tc",     "MBus-3 Equipm. ID [tc]" ],
+      [ "mbus3_type",                "MBus-3 Type meter [0=geen]" ],
+      [ "mbus3_valve_position",      "MBus-3 Klep Positie" ],
+      [ "mbus4_delivered",           "MBus-4 Gebruikt" ],
+      [ "mbus4_delivered_dbl",       "MBus-4 Gebruikt" ],
+      [ "mbus4_delivered_ntc",       "MBus-4 Gebruikt [ntc]" ],
+      [ "mbus4_device_type",         "MBus-4 Type meter [0=geen]" ],
+      [ "mbus4_equipment_id_ntc",    "MBus-4 Equipm. ID [ntc]" ],
+      [ "mbus4_equipment_id_tc",     "MBus-4 Equipm. ID [tc]" ],
+      [ "mbus4_type",                "MBus-4 Type meter [0=geen]" ],
+      [ "mbus4_valve_position",      "MBus-4 Klep Positie" ],
+      [ "message_long",              "Lange Boodschap" ],
+      [ "message_short",             "Korte Boodschap" ],
+      [ "min_free_heap",             "Min. Free Heap ever [bytes]" ],
+      [ "mqtt_broker",               "MQTT Broker IP/URL" ],
+      [ "mqtt_broker_connected",     "MQTT broker connected [1=Ja]" ],
+      [ "mqtt_broker_port",          "MQTT Broker Poort" ],
+      [ "mqtt_interval",             "Verzend MQTT Berichten [Sec.]" ],
+      [ "mqtt_passwd",               "Password MQTT Gebruiker" ],
+      [ "mqtt_toptopic",             "MQTT Top Topic" ],
+      [ "mqtt_user",                 "MQTT Gebruiker" ],
+      [ "mqttbroker",                "MQTT Broker IP/URL" ],
+      [ "mqttbrokerport",            "MQTT Broker Poort" ],
+      [ "mqttinterval",              "Verzend MQTT Berichten [Sec.]" ],
+      [ "mqttpasswd",                "Password MQTT Gebruiker" ],
+      [ "mqtttoptopic",              "MQTT Top Topic" ],
+      [ "mqttuser",                  "MQTT Gebruiker" ],
         
-        ,[ "no_hour_slots",             "Uren aan historie" ]
-        ,[ "no_day_slots",              "Dagen aan historie" ]
-        ,[ "no_month_slots",            "Maanden aan historie [in jaren]" ]
-        ,[ "alter_ring_slots",          "Historie aanpassen [1=Ja]" ]
-        ,[ "neo_brightness",            "Brightness NeoPixels" ]
+      [ "no_hour_slots",             "Uren aan historie" ],
+      [ "no_day_slots",              "Dagen aan historie" ],
+      [ "no_month_slots",            "Maanden aan historie [in jaren]" ],
+      [ "alter_ring_slots",          "Historie aanpassen [1=Ja]" ],
+      [ "neo_brightness",            "Brightness NeoPixels" ],
         
-        ,[ "oled_flip_screen",          "Flip OLED scherm [0=Nee, 1=Ja]" ]
-        ,[ "oled_screen_time",          "Oled Screen Time [Min., 0=infinite]" ]
-        ,[ "oled_type",                 "OLED type [0=None, 1=SDD1306, 2=SH1106]" ]
-        ,[ "p1_version",                "P1 Versie" ]
-        ,[ "p1_version_be",             "P1 Versie [BE]" ]
-        ,[ "power_delivered",           "Vermogen Gebruikt" ]
-        ,[ "power_delivered_l1",        "Vermogen Gebruikt l1" ]
-        ,[ "power_delivered_l2",        "Vermogen Gebruikt l2" ]
-        ,[ "power_delivered_l3",        "Vermogen Gebruikt l3" ]
-        ,[ "power_returned",            "Vermogen Opgewekt" ]
-        ,[ "power_returned_l1",         "Vermogen Opgewekt l1" ]
-        ,[ "power_returned_l2",         "Vermogen Opgewekt l2" ]
-        ,[ "power_returned_l3",         "Vermogen Opgewekt l3" ]
-        ,[ "pre_dsmr40",                "Pré DSMR 40 [0=Nee, 1=Ja]" ]
-        ,[ "psram_size",                "Psram size [bytes]" ]
+      [ "oled_flip_screen",          "Flip OLED scherm [0=Nee, 1=Ja]" ],
+      [ "oled_screen_time",          "Oled Screen Time [Min., 0=infinite]" ],
+      [ "oled_type",                 "OLED type [0=None, 1=SDD1306, 2=SH1106]" ],
+      [ "p1_version",                "P1 Versie" ],
+      [ "p1_version_be",             "P1 Versie [BE]" ],
+      [ "power_delivered",           "Vermogen Gebruikt" ],
+      [ "power_delivered_l1",        "Vermogen Gebruikt l1" ],
+      [ "power_delivered_l2",        "Vermogen Gebruikt l2" ],
+      [ "power_delivered_l3",        "Vermogen Gebruikt l3" ],
+      [ "power_returned",            "Vermogen Opgewekt" ],
+      [ "power_returned_l1",         "Vermogen Opgewekt l1" ],
+      [ "power_returned_l2",         "Vermogen Opgewekt l2" ],
+      [ "power_returned_l3",         "Vermogen Opgewekt l3" ],
+      [ "pre_dsmr40",                "Pré DSMR 40 [0=Nee, 1=Ja]" ],
+      [ "psram_size",                "Psram size [bytes]" ],
         
-        ,[ "reboots",                   "Aantal keer opnieuw opgestart" ]
-        ,[ "run_as_ap",                 "run als AccessPoint [0=Nee, 1=Ja]" ]
-        ,[ "sdk_version",               "SDK versie" ]
-        ,[ "sketch_size",               "Sketch Size [bytes]" ]
-        ,[ "sm_has_fase_info",          "SM Has Fase Info [0=Nee, 1=Ja]" ]
-        ,[ "smhasfaseinfo",             "SM Has Fase Info [0=Nee, 1=Ja]" ]
-        ,[ "ssid",                      "WiFi SSID" ]
-        ,[ "shld_GPIOpin0",             "SW-0 GPIO pin [-1=geen, 13, 14]" ]
-        ,[ "shld_inversed0",            "SW-0 Inversed Logic [0=Nee, 1=Ja]" ]
-        ,[ "shld_activeStart0",         "SW-0 Actief start tijd" ]
-        ,[ "shld_activeStop0",          "SW-0 Actief stop tijd" ]
-        ,[ "shld_onThreshold0",         "SW-0 'Aan' drempel" ]
-        ,[ "shld_offThreshold0",        "SW-0 'Uit' drempel'" ]
-        ,[ "shld_onDelay0",             "SW-0 'Aan' vertraging [sec.]" ]
-        ,[ "shld_offDelay0",            "SW-0 'Uit' vertraging [sec.]" ]
-        ,[ "shld_GPIOpin1",             "SW-1 GPIO pin [-1=geen, 13, 14]" ]
-        ,[ "shld_inversed1",            "SW-1 Inversed Logic [0=Nee, 1=Ja]" ]
-        ,[ "shld_activeStart1",         "SW-1 Actief start tijd" ]
-        ,[ "shld_activeStop1",          "SW-1 Actief stop tijd" ]
-        ,[ "shld_onThreshold1",         "SW-1 'Aan' drempel" ]
-        ,[ "shld_offThreshold1",        "SW-1 'Uit' drempel'" ]
-        ,[ "shld_onDelay1",             "SW-1 'Aan' vertraging [sec.]" ]
-        ,[ "shld_offDelay1",            "SW-1 'Uit' vertraging [sec.]" ]
-        ,[ "telegram_count",            "Aantal verwerkte Telegrammen" ]
-        ,[ "telegram_errors",           "Aantal Foutieve Telegrammen" ]
-        ,[ "telegram_interval",         "Telegram Lees Interval [Sec.]" ]
-        ,[ "tlgrm_interval",            "Telegram Lees Interval [Sec.]" ]
+      [ "reboots",                   "Aantal keer opnieuw opgestart" ],
+      [ "run_as_ap",                 "run als AccessPoint [0=Nee, 1=Ja]" ],
+      [ "sdk_version",               "SDK versie" ],
+      [ "sketch_size",               "Sketch Size [bytes]" ],
+      [ "sm_has_fase_info",          "SM Has Fase Info [0=Nee, 1=Ja]" ],
+      [ "smhasfaseinfo",             "SM Has Fase Info [0=Nee, 1=Ja]" ],
+      [ "ssid",                      "WiFi SSID" ],
+      [ "shld_GPIOpin0",             "SW-0 GPIO pin [-1=geen, 13, 14]" ],
+      [ "shld_inversed0",            "SW-0 Inversed Logic [0=Nee, 1=Ja]" ],
+      [ "shld_activeStart0",         "SW-0 Actief start tijd" ],
+      [ "shld_activeStop0",          "SW-0 Actief stop tijd" ],
+      [ "shld_onThreshold0",         "SW-0 'Aan' drempel" ],
+      [ "shld_offThreshold0",        "SW-0 'Uit' drempel'" ],
+      [ "shld_onDelay0",             "SW-0 'Aan' vertraging [sec.]" ],
+      [ "shld_offDelay0",            "SW-0 'Uit' vertraging [sec.]" ],
+      [ "shld_GPIOpin1",             "SW-1 GPIO pin [-1=geen, 13, 14]" ],
+      [ "shld_inversed1",            "SW-1 Inversed Logic [0=Nee, 1=Ja]" ],
+      [ "shld_activeStart1",         "SW-1 Actief start tijd" ],
+      [ "shld_activeStop1",          "SW-1 Actief stop tijd" ],
+      [ "shld_onThreshold1",         "SW-1 'Aan' drempel" ],
+      [ "shld_offThreshold1",        "SW-1 'Uit' drempel'" ],
+      [ "shld_onDelay1",             "SW-1 'Aan' vertraging [sec.]" ],
+      [ "shld_offDelay1",            "SW-1 'Uit' vertraging [sec.]" ],
+      [ "telegram_count",            "Aantal verwerkte Telegrammen" ],
+      [ "telegram_errors",           "Aantal Foutieve Telegrammen" ],
+      [ "telegram_interval",         "Telegram Lees Interval [Sec.]" ],
+      [ "tlgrm_interval",            "Telegram Lees Interval [Sec.]" ],
         
-        ,[ "uptime",                    "Up Time [dagen] - [hh:mm]" ]
-        ,[ "uptime_sec",                "Up Time in Seconden" ]
-        ,[ "used_psram_size",           "Psram in gebruik [bytes]" ]
-        ,[ "voltage_l1",                "Voltage l1" ]
-        ,[ "voltage_l2",                "Voltage l2" ]
-        ,[ "voltage_l3",                "Voltage l3" ]
-        ,[ "wifi_rssi",                 "WiFi RSSI" ]
-        
-                      ];
+      [ "uptime",                    "Up Time [dagen] - [hh:mm]" ],
+      [ "uptime_sec",                "Up Time in Seconden" ],
+      [ "used_psram_size",           "Psram in gebruik [bytes]" ],
+      [ "voltage_l1",                "Voltage l1" ],
+      [ "voltage_l2",                "Voltage l2" ],
+      [ "voltage_l3",                "Voltage l3" ],
+      [ "wifi_rssi",                 "WiFi RSSI" ]];
 
 /*
 ***************************************************************************

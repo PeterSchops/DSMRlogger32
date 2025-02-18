@@ -87,3 +87,8 @@ rest:
         device_class: "gas"
         state_class: "total_increasing"
         unit_of_measurement: "m³"
+      - name: DSMR Water Consumption
+        value_template: "{{ value_json.actual | selectattr('name', 'eq', 'water_delivered') | map(attribute='value') | first | float }}"
+        device_class: "water"
+        state_class: "total_increasing"
+        unit_of_measurement: "m³"

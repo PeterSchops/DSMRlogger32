@@ -351,7 +351,7 @@ void pushToActualStore(const char *cName, float fValue)
 //=======================================================================
 void pushTlgrmToActualStore()
 {
-  memset(fieldTable, 0, (sizeof(fieldTableStruct) *100));
+  memset(fieldTable, 0, (sizeof(fieldTableStruct) * 100));
   fieldTableCount = 0;
   onlyIfPresent = true;
   copyToFieldsArray(actualTableArray, actualElements);
@@ -365,10 +365,8 @@ void pushTlgrmToActualStore()
 
   actualStoreCount++;
 
-  if ( (actualStoreCount % 1000) == 0 )
-  {
-    for (int i=0; i< _MAX_ACTUAL_STORE; i++)
-    {
+  if ((actualStoreCount % 1000) == 0) {
+    for (int i=0; i< _MAX_ACTUAL_STORE; i++) {
       int s = (i+actualStoreSlot+1) % _MAX_ACTUAL_STORE;
       Debugf("[%3d][%5d][%-12.12s] PwrDel[%10.3f] PwrRet[%10.3f] GasDel[%10.3f] waterDel[%10.3f]\r\n",
               i, actualStore[s].count, actualStore[s].timestamp,
@@ -378,26 +376,23 @@ void pushTlgrmToActualStore()
               actualStore[s].water_delivered);
     }
   }
- 
 } //  pushTlgrmToActualStore()
 
 
 //=======================================================================
 unsigned int CRC16(unsigned int crc, unsigned char *buf, int len)
 {
-  for (int pos = 0; pos < len; pos++)
-  {
+  for (int pos = 0; pos < len; pos++) {
     crc ^= (unsigned int)buf[pos];    // XOR byte into least sig. byte of crc
 
-    for (int i = 8; i != 0; i--)      // Loop over each bit
-    {
-      if ((crc & 0x0001) != 0)        // If the LSB is set
-      {
+    for (int i = 8; i != 0; i--) {    // Loop over each bit    
+      if ((crc & 0x0001) != 0) {      // If the LSB is set      
         crc >>= 1;                    // Shift right and XOR 0xA001
         crc ^= 0xA001;
       }
-      else                            // Else LSB is not set
+      else {                          // Else LSB is not set
         crc >>= 1;                    // Just shift right
+      }
     }
   }
 

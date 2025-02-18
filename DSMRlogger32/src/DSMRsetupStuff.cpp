@@ -116,7 +116,7 @@ void setupPsram()
   //DebugTf("Used [%d]bytes, Psram Free [%d]bytes [after]\r\n", (PsramStart - PsramEnd), ESP.getFreePsram() );
   PsramStart  = PsramEnd;
 
-  smSetting     = (settingSmStruct *) ps_malloc( sizeof(settingSmStruct) );
+  smSetting   = (settingSmStruct *) ps_malloc( sizeof(settingSmStruct) );
   PsramEnd    = ESP.getFreePsram();
   //DebugTf("Claim [%d]bytes for smSetting's\r\n", sizeof(settingSmStruct) );
   memset(smSetting, 0, sizeof(settingSmStruct) );
@@ -142,7 +142,7 @@ void setupPsram()
   fieldTable  = (fieldTableStruct *) ps_malloc( sizeof(fieldTableStruct) * 100 );
   PsramEnd    = ESP.getFreePsram();
   //DebugTf("Claim [%d]bytes for fieldTable\r\n", (sizeof(fieldTableStruct) *100) );
-  memset(fieldTable, 0, (sizeof(fieldTableStruct) *100) );
+  memset(fieldTable, 0, (sizeof(fieldTableStruct) * 100) );
   //DebugTf("Used [%d]bytes, Psram Free [%d]bytes [after]\r\n", (PsramStart - PsramEnd), ESP.getFreePsram() );
   PsramStart  = PsramEnd;
 

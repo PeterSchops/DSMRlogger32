@@ -112,6 +112,7 @@
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Verbruik<br>(Watt)</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Teruglevering<br>(Watt)</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Gas-<br>verbruik<br>(m3)</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Water-<br>verbruik<br>(m3)</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Kosten</th>
           </tr>
         </thead>
@@ -143,6 +144,7 @@
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Verbruik<br>(Watt)</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Energie<br>Teruglevering<br>(Watt)</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Gas-<br>verbruik<br>(m3)</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;">Water-<br>verbruik<br>(m3)</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;">Kosten</th>
         </tr>
       </thead>
@@ -168,7 +170,7 @@
       <input type="radio" id="mGRAPH" onchange="setPresentationType('GRAPH')"/>
       &nbsp;&nbsp;
     </div>
-    <div id='lastMonths' style="margin-left: 50px; width: 1050px; background: lightblue;">
+    <div id='lastMonths' style="margin-left: 50px; width: 1255px; background: lightblue;">
       <table id="lastMonthsTable" style="display:block">
       <thead>
         <tr>
@@ -176,6 +178,7 @@
             <th align='center' colspan=4>Verbruik</th>
             <th align='center' colspan=4>Opgewekt</th>
             <th align='center' colspan=4>Gasverbruik</th>
+            <th align='center' colspan=4>Waterverbruik</th>
         </tr>
         <tr>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='80px'>Maand</th>
@@ -193,6 +196,11 @@
             <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(m3)</th>
             <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(m3)</th>
+
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(m3)</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
+            <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>(m3)</th>
         </tr>
       </thead>
       <tbody>
@@ -206,12 +214,14 @@
             <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>Electra</th>
             <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Gas</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Water</th>
             <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Netw.</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>Totaal</th>
 
             <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Jaar</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>Electra</th>
             <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Gas</th>
+            <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Water</th>
             <th style="text-align: center; border-bottom: 2px solid #ddd;" width='50px'>Netw.</th>
             <th style="text-align: right;  border-bottom: 2px solid #ddd;" width='70px'>Totaal</th>
         </tr>
@@ -234,7 +244,6 @@
         <tr>
             <th style="text-align: left;   border-bottom: 2px solid #ddd;">Name</th>
             <th style="text-align: left;   border-bottom: 2px solid #ddd;">Value</th>
-            <!--<th style="text-align: center; border-bottom: 2px solid #ddd;">Unit</th>-->
         </tr>
       </thead>
       <tbody>
@@ -300,7 +309,7 @@
       </tbody>
       <tfoot>
         <tr>
-            <td colspan=4>Data uit de Slimme Meter</td>
+            <td colspan=3>Data uit de Slimme Meter</td>
         </tr>
       <tfoot>
       </table>
@@ -320,8 +329,9 @@
   <!-- REST -->
 
   <div style="margin: 30px;">
-    <canvas id="dataChart" style="display: none;" width="900" height="300"></canvas>
-    <canvas id="gasChart"  style="display: none;" width="900" height="125"></canvas>
+    <canvas id="dataChart"  style="display: none;" width="900" height="300"></canvas>
+    <canvas id="gasChart"   style="display: none;" width="900" height="125"></canvas>
+    <canvas id="waterChart" style="display: none;" width="900" height="125"></canvas>
   </div>
   </span>
 <!--------------------------------------------------------------------------------------->
@@ -353,6 +363,9 @@
       &nbsp;&nbsp;
       Gas Delivered
       <input type="radio" name="editType" id="MGD" onchange="setEditType('GD')"/>
+      &nbsp;&nbsp;
+      Water Delivered
+      <input type="radio" name="editType" id="MWD" onchange="setEditType('WD')"/>
       &nbsp;&nbsp;
   
   <div id="tabMaanden" class="tabName outer-div" style="display:none">
