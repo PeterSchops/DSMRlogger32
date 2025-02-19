@@ -1,15 +1,17 @@
+/* jshint esversion: 8 */
+
 const APIGW = window.location.protocol + '//' + window.location.host + '/api/';
 const PHASES = 3;
 const UPDATE_INTERVAL = 5000; // 5 seconds
-const MAX_POWER = 3700; // Maximum power in Watts
-const MAX_CURRENT = 16; // Maximum current in Amperes
+//const MAX_POWER = 3700; // Maximum power in Watts
+//const MAX_CURRENT = 16; // Maximum current in Amperes
 
 let pwrBars = [];
 let currentUnit = 'Watts';
 let voltage_l1 = 230;
 let voltage_l2 = 230;
 let voltage_l3 = 230;
-let refreshTimer = UPDATE_INTERVAL
+let refreshTimer = UPDATE_INTERVAL;
 let refreshInterval; // Store the interval ID globally
 let relayState = 0;
 let maxNetPower = 0;
@@ -242,7 +244,7 @@ function fetchData() {
           const switchWrapper0 = document.getElementById('switchWrapper0');
           if (relayActive0 === 1) {
               switchWrapper0.classList.remove('hidden');
-              prevState = relayState;
+              let prevState = relayState;
               relayState = data[`relay_state0`] || 0;
               const relayToggle0 = document.getElementById('relayToggle0');
               relayToggle0.checked = relayState === 1;

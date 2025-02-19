@@ -8,6 +8,7 @@
 **  TERMS OF USE: MIT License. See bottom of file.                                                            
 ***************************************************************************      
 */
+/* jshint esversion: 8 */
 
 let TimerActual;
 let actPoint        = 0;
@@ -277,8 +278,8 @@ var myWaterChart;
     // idx 0 => GAS
     gasData.datasets.push({}); //create a new dataset
     gasData.datasets[0].fill               = 'false';
-    gasData.datasets[0].borderColor        = "blue";
-    gasData.datasets[0].backgroundColor    = "blue";
+    gasData.datasets[0].borderColor        = "orange";
+    gasData.datasets[0].backgroundColor    = "orange";
     gasData.datasets[0].data               = []; //contains the 'Y; axis data
     gasData.datasets[0].label              = "Gas Gebruikt"; //"S"+s; //contains the 'Y; axis label
 
@@ -366,15 +367,15 @@ var myWaterChart;
     // idx 0 => GD
     gasData.datasets.push({}); //create a new dataset
     gasData.datasets[0].fill            = 'false';
-    gasData.datasets[0].borderColor     = "blue";
-    gasData.datasets[0].backgroundColor = "blue";
+    gasData.datasets[0].borderColor     = "orange";
+    gasData.datasets[0].backgroundColor = "orange";
     gasData.datasets[0].data            = []; //contains the 'Y; axis data
     gasData.datasets[0].label           = "Gas deze Periode"; //"S"+s; //contains the 'Y; axis label
     // idx 0 => GD -1
     gasData.datasets.push({}); //create a new dataset
     gasData.datasets[1].fill            = 'false';
-    gasData.datasets[1].borderColor     = "lightblue";
-    gasData.datasets[1].backgroundColor = "lightblue";
+    gasData.datasets[1].borderColor     = "yellow";
+    gasData.datasets[1].backgroundColor = "yellow";
     gasData.datasets[1].data            = []; //contains the 'Y; axis data
     gasData.datasets[1].label           = "Gas vorige Periode"; //"S"+s; //contains the 'Y; axis label
     // idx 0 => WD
@@ -431,7 +432,7 @@ var myWaterChart;
     //let actLabel = "";
     //let actPoint = 0;
     
-    for (field in data) {
+    for (var field in data) {
       var fldValue = data[field];
       //console.log("field["+field+"] fldValue["+fldValue+"]");
       if (field == "timestamp") {
@@ -564,8 +565,8 @@ var myWaterChart;
     // idx 0 => GDT
     actGasData.datasets.push({}); //create a new dataset
     actGasData.datasets[0].fill               = 'false';
-    actGasData.datasets[0].borderColor        = "blue";
-    actGasData.datasets[0].backgroundColor    = "blue";
+    actGasData.datasets[0].borderColor        = "orange";
+    actGasData.datasets[0].backgroundColor    = "orange";
     actGasData.datasets[0].data               = []; //contains the 'Y; axis data
     actGasData.datasets[0].label              = "Gas Verbruikt"; //"S"+s; //contains the 'Y; axis label
 

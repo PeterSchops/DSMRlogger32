@@ -12,7 +12,7 @@
 /* jshint multistr: true */
 const APIGW=window.location.protocol+'//'+window.location.host+'/api/';
 
-"use strict";
+//"use strict";
 
 let needBootsTrapMain     = true;
 let needBootsTrapSettings = true;
@@ -51,10 +51,8 @@ let monthType        = "ED";
 let settingBgColor   = 'deepskyblue';
 let settingFontColor = 'white';
                   
-var monthNames = [ "indxNul","Januari","Februari","Maart","April","Mei","Juni"
-                  ,"Juli","Augustus","September","Oktober","November","December"
-                  ,"\0"
-                 ];
+var monthNames = ["indxNul","Januari","Februari","Maart","April","Mei","Juni",
+                  "Juli","Augustus","September","Oktober","November","December","\0"];
 
 window.onload=bootsTrapMain;
 /*
@@ -337,10 +335,9 @@ function refreshDevInfo()
     .then(json => {
       //console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
       data = json.devinfo;
-      let fldValue, fldUnit;
+      let fldValue;
       
-      for( let field in data )
-      {
+      for (let field in data) {
         //console.log("Processing ["+field+"]..");
           //console.log("["+field+"]->["+fldValue+"]->["+fldUnit+"]");
           fldValue = data[field];
@@ -670,8 +667,8 @@ function refreshSmTelegram()
         preT.textContent = response;
         divT.appendChild(preT);
       }
-      preT = document.getElementById("TelData");//preT use out of scope
-      preT.textContent = response;
+      //preT = document.getElementById("TelData");//preT use out of scope
+      //preT.textContent = response;
     })
     .catch(function(error) {
       console.error(error);
@@ -698,8 +695,8 @@ function refreshDevSyslog()
         preT.textContent = response;
         divT.appendChild(preT);
       }
-      preT = document.getElementById("LogData");//preT use out of scope
-      preT.textContent = response;
+      //preT = document.getElementById("LogData");//preT use out of scope
+      //preT.textContent = response;
     })
     .catch(function(error) {
       console.error(error);
@@ -1324,26 +1321,6 @@ function getDevSettings()
       p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
 } // getDevSettings()
-
-
-//============================================================================  
-function getDevSystem()
-{
-  fetch(APIGW+"v2/dev/system")
-    .then(response => response.json())
-    .then(json => {
-      console.log("parsed .., data is ["+ JSON.stringify(json)+"]");
-      for (let i in json.system) {
-        if      (json.system[i].name == "hostname")    {    hostName = json.system[i].value; }
-        else if (json.system[i].name == "dailyreboot") { dailyreboot = json.system[i].value; }
-      }
-    })
-    .catch(function(error) {
-      console.error(error);
-      var p = document.createElement('p');
-      p.appendChild(document.createTextNode('Error: ' + error.message));
-    });     
-} // getDevSystem()
 
   
 //============================================================================  
@@ -2114,31 +2091,25 @@ function saveMeterReadings()
   let changes = false;
   
   //--- has anything changed?
-  for (i in data)
-  {
+  for (var i in data) {
     //console.log("saveMeterReadings["+i+"] ..");
     changes = false;
 
-    if (getBackGround("em_YY_"+i) == "lightgray")
-    {
+    if (getBackGround("em_YY_"+i) == "lightgray") {
       setBackGround("em_YY_"+i, "white");
       changes = true;
     }
-    if (getBackGround("em_MM_"+i) == "lightgray")
-    {
+    if (getBackGround("em_MM_"+i) == "lightgray") {
       setBackGround("em_MM_"+i, "white");
       changes = true;
     }
 
-    if (document.getElementById("em_in1_"+i).style.background == 'lightgray')
-    {
+    if (document.getElementById("em_in1_"+i).style.background == 'lightgray') {
       changes = true;
       document.getElementById("em_in1_"+i).style.background = 'white';
     }
-    if (monthType != "GD")
-    {
-      if (document.getElementById("em_in2_"+i).style.background == 'lightgray')
-      {
+    if (monthType != "GD") {
+      if (document.getElementById("em_in2_"+i).style.background == 'lightgray') {
         changes = true;
         document.getElementById("em_in2_"+i).style.background = 'white';
       }
@@ -2149,7 +2120,6 @@ function saveMeterReadings()
       sendPostReading(i, data);
     }
   } 
-
 } // saveMeterReadings()
 
   
@@ -2240,7 +2210,8 @@ function sendPostShieldSetting(field, value)
 } // sendPostShieldSetting()
 
   
-//============================================================================  
+//============================================================================
+/* directly called from DSMRindex.html.inc */
 function sendEraseRequest() 
 {
   const jsonString = {"name" : "eraseRequest"};
@@ -2262,8 +2233,9 @@ function sendEraseRequest()
   
 } // sendEraseRequest()
 
-  
-//============================================================================  
+
+//============================================================================ 
+/*
 function validateReadings(type) 
 {
   let withErrors = false;
@@ -2272,27 +2244,22 @@ function validateReadings(type)
       
   console.log("validate("+type+")");
   
-  for (let i=0; i<(data.length -1); i++)
-  {
+  for (let i=0; i<(data.length -1); i++) {
     //--- reset background for the years
-    if (getBackGround("em_YY_"+i) == "red")
-    {
+    if (getBackGround("em_YY_"+i) == "red") {
       setBackGround("em_YY_"+i, "lightgray");
     }
     //--- zelfde jaar, dan prevMM := (MM -1)
-    if ( data[i].EEYY == data[i+1].EEYY )
-    {
+    if (data[i].EEYY == data[i+1].EEYY) {
       prevMM = data[i].MM -1;
       //console.log("["+i+"].EEYY == ["+(i+1)+"].EEYY => ["+data[i].EEYY+"] prevMM["+prevMM+"]");
     }
     //--- jaar == volgend jaar + 1
-    else if ( data[i].EEYY == (data[i+1].EEYY +1) )
-    {
+    else if (data[i].EEYY == (data[i+1].EEYY +1)) {
       prevMM = 12;
       //console.log("["+i+"].EEYY == ["+(i+1)+"].EEYY +1 => ["+data[i].EEYY+"]/["+data[i+1].EEYY+"] ("+prevMM+")");
     }
-    else
-    {
+    else {
       setBackGround("em_YY_"+(i+1), "red");
       withErrors = true;
       prevMM = data[i].MM -1;
@@ -2300,83 +2267,64 @@ function validateReadings(type)
     }
     
     //--- reset background for the months
-    if (getBackGround("em_MM_"+(i+1)) == "red")
-    {
+    if (getBackGround("em_MM_"+(i+1)) == "red") {
       setBackGround("em_MM_"+(i+1), "lightgray");
     }
     //--- if next month != prevMM and this MM != next MM
-    if (data[i+1].MM != prevMM && data[i].MM != data[i+1].MM)
-    {
+    if (data[i+1].MM != prevMM && data[i].MM != data[i+1].MM) {
       setBackGround("em_MM_"+(i+1), "red");
       withErrors = true;
       //console.log("(["+(i+1)+"].MM != ["+prevMM+"].prevMM) && => ["+data[i].MM+"]/["+data[i+1].MM+"] (error)");
     }
-    else
-    {
+    else {
       //setBackGround("em_MM_"+i, "lightgreen");
     }
-    if (type == "ED")
-    {
-      if (getBackGround("em_in1_"+(i+1)) == "red")
-      {
+    if (type == "ED") {
+      if (getBackGround("em_in1_"+(i+1)) == "red") {
         setBackGround("em_in1_"+(i+1), "lightgray");
       }
-      if (data[i].edt1 < data[i+1].edt1)
-      {
+      if (data[i].edt1 < data[i+1].edt1) {
         setBackGround("em_in1_"+(i+1), "red");
         withErrors = true;
       }
-      if (getBackGround("em_in2_"+(i+1)) == "red")
-      {
+      if (getBackGround("em_in2_"+(i+1)) == "red") {
         setBackGround("em_in2_"+(i+1), "lightgray");
       }
-      if (data[i].edt2 < data[i+1].edt2)
-      {
+      if (data[i].edt2 < data[i+1].edt2) {
         setBackGround("em_in2_"+(i+1), "red");
         withErrors = true;
       }
     }
-    else if (type == "ER")
-    {
-      if (getBackGround("em_in1_"+(i+1)) == "red")
-      {
+    else if (type == "ER") {
+      if (getBackGround("em_in1_"+(i+1)) == "red") {
         setBackGround("em_in1_"+(i+1), "lightgray");
       }
-      if (data[i].ert1 < data[i+1].ert1)
-      {
+      if (data[i].ert1 < data[i+1].ert1) {
         setBackGround("em_in1_"+(i+1), "red");
         withErrors = true;
       }
-      if (getBackGround("em_in2_"+(i+1)) == "red")
-      {
+      if (getBackGround("em_in2_"+(i+1)) == "red") {
         setBackGround("em_in2_"+(i+1), "lightgray");
       }
-      if (data[i].ert2 < data[i+1].ert2)
-      {
+      if (data[i].ert2 < data[i+1].ert2) {
         setBackGround("em_in2_"+(i+1), "red");
         withErrors = true;
       }
     }
-    else if (type == "GD")
-    {
-      if (getBackGround("em_in1_"+(i+1)) == "red")
-      {
+    else if (type == "GD") {
+      if (getBackGround("em_in1_"+(i+1)) == "red") {
         setBackGround("em_in1_"+(i+1), "lightgray");
       }
-      if (data[i].gdt < data[i+1].gdt)
-      {
+      if (data[i].gdt < data[i+1].gdt) {
         setBackGround("em_in1_"+(i+1), "red");
         withErrors = true;
       }
     }
-    else if (type == "WD")
-    {
-      if (getBackGround("em_in1_"+(i+1)) == "red")
-      {
+    else if (type == "WD") {
+      if (getBackGround("em_in1_"+(i+1)) == "red") {
         setBackGround("em_in1_"+(i+1), "lightgray");
       }
-      if (data[i].wdt < data[i+1].wdt)
-      {
+      if (data[i].wdt < data[i+1].wdt) {
         setBackGround("em_in1_"+(i+1), "red");
         withErrors = true;
       }
@@ -2386,9 +2334,8 @@ function validateReadings(type)
   if (withErrors)  return false;
 
   return true;
-  
 } // validateReadings()
-
+*/
   
 //============================================================================  
 function sendPostReading(i, row) 
@@ -2426,6 +2373,7 @@ function sendPostReading(i, row)
 } // sendPostReading()
   
 //============================================================================  
+/* directly called from DSMRindex.html.inc */
 function setEditType(eType) 
 {
   if (eType == "ED") {
@@ -2490,38 +2438,34 @@ function getBackGround(field)
 } // getBackGround()
 
 
-//============================================================================  
+//============================================================================
+/*
 function validateNumber(field) 
 {
   console.log("validateNumber(): ["+field+"]");
   var pattern = /^\d{1,2}(\.\d{1,2})?$/;
   var max = 99.99;
-  if (field == "EDT1" || field == "EDT2" || field == "ERT1" || field == "ERT2" || field == "GAS" || field == "WATER") 
-  {
+  if (field == "EDT1" || field == "EDT2" || field == "ERT1" || field == "ERT2" || field == "GAS" || field == "WATER") {
     pattern = /^\d{1,1}(\.\d{1,5})?$/;
     max = 1.99999;
   }
   var newVal = document.getElementById(field).value;
   newVal = newVal.replace( /[^0-9.]/g, '' );
-  if (!pattern.test(newVal)) 
-  {
+  if (!pattern.test(newVal)) {
     document.getElementById(field).style.color = 'orange';
     console.log("wrong format");
-  } else 
-  {
+  } else {
     document.getElementById(field).style.color = settingFontColor;
     console.log("valid number!");
   }
-  if (newVal > max) 
-  {
+  if (newVal > max) {
     console.log("Number to big!");
     document.getElementById(field).style.color = 'orange';
     newVal = max;
   }
   document.getElementById(field).value = newVal * 1;
-  
 } // validateNumber()
-
+*/
 
 //============================================================================  
 function translateToHuman(longName) 
@@ -2556,7 +2500,8 @@ function formatDate(type, dateIn)
 }
 
 
-//============================================================================  
+//============================================================================
+/*
 function recidToEpoch(dateIn) 
 {
   var YY = "20"+dateIn.substring(0,2);
@@ -2566,9 +2511,8 @@ function recidToEpoch(dateIn)
   //console.log("epoch is ["+epoch+"]");
 
   return epoch;
-  
 } // recidToEpoch()
-
+*/
 
 //============================================================================  
 function recidToWeekday(dateIn)
@@ -2583,201 +2527,199 @@ function recidToWeekday(dateIn)
 
   
 //============================================================================  
+/*
 function round(value, precision) 
 {
   var multiplier = Math.pow(10, precision || 0);
   return Math.round(value * multiplier) / multiplier;
 }
-
+*/
   
 //============================================================================  
 function isFloat(x) 
 {
   // check if the passed value is a number
-  if(typeof x == 'number' && !isNaN(x))
-  {
+  if ((typeof x == 'number') && !isNaN(x)) {
     // check if it is integer
     if (Number.isInteger(x))
           return false;
     else  return true;
   } 
-  else 
-  {
+  else {
     return false;
   }
-  
-} //  isFloat()
+} // isFloat()
   
   
 //============================================================================  
 var translateFields = [
-      [ "author",                    "Auteur" ],
-      [ "boardtype",                 "Board Type" ],
-      [ "chip_model",                "Chip type" ],
-      [ "chipid",                    "Chip ID" ],
-      [ "compile_options",           "Compiler Opties" ],
-      [ "compiled",                  "Gecompileerd" ],
-      [ "coreversion",               "Core Versie" ],
-      [ "cpu_freq",                  "CPU Frequency [MHz]" ],
-      [ "current_l1",                "Current l1" ],
-      [ "current_l2",                "Current l2" ],
-      [ "current_l3",                "Current l3" ],
+      [ "author",                     "Auteur" ],
+      [ "boardtype",                  "Board Type" ],
+      [ "chip_model",                 "Chip type" ],
+      [ "chipid",                     "Chip ID" ],
+      [ "compile_options",            "Compiler Opties" ],
+      [ "compiled",                   "Gecompileerd" ],
+      [ "coreversion",                "Core Versie" ],
+      [ "cpu_freq",                   "CPU Frequency [MHz]" ],
+      [ "current_l1",                 "Current l1" ],
+      [ "current_l2",                 "Current l2" ],
+      [ "current_l3",                 "Current l3" ],
       [ "daily_reboot",               "Dagelijkse Reboot [0=Nee, 1=Ja]" ],
         
-      [ "ed_tariff1",                "Energie Verbruik Tarief-1/kWh" ],
-      [ "ed_tariff2",                "Energie Verbruik Tarief-2/kWh" ],
-      [ "electr_netw_costs",         "Netwerkkosten Energie/maand" ],
-      [ "electricity_failure_log",   "Electricity Failure log" ],
-      [ "electricity_failures",      "Electricity Failures" ],
-      [ "electricity_long_failures", "Electricity Long Failures" ],
-      [ "electricity_sags_l1",       "Electricity Sags l1" ],
-      [ "electricity_sags_l2",       "Electricity Sags l2" ],
-      [ "electricity_sags_l3",       "Electricity Sags l3" ],
-      [ "electricity_swells_l1",     "Electricity Swells l1" ],
-      [ "electricity_swells_l2",     "Electricity Swells l2" ],
-      [ "electricity_swells_l3",     "Electricity Swells l3" ],
+      [ "ed_tariff1",                 "Energie Verbruik Tarief-1/kWh" ],
+      [ "ed_tariff2",                 "Energie Verbruik Tarief-2/kWh" ],
+      [ "electr_netw_costs",          "Netwerkkosten Energie/maand" ],
+      [ "electricity_failure_log",    "Electricity Failure log" ],
+      [ "electricity_failures",       "Electricity Failures" ],
+      [ "electricity_long_failures",  "Electricity Long Failures" ],
+      [ "electricity_sags_l1",        "Electricity Sags l1" ],
+      [ "electricity_sags_l2",        "Electricity Sags l2" ],
+      [ "electricity_sags_l3",        "Electricity Sags l3" ],
+      [ "electricity_swells_l1",      "Electricity Swells l1" ],
+      [ "electricity_swells_l2",      "Electricity Swells l2" ],
+      [ "electricity_swells_l3",      "Electricity Swells l3" ],
       [ "electricity_switch_position","Electricity Switch Position" ],
-      [ "electricity_tariff",        "Electriciteit tarief" ],
-      [ "electricity_threshold",     "Electricity Threshold" ],
-      [ "energy_delivered_tariff1",  "Energie Gebruikt tarief 1" ],
-      [ "energy_delivered_tariff2",  "Energie Gebruikt tarief 2" ],
-      [ "energy_returned_tariff1",   "Energie Opgewekt tarief 1" ],
-      [ "energy_returned_tariff2",   "Energie Opgewekt tarief 2" ],
-      [ "er_tariff1",                "Energie Opgewekt Tarief-1/kWh" ],
-      [ "er_tariff2",                "Energie Opgewekt Tarief-2/kWh" ],
+      [ "electricity_tariff",         "Electriciteit tarief" ],
+      [ "electricity_threshold",      "Electricity Threshold" ],
+      [ "energy_delivered_tariff1",   "Energie Gebruikt tarief 1" ],
+      [ "energy_delivered_tariff2",   "Energie Gebruikt tarief 2" ],
+      [ "energy_returned_tariff1",    "Energie Opgewekt tarief 1" ],
+      [ "energy_returned_tariff2",    "Energie Opgewekt tarief 2" ],
+      [ "er_tariff1",                 "Energie Opgewekt Tarief-1/kWh" ],
+      [ "er_tariff2",                 "Energie Opgewekt Tarief-2/kWh" ],
         
-      [ "filesystem_type",           "File Systeem" ],
-      [ "filesystem_size",           "Grootte littleFS [bytes]" ],
-      [ "flashchip_mode",            "Flash Chip Mode" ],
-      [ "flashchip_speed",           "Flash Chip Freq. [Hz]" ],
-      [ "flashchipid",               "Flash Chip ID" ],
-      [ "flashchiprealsize",         "Flash Chip Real Size" ],
-      [ "flashchipsize",             "Flash Chip Size" ],
-      [ "free_heap",                 "Free Heap Space [bytes]" ],
-      [ "free_psram_size",           "Free Psram [SPI-RAM] [bytes]" ],
-      [ "free_sketch_space",         "Free Sketch Space [bytes]" ],
-      [ "fwversion",                 "Firmware Versie" ],
+      [ "filesystem_type",            "File Systeem" ],
+      [ "filesystem_size",            "Grootte littleFS [bytes]" ],
+      [ "flashchip_mode",             "Flash Chip Mode" ],
+      [ "flashchip_speed",            "Flash Chip Freq. [Hz]" ],
+      [ "flashchipid",                "Flash Chip ID" ],
+      [ "flashchiprealsize",          "Flash Chip Real Size" ],
+      [ "flashchipsize",              "Flash Chip Size" ],
+      [ "free_heap",                  "Free Heap Space [bytes]" ],
+      [ "free_psram_size",            "Free Psram [SPI-RAM] [bytes]" ],
+      [ "free_sketch_space",          "Free Sketch Space [bytes]" ],
+      [ "fwversion",                  "Firmware Versie" ],
         
-      [ "gas_delivered",             "Gas Gebruikt" ],
-      [ "gas_netw_costs",            "Netwerkkosten Gas/maand" ],
-      [ "gd_tariff" ,                "Gas Verbruik Tarief/m3" ],
-      [ "water_delivered",           "Water Gebruikt" ],
-      [ "water_netw_costs",          "Netwerkkosten Water/maand" ],
-      [ "wd_tariff" ,                "Water Verbruik Tarief/m3" ],
-      [ "hostname",                  "HostName" ],
-      [ "identification",            "Slimme Meter ID" ],
-      [ "index_page",                "Te Gebruiken index.html Pagina" ],
-      [ "indexfile",                 "Te Gebruiken index.html Pagina" ],
-      [ "ipaddress",                 "IP adres" ],
-      [ "last_reset",                "Laatste Reset reden" ],
+      [ "gas_delivered",              "Gas Gebruikt" ],
+      [ "gas_netw_costs",             "Netwerkkosten Gas/maand" ],
+      [ "gd_tariff" ,                 "Gas Verbruik Tarief/m3" ],
+      [ "water_delivered",            "Water Gebruikt" ],
+      [ "water_netw_costs",           "Netwerkkosten Water/maand" ],
+      [ "wd_tariff" ,                 "Water Verbruik Tarief/m3" ],
+      [ "hostname",                   "HostName" ],
+      [ "identification",             "Slimme Meter ID" ],
+      [ "index_page",                 "Te Gebruiken index.html Pagina" ],
+      [ "indexfile",                  "Te Gebruiken index.html Pagina" ],
+      [ "ipaddress",                  "IP adres" ],
+      [ "last_reset",                 "Laatste Reset reden" ],
         
-      [ "macaddress",                "MAC adres" ],
-      [ "mbus1_delivered",           "MBus-1 Gebruikt" ],
-      [ "mbus1_delivered_dbl",       "MBus-1 Gebruikt" ],
-      [ "mbus1_delivered_ntc",       "MBus-1 Gebruikt [ntc]" ],
-      [ "mbus1_device_type",         "MBus-1 Type meter [0=geen]" ],
-      [ "mbus1_equipment_id_ntc",    "MBus-1 Equipm. ID [ntc]" ],
-      [ "mbus1_equipment_id_tc",     "MBus-1 Equipm. ID [tc]" ],
-      [ "mbus1_type",                "MBus-1 Type meter [0=geen]" ],
-      [ "mbus1_valve_position",      "MBus-1 Klep Positie" ],
-      [ "mbus2_delivered",           "MBus-2 Gebruikt" ],
-      [ "mbus2_delivered_dbl",       "MBus-2 Gebruikt" ],
-      [ "mbus2_delivered_ntc",       "MBus-2 Gebruikt [ntc]" ],
-      [ "mbus2_device_type",         "MBus-2 Type meter [0=geen]" ],
-      [ "mbus2_equipment_id_ntc",    "MBus-2 Equipm. ID [ntc]" ],
-      [ "mbus2_equipment_id_tc",     "MBus-2 Equipm. ID [tc]" ],
-      [ "mbus2_type",                "MBus-2 Type meter [0=geen]" ],
-      [ "mbus2_valve_position",      "MBus-2 Klep Positie" ],
-      [ "mbus3_delivered",           "MBus-3 Gebruikt" ],
-      [ "mbus3_delivered_dbl",       "MBus-3 Gebruikt" ],
-      [ "mbus3_delivered_ntc",       "MBus-3 Gebruikt [ntc]" ],
-      [ "mbus3_device_type",         "MBus-3 Type meter [0=geen]" ],
-      [ "mbus3_equipment_id_ntc",    "MBus-3 Equipm. ID [ntc]" ],
-      [ "mbus3_equipment_id_tc",     "MBus-3 Equipm. ID [tc]" ],
-      [ "mbus3_type",                "MBus-3 Type meter [0=geen]" ],
-      [ "mbus3_valve_position",      "MBus-3 Klep Positie" ],
-      [ "mbus4_delivered",           "MBus-4 Gebruikt" ],
-      [ "mbus4_delivered_dbl",       "MBus-4 Gebruikt" ],
-      [ "mbus4_delivered_ntc",       "MBus-4 Gebruikt [ntc]" ],
-      [ "mbus4_device_type",         "MBus-4 Type meter [0=geen]" ],
-      [ "mbus4_equipment_id_ntc",    "MBus-4 Equipm. ID [ntc]" ],
-      [ "mbus4_equipment_id_tc",     "MBus-4 Equipm. ID [tc]" ],
-      [ "mbus4_type",                "MBus-4 Type meter [0=geen]" ],
-      [ "mbus4_valve_position",      "MBus-4 Klep Positie" ],
-      [ "message_long",              "Lange Boodschap" ],
-      [ "message_short",             "Korte Boodschap" ],
-      [ "min_free_heap",             "Min. Free Heap ever [bytes]" ],
-      [ "mqtt_broker",               "MQTT Broker IP/URL" ],
-      [ "mqtt_broker_connected",     "MQTT broker connected [1=Ja]" ],
-      [ "mqtt_broker_port",          "MQTT Broker Poort" ],
-      [ "mqtt_interval",             "Verzend MQTT Berichten [Sec.]" ],
-      [ "mqtt_passwd",               "Password MQTT Gebruiker" ],
-      [ "mqtt_toptopic",             "MQTT Top Topic" ],
-      [ "mqtt_user",                 "MQTT Gebruiker" ],
-      [ "mqttbroker",                "MQTT Broker IP/URL" ],
-      [ "mqttbrokerport",            "MQTT Broker Poort" ],
-      [ "mqttinterval",              "Verzend MQTT Berichten [Sec.]" ],
-      [ "mqttpasswd",                "Password MQTT Gebruiker" ],
-      [ "mqtttoptopic",              "MQTT Top Topic" ],
-      [ "mqttuser",                  "MQTT Gebruiker" ],
+      [ "macaddress",                 "MAC adres" ],
+      [ "mbus1_delivered",            "MBus-1 Gebruikt" ],
+      [ "mbus1_delivered_dbl",        "MBus-1 Gebruikt" ],
+      [ "mbus1_delivered_ntc",        "MBus-1 Gebruikt [ntc]" ],
+      [ "mbus1_device_type",          "MBus-1 Type meter [0=geen]" ],
+      [ "mbus1_equipment_id_ntc",     "MBus-1 Equipm. ID [ntc]" ],
+      [ "mbus1_equipment_id_tc",      "MBus-1 Equipm. ID [tc]" ],
+      [ "mbus1_type",                 "MBus-1 Type meter [0=geen]" ],
+      [ "mbus1_valve_position",       "MBus-1 Klep Positie" ],
+      [ "mbus2_delivered",            "MBus-2 Gebruikt" ],
+      [ "mbus2_delivered_dbl",        "MBus-2 Gebruikt" ],
+      [ "mbus2_delivered_ntc",        "MBus-2 Gebruikt [ntc]" ],
+      [ "mbus2_device_type",          "MBus-2 Type meter [0=geen]" ],
+      [ "mbus2_equipment_id_ntc",     "MBus-2 Equipm. ID [ntc]" ],
+      [ "mbus2_equipment_id_tc",      "MBus-2 Equipm. ID [tc]" ],
+      [ "mbus2_type",                 "MBus-2 Type meter [0=geen]" ],
+      [ "mbus2_valve_position",       "MBus-2 Klep Positie" ],
+      [ "mbus3_delivered",            "MBus-3 Gebruikt" ],
+      [ "mbus3_delivered_dbl",        "MBus-3 Gebruikt" ],
+      [ "mbus3_delivered_ntc",        "MBus-3 Gebruikt [ntc]" ],
+      [ "mbus3_device_type",          "MBus-3 Type meter [0=geen]" ],
+      [ "mbus3_equipment_id_ntc",     "MBus-3 Equipm. ID [ntc]" ],
+      [ "mbus3_equipment_id_tc",      "MBus-3 Equipm. ID [tc]" ],
+      [ "mbus3_type",                 "MBus-3 Type meter [0=geen]" ],
+      [ "mbus3_valve_position",       "MBus-3 Klep Positie" ],
+      [ "mbus4_delivered",            "MBus-4 Gebruikt" ],
+      [ "mbus4_delivered_dbl",        "MBus-4 Gebruikt" ],
+      [ "mbus4_delivered_ntc",        "MBus-4 Gebruikt [ntc]" ],
+      [ "mbus4_device_type",          "MBus-4 Type meter [0=geen]" ],
+      [ "mbus4_equipment_id_ntc",     "MBus-4 Equipm. ID [ntc]" ],
+      [ "mbus4_equipment_id_tc",      "MBus-4 Equipm. ID [tc]" ],
+      [ "mbus4_type",                 "MBus-4 Type meter [0=geen]" ],
+      [ "mbus4_valve_position",       "MBus-4 Klep Positie" ],
+      [ "message_long",               "Lange Boodschap" ],
+      [ "message_short",              "Korte Boodschap" ],
+      [ "min_free_heap",              "Min. Free Heap ever [bytes]" ],
+      [ "mqtt_broker",                "MQTT Broker IP/URL" ],
+      [ "mqtt_broker_connected",      "MQTT broker connected [1=Ja]" ],
+      [ "mqtt_broker_port",           "MQTT Broker Poort" ],
+      [ "mqtt_interval",              "Verzend MQTT Berichten [Sec.]" ],
+      [ "mqtt_passwd",                "Password MQTT Gebruiker" ],
+      [ "mqtt_toptopic",              "MQTT Top Topic" ],
+      [ "mqtt_user",                  "MQTT Gebruiker" ],
+      [ "mqttbroker",                 "MQTT Broker IP/URL" ],
+      [ "mqttbrokerport",             "MQTT Broker Poort" ],
+      [ "mqttinterval",               "Verzend MQTT Berichten [Sec.]" ],
+      [ "mqttpasswd",                 "Password MQTT Gebruiker" ],
+      [ "mqtttoptopic",               "MQTT Top Topic" ],
+      [ "mqttuser",                   "MQTT Gebruiker" ],
         
-      [ "no_hour_slots",             "Uren aan historie" ],
-      [ "no_day_slots",              "Dagen aan historie" ],
-      [ "no_month_slots",            "Maanden aan historie [in jaren]" ],
-      [ "alter_ring_slots",          "Historie aanpassen [1=Ja]" ],
-      [ "neo_brightness",            "Brightness NeoPixels" ],
+      [ "no_hour_slots",              "Uren aan historie" ],
+      [ "no_day_slots",               "Dagen aan historie" ],
+      [ "no_month_slots",             "Maanden aan historie [in jaren]" ],
+      [ "alter_ring_slots",           "Historie aanpassen [1=Ja]" ],
+      [ "neo_brightness",             "Brightness NeoPixels" ],
         
-      [ "oled_flip_screen",          "Flip OLED scherm [0=Nee, 1=Ja]" ],
-      [ "oled_screen_time",          "Oled Screen Time [Min., 0=infinite]" ],
-      [ "oled_type",                 "OLED type [0=None, 1=SDD1306, 2=SH1106]" ],
-      [ "p1_version",                "P1 Versie" ],
-      [ "p1_version_be",             "P1 Versie [BE]" ],
-      [ "power_delivered",           "Vermogen Gebruikt" ],
-      [ "power_delivered_l1",        "Vermogen Gebruikt l1" ],
-      [ "power_delivered_l2",        "Vermogen Gebruikt l2" ],
-      [ "power_delivered_l3",        "Vermogen Gebruikt l3" ],
-      [ "power_returned",            "Vermogen Opgewekt" ],
-      [ "power_returned_l1",         "Vermogen Opgewekt l1" ],
-      [ "power_returned_l2",         "Vermogen Opgewekt l2" ],
-      [ "power_returned_l3",         "Vermogen Opgewekt l3" ],
-      [ "pre_dsmr40",                "Pré DSMR 40 [0=Nee, 1=Ja]" ],
-      [ "psram_size",                "Psram size [bytes]" ],
+      [ "oled_flip_screen",           "Flip OLED scherm [0=Nee, 1=Ja]" ],
+      [ "oled_screen_time",           "Oled Screen Time [Min., 0=infinite]" ],
+      [ "oled_type",                  "OLED type [0=None, 1=SDD1306, 2=SH1106]" ],
+      [ "p1_version",                 "P1 Versie" ],
+      [ "p1_version_be",              "P1 Versie [BE]" ],
+      [ "power_delivered",            "Vermogen Gebruikt" ],
+      [ "power_delivered_l1",         "Vermogen Gebruikt l1" ],
+      [ "power_delivered_l2",         "Vermogen Gebruikt l2" ],
+      [ "power_delivered_l3",         "Vermogen Gebruikt l3" ],
+      [ "power_returned",             "Vermogen Opgewekt" ],
+      [ "power_returned_l1",          "Vermogen Opgewekt l1" ],
+      [ "power_returned_l2",          "Vermogen Opgewekt l2" ],
+      [ "power_returned_l3",          "Vermogen Opgewekt l3" ],
+      [ "pre_dsmr40",                 "Pré DSMR 40 [0=Nee, 1=Ja]" ],
+      [ "psram_size",                 "Psram size [bytes]" ],
         
-      [ "reboots",                   "Aantal keer opnieuw opgestart" ],
-      [ "run_as_ap",                 "run als AccessPoint [0=Nee, 1=Ja]" ],
-      [ "sdk_version",               "SDK versie" ],
-      [ "sketch_size",               "Sketch Size [bytes]" ],
-      [ "sm_has_fase_info",          "SM Has Fase Info [0=Nee, 1=Ja]" ],
-      [ "smhasfaseinfo",             "SM Has Fase Info [0=Nee, 1=Ja]" ],
-      [ "ssid",                      "WiFi SSID" ],
-      [ "shld_GPIOpin0",             "SW-0 GPIO pin [-1=geen, 13, 14]" ],
-      [ "shld_inversed0",            "SW-0 Inversed Logic [0=Nee, 1=Ja]" ],
-      [ "shld_activeStart0",         "SW-0 Actief start tijd" ],
-      [ "shld_activeStop0",          "SW-0 Actief stop tijd" ],
-      [ "shld_onThreshold0",         "SW-0 'Aan' drempel" ],
-      [ "shld_offThreshold0",        "SW-0 'Uit' drempel'" ],
-      [ "shld_onDelay0",             "SW-0 'Aan' vertraging [sec.]" ],
-      [ "shld_offDelay0",            "SW-0 'Uit' vertraging [sec.]" ],
-      [ "shld_GPIOpin1",             "SW-1 GPIO pin [-1=geen, 13, 14]" ],
-      [ "shld_inversed1",            "SW-1 Inversed Logic [0=Nee, 1=Ja]" ],
-      [ "shld_activeStart1",         "SW-1 Actief start tijd" ],
-      [ "shld_activeStop1",          "SW-1 Actief stop tijd" ],
-      [ "shld_onThreshold1",         "SW-1 'Aan' drempel" ],
-      [ "shld_offThreshold1",        "SW-1 'Uit' drempel'" ],
-      [ "shld_onDelay1",             "SW-1 'Aan' vertraging [sec.]" ],
-      [ "shld_offDelay1",            "SW-1 'Uit' vertraging [sec.]" ],
-      [ "telegram_count",            "Aantal verwerkte Telegrammen" ],
-      [ "telegram_errors",           "Aantal Foutieve Telegrammen" ],
-      [ "telegram_interval",         "Telegram Lees Interval [Sec.]" ],
-      [ "tlgrm_interval",            "Telegram Lees Interval [Sec.]" ],
+      [ "reboots",                    "Aantal keer opnieuw opgestart" ],
+      [ "run_as_ap",                  "run als AccessPoint [0=Nee, 1=Ja]" ],
+      [ "sdk_version",                "SDK versie" ],
+      [ "sketch_size",                "Sketch Size [bytes]" ],
+      [ "sm_has_fase_info",           "SM Has Fase Info [0=Nee, 1=Ja]" ],
+      [ "smhasfaseinfo",              "SM Has Fase Info [0=Nee, 1=Ja]" ],
+      [ "ssid",                       "WiFi SSID" ],
+      [ "shld_GPIOpin0",              "SW-0 GPIO pin [-1=geen, 13, 14]" ],
+      [ "shld_inversed0",             "SW-0 Inversed Logic [0=Nee, 1=Ja]" ],
+      [ "shld_activeStart0",          "SW-0 Actief start tijd" ],
+      [ "shld_activeStop0",           "SW-0 Actief stop tijd" ],
+      [ "shld_onThreshold0",          "SW-0 'Aan' drempel" ],
+      [ "shld_offThreshold0",         "SW-0 'Uit' drempel'" ],
+      [ "shld_onDelay0",              "SW-0 'Aan' vertraging [sec.]" ],
+      [ "shld_offDelay0",             "SW-0 'Uit' vertraging [sec.]" ],
+      [ "shld_GPIOpin1",              "SW-1 GPIO pin [-1=geen, 13, 14]" ],
+      [ "shld_inversed1",             "SW-1 Inversed Logic [0=Nee, 1=Ja]" ],
+      [ "shld_activeStart1",          "SW-1 Actief start tijd" ],
+      [ "shld_activeStop1",           "SW-1 Actief stop tijd" ],
+      [ "shld_onThreshold1",          "SW-1 'Aan' drempel" ],
+      [ "shld_offThreshold1",         "SW-1 'Uit' drempel'" ],
+      [ "shld_onDelay1",              "SW-1 'Aan' vertraging [sec.]" ],
+      [ "shld_offDelay1",             "SW-1 'Uit' vertraging [sec.]" ],
+      [ "telegram_count",             "Aantal verwerkte Telegrammen" ],
+      [ "telegram_errors",            "Aantal Foutieve Telegrammen" ],
+      [ "telegram_interval",          "Telegram Lees Interval [Sec.]" ],
+      [ "tlgrm_interval",             "Telegram Lees Interval [Sec.]" ],
         
-      [ "uptime",                    "Up Time [dagen] - [hh:mm]" ],
-      [ "uptime_sec",                "Up Time in Seconden" ],
-      [ "used_psram_size",           "Psram in gebruik [bytes]" ],
-      [ "voltage_l1",                "Voltage l1" ],
-      [ "voltage_l2",                "Voltage l2" ],
-      [ "voltage_l3",                "Voltage l3" ],
-      [ "wifi_rssi",                 "WiFi RSSI" ]];
+      [ "uptime",                     "Up Time [dagen] - [hh:mm]" ],
+      [ "uptime_sec",                 "Up Time in Seconden" ],
+      [ "used_psram_size",            "Psram in gebruik [bytes]" ],
+      [ "voltage_l1",                 "Voltage l1" ],
+      [ "voltage_l2",                 "Voltage l2" ],
+      [ "voltage_l3",                 "Voltage l3" ],
+      [ "wifi_rssi",                  "WiFi RSSI" ]];
 
 /*
 ***************************************************************************
