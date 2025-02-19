@@ -201,7 +201,7 @@ void _debugBOL(const char *fn, int line);
 #define _NO_MONTH_SLOTS_  (24 +1)
 #define SECS_PER_HOUR         3600
 #define SECS_PER_DAY         86400
-#define _MAX_ACTUAL_STORE  500 //--155
+#define _MAX_ACTUAL_STORE  450 //--155 (~480 seems to be themax since water logging was added)
 
 //============ Structs, Unions & Enums ============
 //-- from DSMRlogger32.h
