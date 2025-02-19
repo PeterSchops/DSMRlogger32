@@ -1297,7 +1297,7 @@ void sendJsonActualHist()
   for (int i=0; i<_MAX_ACTUAL_STORE; i++)
   {
     int s = (i+actualStoreSlot+1) % _MAX_ACTUAL_STORE;
-    if ( strlen(actualStore[s].timestamp) < 12) { continue; }
+    if (strlen(actualStore[s].timestamp) < 12) { continue; }
     //-- built JSON string ..
     snprintf(cRecnr, sizeof(cRecnr), "%d", i);
     JsonObject nestedRec = doc["store"][cRecnr].createNestedObject();
@@ -1311,8 +1311,7 @@ void sendJsonActualHist()
     nestedRec["actual"]["gas_delivered"]      = round3(actualStore[s].gas_delivered);
     nestedRec["actual"]["water_delivered"]    = round3(actualStore[s].water_delivered);
 
-    if (Verbose2)
-    {
+    if (Verbose2) {
       Debugf("[%3d][%5d][%-12.12s] PwrDel[%10.3f] PwrRet[%10.3f] GasDel[%10.3f] WaterDel[%10.3f]\r\n",
               i, actualStore[s].count, actualStore[s].timestamp,
                                         (actualStore[s].power_delivered_l1
@@ -1324,7 +1323,6 @@ void sendJsonActualHist()
                                           actualStore[s].gas_delivered,
                                           actualStore[s].water_delivered);
     }
-  
   } //  for i...
   
   serializeJsonPretty(doc, jsonBuff, _JSONBUFF_LEN);

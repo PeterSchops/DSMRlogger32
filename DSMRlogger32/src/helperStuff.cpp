@@ -329,23 +329,14 @@ void pushToActualStore(const char *cName,  String sValue)
 //=======================================================================
 void pushToActualStore(const char *cName, float fValue)
 {
-  if (strcmp(cName, "power_delivered_l1") == 0)
-        actualStore[actualStoreSlot].power_delivered_l1 = round3(fValue);
-  else if (strcmp(cName, "power_delivered_l2") == 0)
-        actualStore[actualStoreSlot].power_delivered_l2 = round3(fValue);
-  else if (strcmp(cName, "power_delivered_l3") == 0)
-        actualStore[actualStoreSlot].power_delivered_l3 = round3(fValue);
-  else if (strcmp(cName, "power_returned_l1") == 0)
-        actualStore[actualStoreSlot].power_returned_l1  = round3(fValue);
-  else if (strcmp(cName, "power_returned_l2") == 0)
-        actualStore[actualStoreSlot].power_returned_l2  = round3(fValue);
-  else if (strcmp(cName, "power_returned_l3") == 0)
-        actualStore[actualStoreSlot].power_returned_l3  = round3(fValue);
-  else if (strcmp(cName, "gas_delivered") == 0)
-        actualStore[actualStoreSlot].gas_delivered      = round3(fValue);
-  else if (strcmp(cName, "water_delivered") == 0)
-        actualStore[actualStoreSlot].water_delivered    = round3(fValue);
-  
+  if      (strcmp(cName, "power_delivered_l1") == 0) { actualStore[actualStoreSlot].power_delivered_l1 = round3(fValue); }
+  else if (strcmp(cName, "power_delivered_l2") == 0) { actualStore[actualStoreSlot].power_delivered_l2 = round3(fValue); }
+  else if (strcmp(cName, "power_delivered_l3") == 0) { actualStore[actualStoreSlot].power_delivered_l3 = round3(fValue); }
+  else if (strcmp(cName, "power_returned_l1") == 0)  { actualStore[actualStoreSlot].power_returned_l1  = round3(fValue); }
+  else if (strcmp(cName, "power_returned_l2") == 0)  { actualStore[actualStoreSlot].power_returned_l2  = round3(fValue); }
+  else if (strcmp(cName, "power_returned_l3") == 0)  { actualStore[actualStoreSlot].power_returned_l3  = round3(fValue); }
+  else if (strcmp(cName, "gas_delivered") == 0)      { actualStore[actualStoreSlot].gas_delivered      = round3(fValue); }
+  else if (strcmp(cName, "water_delivered") == 0)    { actualStore[actualStoreSlot].water_delivered    = round3(fValue); }
 } //  pushToActualStore(char, float)
 
 //=======================================================================
