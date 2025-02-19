@@ -300,7 +300,7 @@ function fetchData() {
           updateScales();
       })
       .catch(error => {
-          console.error('Error fetching data:', error);
+          console.error(error);
       });
 }
 
@@ -415,8 +415,8 @@ function toggleRelay(relayNumber, isChecked) {
       fetchData(); // Refresh data to confirm the change
   })
   .catch((error) => {
-      console.error('Error:', error);
-      event.target.checked = !event.target.checked; // Revert the toggle if there's an error
+    console.error(error);
+    event.target.checked = !event.target.checked; // Revert the toggle if there's an error
   });
 }
 
