@@ -117,10 +117,8 @@ function bootsTrapMain()
   initActualGraph();
   openTab("ActualTab");
   setPresentationType('TAB');
-  readGitHubVersion();
   
   console.log("..exit bootsTrapMain()!");
-    
 } // bootsTrapMain()
 
   
@@ -413,12 +411,10 @@ function refreshDevInfo()
           }
        }  // for ..
     })
-    .catch(function(error) 
-    {
+    .catch(function (error) {
+      console.error(error);
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
 } // refreshDevInfo()
 
@@ -442,12 +438,10 @@ function refreshDevTime()
         }
       }
     })
-    .catch(function(error) 
-    {
+    .catch(function (error) {
+      console.error(error);
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
     
   document.getElementById('message').innerHTML = newVersionMsg;
@@ -458,11 +452,11 @@ function refreshDevTime()
 //============================================================================  
 function refreshSmActual()
 {
-  console.log("refreshSmActual: presentationType["+presentationType+"]");
+  //console.log("refreshSmActual: presentationType["+presentationType+"]");
   if ((presentationType == "GRAPH") && (actualHist == false)) {
     //Actual graph update
     //console.log("hist/actual-->start");
-    fetch(APIGW+"v2/hist/actual")
+    fetch(APIGW+"v2/hist/actual")//450 data points in JSON
       .then(response => response.json())
       .then(json => {
         //console.log("parsing fields in ["+ JSON.stringify(json)+"]");
@@ -485,14 +479,14 @@ function refreshSmActual()
         //console.log("hist/actual-->done..");
       })
       .catch(function (error) {
-        console.log("refreshSmActual:graph-->error");
+        console.error(error);
         var p = document.createElement('p');
         p.appendChild(document.createTextNode('Error: ' + error.message));
       });
   }
   else {
     //Actual table update
-    fetch(APIGW+"v2/sm/actual")
+    fetch(APIGW+"v2/sm/actual")//last data point
       .then(response => response.json())
       .then(json => {
         //console.log("parsed .., fields is ["+ JSON.stringify(json)+"]");
@@ -506,7 +500,7 @@ function refreshSmActual()
         //console.log("sm/actual-->done..");
       })
       .catch(function(error) {
-        console.log("refreshSmActual:table-->error");
+        console.error(error);
         var p = document.createElement('p');
         p.appendChild(document.createTextNode('Error: ' + error.message));
       });
@@ -582,7 +576,7 @@ function refreshSmFields()
       //console.log("-->done..");
     })
     .catch(function(error) {
-      console.log("refreshSmFields-->error");
+      console.error(error);
       var p = document.createElement('p');
       p.appendChild(document.createTextNode('Error: ' + error.message));
     }); 
@@ -606,7 +600,7 @@ function refreshHours()
       else  showHistGraph(data, "Hours");
     })
     .catch(function(error) {
-      console.log("refreshHours-->error");
+      console.error(error);
       var p = document.createElement('p');
       p.appendChild(document.createTextNode('Error: ' + error.message));
     }); 
@@ -627,7 +621,7 @@ function refreshDays()
       else  showHistGraph(data, "Days");
     })
     .catch(function(error) {
-      console.log("refreshDays-->error");
+      console.error(error);
       var p = document.createElement('p');
       p.appendChild(document.createTextNode('Error: ' + error.message));
     });
@@ -652,7 +646,7 @@ function refreshMonths()
       else  showMonthsGraph(data);
     })
     .catch(function(error) {
-      console.log("refreshMonths-->error");
+      console.error(error);
       var p = document.createElement('p');
       p.appendChild(document.createTextNode('Error: ' + error.message));
     });
@@ -680,7 +674,7 @@ function refreshSmTelegram()
       preT.textContent = response;
     })
     .catch(function(error) {
-      console.log("refreshSmTelegram-->error");
+      console.error(error);
       var p = document.createElement('p');
       p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
@@ -708,7 +702,7 @@ function refreshDevSyslog()
       preT.textContent = response;
     })
     .catch(function(error) {
-      console.log("refreshDevSyslog-->error");
+      console.error(error);
       var p = document.createElement('p');
       p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
@@ -1304,7 +1298,8 @@ function getSmSettings()
         else if (json.settings[i].name == "pre_dsmr40")        {        pre_dsmr40 = json.settings[i].value; }
       }
     })
-    .catch(function(error) {
+    .catch(function (error) {
+      console.error(error);
       var p = document.createElement('p');
       p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
@@ -1324,7 +1319,7 @@ function getDevSettings()
       }
     })
     .catch(function(error) {
-      console.log("getDevSettings-->error");
+      console.error(error);
       var p = document.createElement('p');
       p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
@@ -1344,7 +1339,7 @@ function getDevSystem()
       }
     })
     .catch(function(error) {
-      console.log("getDevSystem-->error");
+      console.error(error);
       var p = document.createElement('p');
       p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
@@ -1355,7 +1350,7 @@ function getDevSystem()
 function setPresentationType(pType) 
 {
   if (pType == "GRAPH") {
-    console.log("Set presentationType to GRAPHICS mode!");
+    //console.log("Set presentationType to GRAPHICS mode!");
     presentationType = pType;
     document.getElementById('aGRAPH').checked = true;
     document.getElementById('aTAB').checked   = false;
@@ -1371,7 +1366,7 @@ function setPresentationType(pType)
     document.getElementById("lastMonthsTableCosts").style.display = "none";
   }
   else if (pType == "TAB") {
-    console.log("Set presentationType to Tabular mode!");
+    //console.log("Set presentationType to Tabular mode!");
     presentationType = pType;
     document.getElementById('aTAB').checked   = true;
     document.getElementById('aGRAPH').checked = false;
@@ -1578,12 +1573,10 @@ function refreshSmSettings()
       }
       //console.log("-->done..");
     })
-    .catch(function(error) 
-    {
+    .catch(function (error) {
+      console.error(error);
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
 
     document.getElementById('message').innerHTML = newVersionMsg;
@@ -1672,12 +1665,10 @@ function refreshDevSettings()
       }
       //console.log("-->done..");
     })
-    .catch(function(error) 
-    {
+    .catch(function (error) {
+      console.error(error);
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
 
     document.getElementById('message').innerHTML = newVersionMsg;
@@ -1766,12 +1757,10 @@ function refreshShieldSettings()
       }
       //console.log("-->done..");
     })
-    .catch(function(error) 
-    {
+    .catch(function (error) {
+      console.error(error);
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });     
 
     document.getElementById('message').innerHTML = newVersionMsg;
@@ -1791,12 +1780,10 @@ function getMonths()
       expandDataSettings(data);
       showMonths(data, monthType);
     })
-    .catch(function(error) 
-    {
+    .catch(function (error) {
+      console.error(error);
       var p = document.createElement('p');
-      p.appendChild(
-        document.createTextNode('Error: ' + error.message)
-      );
+      p.appendChild(document.createTextNode('Error: ' + error.message));
     });
 
     document.getElementById('message').innerHTML = newVersionMsg;
@@ -2436,53 +2423,7 @@ function sendPostReading(i, row)
     }, function(error) {
       console.log("Error["+error.message+"]"); //=> String
     });
-
-    
 } // sendPostReading()
-
-
-//============================================================================  
-function readGitHubVersion()
-{
-  if (GitHubVersion != 0) return;
-  
-  fetch("https://cdn.jsdelivr.net/gh/mrWheel/DSMRloggerAPI@master/data/DSMRversion.dat", {cache: "no-store"})
-    .then(response => {
-      if (response.ok) {
-        return response.text();
-      } else {
-        console.log('Something went wrong');
-        return "";
-      }
-    })
-    .then(text => {
-      var tmpGHF     = text.replace(/(\r\n|\n|\r)/gm, "");
-      console.log("parsed: tmpGHF is ["+tmpGHF+"]");
-      GitHubVersion_dspl = tmpGHF;
-      //console.log("parsed: GitHubVersion is ["+GitHubVersion_dspl+"]");
-      tmpX = tmpGHF.substring(1, tmpGHF.indexOf(' '));
-      //console.log("parsed: tmpX is ["+tmpX+"]");
-      tmpN = tmpX.split(".");
-      console.log("parsed: tmpN is ["+tmpN[0]+"|"+tmpN[1]+"|"+tmpN[2]+"]");
-      GitHubVersion = tmpN[0]*10000 + tmpN[1]*1;
-      
-      console.log("firmwareVersion["+firmwareVersion+"] >= GitHubVersion["+GitHubVersion+"]");
-      if (firmwareVersion == 0 || firmwareVersion >= GitHubVersion)
-            newVersionMsg = "";
-      else  newVersionMsg = firmwareVersion_dspl + " nieuwere versie ("+GitHubVersion_dspl+") beschikbaar";
-      document.getElementById('message').innerHTML = newVersionMsg;
-      console.log(newVersionMsg);
-
-    })
-    .catch(function(error) 
-    {
-      console.log(error);
-      GitHubVersion_dspl   = "";
-      GitHubVersion        = 0;
-    });     
-
-} // readGitHubVersion()
-
   
 //============================================================================  
 function setEditType(eType) 
