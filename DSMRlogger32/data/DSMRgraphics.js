@@ -11,7 +11,7 @@
 
 let TimerActual;
 let actPoint        = 0;
-let maxPoints       = 501;  //-- was: 150
+let maxPoints       = 451;//501;  //-- was: 150
 var actLabel        = "-";
 var gasDelivered    = 0;
 var waterDelivered  = 0;
@@ -584,9 +584,9 @@ var myWaterChart;
   //============================================================================  
   function showActualGraph()
   {
-    if (activeTab != "ActualTab") return;
+    if (activeTab != "ActualTab") { return; }
 
-    console.log("Now in showActualGraph()..");
+    //console.log("Now in showActualGraph()..");
 
     //--- hide Table
     document.getElementById("actual").style.display     = "none";
@@ -599,10 +599,10 @@ var myWaterChart;
     myElectrChart.update();
     
     renderGasChart(actGasData, "dm3");
-    gasChart.update();
+    myGasChart.update();
 
     renderWaterChart(actWaterData, "dm3");
-    waterChart.update();
+    myWaterChart.update();
   } // showActualGraph()
   
   
