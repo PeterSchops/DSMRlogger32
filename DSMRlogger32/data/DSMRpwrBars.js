@@ -53,13 +53,12 @@ function createPwrBar(id)
  */
 function initPwrBars() 
 {
-    for (let i = 1; i <= PHASES; i++) 
-    {
-        pwrBars.push(createPwrBar(`pwrbar-${i}`));
-    }
-    pwrBars.push(createPwrBar('pwrbar-total'));
-    calculateBarLength();
-    updateScales();
+  for (let i = 1; i <= PHASES; i++) {
+    pwrBars.push(createPwrBar(`pwrbar-${i}`));
+  }
+  pwrBars.push(createPwrBar('pwrbar-total'));
+  calculateBarLength();
+  updateScales();
 }
 
 /******************************************************************************************
@@ -70,12 +69,11 @@ function initPwrBars()
  */
 function calculateBarLength() 
 {
-    if (pwrBars.length > 0) 
-    {
-        const containerWidth = pwrBars[0].element.querySelector('.bar-container').offsetWidth;
-        barLength = containerWidth - (2 * containerPadding); // Full width minus padding on both sides
-        console.log(`Bar length calculated: ${barLength}px`);
-    }
+  if (pwrBars.length > 0) {
+    const containerWidth = pwrBars[0].element.querySelector('.bar-container').offsetWidth;
+    barLength = containerWidth - (2 * containerPadding); // Full width minus padding on both sides
+    console.log(`Bar length calculated: ${barLength}px`);
+  }
 }
 
 /******************************************************************************************
@@ -89,8 +87,7 @@ function calculateBarLength()
  */
 function determineMaxScale(maxValue, isAmpere) 
 {
-  if (isAmpere) 
-  {
+  if (isAmpere) {
     //console.log("Determining max scale for Ampere ["+maxValue+"]");
     if (Math.abs(maxValue) <   1) return 1;
     if (Math.abs(maxValue) >=  1 && Math.abs(maxValue) <  2) return 2;
@@ -99,8 +96,7 @@ function determineMaxScale(maxValue, isAmpere)
     if (Math.abs(maxValue) >= 10 && Math.abs(maxValue) < 16) return 16;
     return 25;
   } 
-  else 
-  {
+  else {
     //console.log("Determining max scale for Watt ["+maxValue+"]");
     if (Math.abs(maxValue) < 250) return 250;
     if (Math.abs(maxValue) >= 250 && Math.abs(maxValue) < 500) return 500;
@@ -273,13 +269,12 @@ function fetchData() {
           voltage_l3 = data[`voltage_l3`] || 230;
           
           let maxPower = 0;
-          for (let i = 1; i <= PHASES; i++) 
-          {
+          for (let i = 1; i <= PHASES; i++) {
               const delivered = data[`power_delivered_l${i}`] || 0;
               const returned = data[`power_returned_l${i}`] || 0;
               const netPower = returned - delivered; // Negative for delivered, positive for returned
               const voltage = eval(`voltage_l${i}`);
-              const displayValue = currentUnit === 'Amps' ? (netPower * 1000 / voltage) : (netPower * 1000);
+              const displayValue   = currentUnit === 'Amps' ? (netPower * 1000 / voltage) : (netPower * 1000);
               const alternateValue = currentUnit === 'Amps' ? (netPower * 1000) : (netPower * 1000 / voltage);
               maxPower = Math.max(maxPower, Math.abs(displayValue));
               updatePwrBar(pwrBars[i - 1], displayValue);
@@ -291,7 +286,7 @@ function fetchData() {
           const totalReturned = data.power_returned || 0;
           const totalNetPower = totalReturned - totalDelivered;
           const avgVoltage = (voltage_l1 + voltage_l2 + voltage_l3) / 3;
-          const totalDisplayValue = currentUnit === 'Amps' ? (totalNetPower * 1000 / avgVoltage) : (totalNetPower * 1000);
+          const totalDisplayValue   = currentUnit === 'Amps' ? (totalNetPower * 1000 / avgVoltage) : (totalNetPower * 1000);
           const totalAlternateValue = currentUnit === 'Amps' ? (totalNetPower * 1000) : (totalNetPower * 1000 / avgVoltage);
           maxPower = Math.max(maxPower, Math.abs(totalDisplayValue));
           updatePwrBar(pwrBars[3], totalDisplayValue);

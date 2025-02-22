@@ -10,26 +10,12 @@
 */
 #include "timeStuff.h"
 
-
 //===========================================================================================
 void logNtpTime()
 {
-  DebugTf("log NTP Date/Time: %02d-%02d-%04d %02d:%02d:%02d\r\n"
-                                             , localtime(&now)->tm_mday
-                                             , localtime(&now)->tm_mon+1
-                                             , localtime(&now)->tm_year+1900
-                                             , localtime(&now)->tm_hour
-                                             , localtime(&now)->tm_min
-                                             , localtime(&now)->tm_sec);
-  if ((localtime(&now)->tm_hour == 12) || (ntpEventId == 0))
-  {
-    writeToSysLog("NTP Date/Time: %02d-%02d-%04d %02d:%02d:%02d"
-                                             , localtime(&now)->tm_mday
-                                             , localtime(&now)->tm_mon+1
-                                             , localtime(&now)->tm_year+1900
-                                             , localtime(&now)->tm_hour
-                                             , localtime(&now)->tm_min
-                                             , localtime(&now)->tm_sec);
+  DebugTf("log NTP Date/Time: %s\r\n", currentDateTimeString().c_str());
+  if ((localtime(&now)->tm_hour == 12) || (ntpEventId == 0)) {
+    writeToSysLog("NTP Date/Time: %s", currentDateTimeString().c_str());
   }
   //ntpEventId = setEvent(logNtpTime, now()+3600);
 
@@ -41,19 +27,13 @@ void saveTimestamp(const char *timeStamp)
 {
   //-- save this timestamp as "previous timestamp"
   prevTlgrmTime = lastTlgrmTime;
-  if (prevTlgrmTime.Year < 2000)
-  {
-    prevTlgrmTime = buildTimeStruct(lastTlgrmTime.Timestamp, devSetting->NoHourSlots
-                                                         , devSetting->NoDaySlots 
-                                                         , devSetting->NoMonthSlots);
+  if (prevTlgrmTime.Year < 2000) {
+    prevTlgrmTime = buildTimeStruct(lastTlgrmTime.Timestamp, devSetting->NoHourSlots, devSetting->NoDaySlots, devSetting->NoMonthSlots);
   }
   //-- fill all other fields
   strlcpy(lastTlgrmTime.Timestamp, timeStamp, _TIMESTAMP_LEN);
-  lastTlgrmTime = buildTimeStruct(lastTlgrmTime.Timestamp, devSetting->NoHourSlots
-                                                         , devSetting->NoDaySlots 
-                                                         , devSetting->NoMonthSlots);
+  lastTlgrmTime = buildTimeStruct(lastTlgrmTime.Timestamp, devSetting->NoHourSlots, devSetting->NoDaySlots, devSetting->NoMonthSlots);
   DebugTf("prevTlgrmTime[%s], lastTlgrmTime[%s]\r\n", prevTlgrmTime.Timestamp, lastTlgrmTime.Timestamp);
-
 } //  saveTimestamp()
 
 
@@ -83,17 +63,15 @@ void saveTimestamp(const char *timeStamp)
 //===========================================================================================
 void fillMissingTimestamp(char *timestamp) 
 {
-    const char *defaultFill[] = 
-    {
+  const char *defaultFill[] = {
         "010101010101", "10101010101", "0101010101", "101010101", 
         "01010101", "1010101", "010101", "10101", 
         "0101", "101", "01", "1"
-    };
-    size_t len = strlen(timestamp);
-    if (len < 12) 
-    {
-        strlcat(timestamp, defaultFill[len], _TIMESTAMP_LEN);
-    }
+  };
+  size_t len = strlen(timestamp);
+  if (len < 12) {
+    strlcat(timestamp, defaultFill[len], _TIMESTAMP_LEN);
+  }
 } // fillMissingTimestamp()
 
 //===========================================================================================
@@ -106,32 +84,27 @@ void fillMissingTimestamp(char *timestamp)
 // @return The number of days in the given month of the given year.
 int daysInMonth(int year, int month) 
 {
-    static const int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-    if (month == 1) //-- February
-    { 
-        if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
-            return 29;
-        }
+  static const int days[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  if (month == 1) { //-- February
+    if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) {
+      return 29;
     }
-    return days[month];
-
+  }
+  return days[month];
 } // daysInMonth()
 
 //===========================================================================================
 // Helper function to calculate days since epoch (January 1, 1970)
 int daysSinceEpoch(int year, int month, int day) 
 {
-    int days = 0;
-    for (int y = 1970; y < year; ++y) 
-    {
-        days += 365 + (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0));
-    }
-    for (int m = 0; m < month - 1; ++m) 
-    {
-        days += daysInMonth(year, m);
-    }
-    return days + day - 1;
-
+  int days = 0;
+  for (int y = 1970; y < year; ++y) {
+    days += 365 + (y % 4 == 0 && (y % 100 != 0 || y % 400 == 0));
+  }
+  for (int m = 0; m < month - 1; ++m) {
+    days += daysInMonth(year, m);
+  }
+  return days + day - 1;
 } // daysSinceEpoch()
 
 //===========================================================================================
@@ -139,7 +112,7 @@ timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType)
 {
   timeStruct newTime = useTime;  // Initialize newTime with useTime to keep all fields
 
-  if (Verbose2) DebugTf("calculateTime[%s], units[%d], ringType[%d]\n", useTime.Timestamp, units, ringType);
+  if (Verbose2) { DebugTf("calculateTime[%s], units[%d], ringType[%d]\n", useTime.Timestamp, units, ringType); }
   
   // Parse useTime.Timestamp
   int year, month, day, hour, minute, second;
@@ -152,8 +125,7 @@ timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType)
   year += 2000;
 
   // Adjust time based on units and ringType
-  switch(ringType)
-  {
+  switch(ringType) {
     case RNG_HOURS:
         hour += units;
         while (hour >= 24) 
@@ -297,34 +269,29 @@ timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType)
 //===========================================================================================
 timeStruct buildTimeStruct(const char *timeStamp, uint16_t maxHourSlots, uint16_t maxDaySlots, uint16_t maxMonthSlots) 
 {
-    struct tm  timeInfo = {0};
-    timeStruct thisTime = {0};
+  struct tm  timeInfo = {0};
+  timeStruct thisTime = {0};
 
-    if (Verbose2)
-        DebugTf("--->given.timeStamp[%s], maxHourSlot[%2d], maxDaySlot[%2d], maxMonthSlot[%2d]\r\n", timeStamp
-                                                                                   , maxHourSlots
-                                                                                   , maxDaySlots
-                                                                                   , maxMonthSlots);
+  if (Verbose2) {
+    DebugTf("--->given.timeStamp[%s], maxHourSlot[%2d], maxDaySlot[%2d], maxMonthSlot[%2d]\r\n", timeStamp, maxHourSlots, maxDaySlots, maxMonthSlots);
+  }
+  // Ensure valid slots
+  if (maxHourSlots  < _NO_HOUR_SLOTS_)  { maxHourSlots   = _NO_HOUR_SLOTS_; }
+  if (maxDaySlots   < _NO_DAY_SLOTS_)   { maxDaySlots    = _NO_DAY_SLOTS_; }
+  if (maxMonthSlots < _NO_MONTH_SLOTS_) { maxMonthSlots  = _NO_MONTH_SLOTS_; }
     
-    // Ensure valid slots
-    if (maxHourSlots  < _NO_HOUR_SLOTS_)   maxHourSlots   = _NO_HOUR_SLOTS_;
-    if (maxDaySlots   < _NO_DAY_SLOTS_)    maxDaySlots    = _NO_DAY_SLOTS_;
-    if (maxMonthSlots < _NO_MONTH_SLOTS_)  maxMonthSlots  = _NO_MONTH_SLOTS_;
-    
-    // Copy the timestamp and fill missing parts
-    strncpy(thisTime.Timestamp, timeStamp, _TIMESTAMP_LEN - 1);
-    thisTime.Timestamp[_TIMESTAMP_LEN - 1] = '\0';
-    fillMissingTimestamp(thisTime.Timestamp);
+  // Copy the timestamp and fill missing parts
+  strncpy(thisTime.Timestamp, timeStamp, _TIMESTAMP_LEN - 1);
+  thisTime.Timestamp[_TIMESTAMP_LEN - 1] = '\0';
+  fillMissingTimestamp(thisTime.Timestamp);
 
-    thisTime = calculateTime(thisTime, 0, RNG_HOURS);
+  thisTime = calculateTime(thisTime, 0, RNG_HOURS);
 
-    if (Verbose1)
-        DebugTf("returning.timeStamp[%s],    hourSlot[%2d],    daySlot[%2d],    monthSlot[%2d]\r\n", thisTime.Timestamp
-                                                                                      , thisTime.hourSlot
-                                                                                      , thisTime.daySlot
-                                                                                      , thisTime.monthSlot);
-    return thisTime;
-    
+  if (Verbose1) {
+    DebugTf("returning.timeStamp[%s],    hourSlot[%2d],    daySlot[%2d],    monthSlot[%2d]\r\n", 
+      thisTime.Timestamp, thisTime.hourSlot, thisTime.daySlot, thisTime.monthSlot);
+  }
+  return thisTime;
 } //  buildTimeStruct()
 
 
@@ -333,7 +300,7 @@ String buildDateTimeString(const char *timeStamp, int len)
 {
   String tmpTS = String(timeStamp);
   String DateTime = "";
-  if (len < 12) return String(timeStamp);
+  if (len < 12) { return String(timeStamp); }
   DateTime   = "20" + tmpTS.substring(0, 2);    // YY
   DateTime  += "-"  + tmpTS.substring(2, 4);    // MM
   DateTime  += "-"  + tmpTS.substring(4, 6);    // DD
@@ -341,23 +308,7 @@ String buildDateTimeString(const char *timeStamp, int len)
   DateTime  += ":"  + tmpTS.substring(8, 10);   // MM
   DateTime  += ":"  + tmpTS.substring(10, 12);  // SS
   return DateTime;
-
 } // buildDateTimeString()
-
-
-//===========================================================================================
-void epochToTimestamp(time_t t, char *ts, int8_t len)
-{
-  if (len < 12)
-  {
-    strlcpy(ts, "Error", len);
-    return;
-  }
-  //------------yy  mm  dd  hh  mm  ss
-  snprintf(ts, len, "%02d%02d%02d%02d%02d%02d", localtime(&now)->tm_year-2000, localtime(&now)->tm_mon, localtime(&now)->tm_mday
-          , localtime(&now)->tm_hour, localtime(&now)->tm_min, localtime(&now)->tm_sec);
-
-} // epochToTimestamp()
 
 
 //===========================================================================================
@@ -368,7 +319,6 @@ int8_t MinuteFromTimestamp(const char *timeStamp)
   // YYMMDDHHmmss MM = 8-9
   strCpyFrm(aMM, 4, timeStamp, 8, 9);
   return String(aMM).toInt();
-
 } // MinuteFromTimestamp()
 
 //===========================================================================================
@@ -379,7 +329,6 @@ int8_t HourFromTimestamp(const char *timeStamp)
   strCpyFrm(aHH, 4, timeStamp, 6, 7);
   //Debugf("aHH[%s], nHH[%02d]\r\n", aHH, String(aHH).toInt());
   return String(aHH).toInt();
-
 } // HourFromTimestamp()
 
 //===========================================================================================
@@ -390,7 +339,6 @@ int8_t DayFromTimestamp(const char *timeStamp)
   // YYMMDDHHmmss DD = 4-5
   strCpyFrm(aDD, 4, timeStamp, 4, 5);
   return String(aDD).toInt();
-
 } // DayFromTimestamp()
 
 //===========================================================================================
@@ -401,7 +349,6 @@ int8_t MonthFromTimestamp(const char *timeStamp)
   // YYMMDDHHmmss MM = 2-3
   strCpyFrm(aMM, 4, timeStamp, 2, 3);
   return String(aMM).toInt();
-
 } // MonthFromTimestamp()
 
 //===========================================================================================
@@ -412,7 +359,6 @@ int8_t YearFromTimestamp(const char *timeStamp)
   // YYMMDDHHmmss YY = 0-1
   strCpyFrm(aYY, 4, timeStamp, 0, 1);
   return String(aYY).toInt();
-
 } // YearFromTimestamp()
 
 
@@ -426,8 +372,7 @@ time_t epoch(const char *timeStamp, int8_t len, bool syncTime)
   DebugTf("calculate epoch() from [%s]\r\n", timeStamp);
 
   strlcat(fullTimeStamp, timeStamp, _TIMESTAMP_LEN);
-  if (Verbose2) 
-    DebugTf("epoch(%s) strlen([%d])\r\n", fullTimeStamp, strlen(fullTimeStamp));
+  if (Verbose2) { DebugTf("epoch(%s) strlen([%d])\r\n", fullTimeStamp, strlen(fullTimeStamp)); }
   switch(strlen(fullTimeStamp))
   {
     case  4:  //--- timeStamp is YYMM
@@ -469,9 +414,28 @@ time_t epoch(const char *timeStamp, int8_t len, bool syncTime)
   time_t savEpoch = time(0);  // Save current epoch time
 
   return nT;
-
 } // epoch()
 
+
+// Get current date/time, format is YYYY-MM-DD.HH:mm:ss
+String currentDateTimeString() {
+  time_t     time_now = time(NULL);
+  struct tm  tstruct;
+  char       buf[80];
+
+  localtime_r(&time_now, &tstruct);
+  strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tstruct);
+
+  return buf;
+}
+
+int currentMinutes () {
+  time_t     time_now = time(NULL);
+  struct tm  tstruct;
+
+  localtime_r(&now, &tstruct);
+  return (tstruct.tm_hour * 60) + tstruct.tm_min;
+}
 
 /***************************************************************************
 *
@@ -493,5 +457,4 @@ time_t epoch(const char *timeStamp, int8_t len, bool syncTime)
 * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
 * OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-ipGateway[0*
 ***************************************************************************/

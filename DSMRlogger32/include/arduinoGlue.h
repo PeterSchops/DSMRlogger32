@@ -488,72 +488,77 @@ enum runStates { SInit, SMonth, SDay, SHour, SNormal };
 enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_IS_CONNECTED, MQTT_STATE_ERROR };
 
 using MyData = ParsedData<
-               /* String */  identification
-               /* String */, p1_version
-               /* String */, p1_version_be
-               /* String */, timestamp
-               /* String */, equipment_id
-               /* FixedValue */, energy_delivered_tariff1
-               /* FixedValue */, energy_delivered_tariff2
-               /* FixedValue */, energy_returned_tariff1
-               /* FixedValue */, energy_returned_tariff2
-               /* String */, electricity_tariff
-               /* FixedValue */, power_delivered
-               /* FixedValue */, power_returned
-               /* FixedValue */, electricity_threshold
-               /* uint8_t */, electricity_switch_position
-               /* uint32_t */, electricity_failures
-               /* uint32_t */, electricity_long_failures
-               /* String */, electricity_failure_log
-               /* uint32_t */, electricity_sags_l1
-               /* uint32_t */, electricity_sags_l2
-               /* uint32_t */, electricity_sags_l3
-               /* uint32_t */, electricity_swells_l1
-               /* uint32_t */, electricity_swells_l2
-               /* uint32_t */, electricity_swells_l3
-               /* String */, message_short
-               /* String */ //         ,message_long // this one is too big and will crash the MCU
-               /* FixedValue */, voltage_l1
-               /* FixedValue */, voltage_l2
-               /* FixedValue */, voltage_l3
-               /* FixedValue */, current_l1
-               /* FixedValue */, current_l2
-               /* FixedValue */, current_l3
-               /* FixedValue */, power_delivered_l1
-               /* FixedValue */, power_delivered_l2
-               /* FixedValue */, power_delivered_l3
-               /* FixedValue */, power_returned_l1
-               /* FixedValue */, power_returned_l2
-               /* FixedValue */, power_returned_l3
-               /* uint16_t */, mbus1_device_type
-               /* String */, mbus1_equipment_id_tc
-               /* String */, mbus1_equipment_id_ntc
-               /* uint8_t */, mbus1_valve_position
-               /* TimestampedFixedValue */, mbus1_delivered
-               /* TimestampedFixedValue */, mbus1_delivered_ntc
-               /* TimestampedFixedValue */, mbus1_delivered_dbl
-               /* uint16_t */, mbus2_device_type
-               /* String */, mbus2_equipment_id_tc
-               /* String */, mbus2_equipment_id_ntc
-               /* uint8_t */, mbus2_valve_position
-               /* TimestampedFixedValue */, mbus2_delivered
-               /* TimestampedFixedValue */, mbus2_delivered_ntc
-               /* TimestampedFixedValue */, mbus2_delivered_dbl
-               /* uint16_t */, mbus3_device_type
-               /* String */, mbus3_equipment_id_tc
-               /* String */, mbus3_equipment_id_ntc
-               /* uint8_t */, mbus3_valve_position
-               /* TimestampedFixedValue */, mbus3_delivered
-               /* TimestampedFixedValue */, mbus3_delivered_ntc
-               /* TimestampedFixedValue */, mbus3_delivered_dbl
-               /* uint16_t */, mbus4_device_type
-               /* String */, mbus4_equipment_id_tc
-               /* String */, mbus4_equipment_id_ntc
-               /* uint8_t */, mbus4_valve_position
-               /* TimestampedFixedValue */, mbus4_delivered
-               /* TimestampedFixedValue */, mbus4_delivered_ntc
-               /* TimestampedFixedValue */, mbus4_delivered_dbl
-               >;
+              identification,              /* String */
+              p1_version,                  /* String */ 
+              p1_version_be,               /* String 0-0:96.1.4(50221) */
+              //grid_configuration,          /* String 1-0:94.32.1(400) */
+              timestamp,                   /* String 0-0:1.0.0(250219234430W) */
+              equipment_id,                /* String 0-0:96.1.1() */
+              peak_pwr_last_q,             /* FixedValue 1-0:1.4.0() */
+              highest_peak_pwr,            /* TimestampedFixedValue 1-0:1.6.0() */
+              energy_delivered_tariff1,    /* FixedValue 1-0:1.8.1(000224.375*kWh) */
+              energy_delivered_tariff2,    /* FixedValue 1-0:1.8.2(000361.948*kWh) */ 
+              energy_returned_tariff1,     /* FixedValue 1-0:2.8.1(000172.963*kWh) */
+              energy_returned_tariff2,     /* FixedValue 1-0:2.8.2(000082.945*kWh) */
+              electricity_tariff,          /* String 0-0:96.14.0(0002) */
+              power_delivered,             /* FixedValue 1-0:1.7.0(00.378*kW) */ 
+              power_returned,              /* FixedValue 1-0:2.7.0(00.000*kW) */
+              electricity_threshold,       /* FixedValue */
+              electricity_switch_position, /* uint8_t */
+              electricity_failures,        /* uint32_t */
+              electricity_long_failures,   /* uint32_t */
+              electricity_failure_log,     /* String */
+              electricity_sags_l1,         /* uint32_t */
+              electricity_sags_l2,         /* uint32_t */ 
+              electricity_sags_l3,         /* uint32_t */
+              electricity_swells_l1,       /* uint32_t */
+              electricity_swells_l2,       /* uint32_t */ 
+              electricity_swells_l3,       /* uint32_t */
+              message_short,               /* String */
+              // message_long              /* String this one is too big and will crash the MCU */
+              voltage_l1,                  /* FixedValue 1-0:32.7.0(239.2*V) */
+              voltage_l2,                  /* FixedValue 1-0:52.7.0(240.3*V) */
+              voltage_l3,                  /* FixedValue 1-0:72.7.0(240.9*V) */
+              current_l1,                  /* FixedValue 1-0:31.7.0(000.32*A) */
+              current_l2,                  /* FixedValue 1-0:51.7.0(000.55*A) */
+              current_l3,                  /* FixedValue 1-0:71.7.0(000.99*A) */
+              power_delivered_l1,          /* FixedValue 1-0:21.7.0(00.061*kW) */
+              power_delivered_l2,          /* FixedValue 1-0:41.7.0(00.112*kW) */
+              power_delivered_l3,          /* FixedValue 1-0:61.7.0(00.205*kW) */
+              power_returned_l1,           /* FixedValue 1-0:22.7.0(00.000*kW) */
+              power_returned_l2,           /* FixedValue 1-0:42.7.0(00.000*kW) */
+              power_returned_l3,           /* FixedValue 1-0:62.7.0(00.000*kW) */
+              //electricity_switch_position, /* uint8_t 0-0:96.3.10(1) */
+              //electricity_threshold,       /* FixedValue  0-0:17.0.0(99.999*kW) */
+              mbus1_device_type,           /* uint16_t 0-1:24.1.0(003) */
+              mbus1_equipment_id_tc,       /* String */
+              mbus1_equipment_id_ntc,      /* String 0-1:96.1.1(37414D5832313234323038373434) */
+              mbus1_valve_position,        /* uint8_t 0-1:24.4.0(1) */
+              mbus1_delivered,             /* TimestampedFixedValue */
+              mbus1_delivered_ntc,         /* TimestampedFixedValue 0-1:24.2.3(250219234154W)(00000.014*m3) */
+              mbus1_delivered_dbl,         /* TimestampedFixedValue */
+              mbus2_device_type,           /* uint16_t 0-2:24.1.0(007) */
+              mbus2_equipment_id_tc,       /* String */
+              mbus2_equipment_id_ntc,      /* String 0-2:96.1.1(3853455430303130323038353939) */
+              mbus2_valve_position,        /* uint8_t */
+              mbus2_delivered,             /* TimestampedFixedValue 0-2:24.2.1(250219233900W)(00000.542*m3) */
+              mbus2_delivered_ntc,         /* TimestampedFixedValue */
+              mbus2_delivered_dbl,         /* TimestampedFixedValue */
+              mbus3_device_type,           /* uint16_t */
+              mbus3_equipment_id_tc,       /* String */
+              mbus3_equipment_id_ntc,      /* String */
+              mbus3_valve_position,        /* uint8_t */
+              mbus3_delivered,             /* TimestampedFixedValue */
+              mbus3_delivered_ntc,         /* TimestampedFixedValue */
+              mbus3_delivered_dbl,         /* TimestampedFixedValue */
+              mbus4_device_type,           /* uint16_t */
+              mbus4_equipment_id_tc,       /* String */
+              mbus4_equipment_id_ntc,      /* String */
+              mbus4_valve_position,        /* uint8_t */
+              mbus4_delivered,             /* TimestampedFixedValue */
+              mbus4_delivered_ntc,         /* TimestampedFixedValue */
+              mbus4_delivered_dbl          /* TimestampedFixedValue */
+              >;
 
 //-- not used extern MyData      DSMRdata;
 
@@ -746,10 +751,7 @@ void saveTimestamp(const char *timeStamp);
 timeStruct buildTimeStruct(const char *timeStamp, uint16_t hourSlots , uint16_t daySlots , uint16_t monthSlots);
 //-- Used in: timeStuff.cpp, FSYSstuff.cpp
 timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType);
-//-- Used in: processTelegram.cpp, timeStuff.cpp
-String buildDateTimeString(const char *timeStamp, int len); 
-//-- Used in: handleTestdata.cpp, timeStuff.cpp
-void epochToTimestamp(time_t t, char *ts, int8_t len);      
+
 //-- from FSmanager.ino -----------
 //-- Used in: FSmanager.cpp, DSMRlogger32.cpp
 void setupFSmanager();                                      

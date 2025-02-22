@@ -22,19 +22,17 @@ void setupFileSystem()
 #else
   DebugTln("USING [LittleFS] as Filesystem!");
 #endif
-  if (_FSYS.begin())
-  {
+  if (_FSYS.begin()) {
     #ifdef _SPIFFS
-        DebugTln("SPIFFS Mount succesfull!");
+      DebugTln("SPIFFS Mount succesfull!");
     #else
-        DebugTln("LittleFS Mount succesfull!");
+      DebugTln("LittleFS Mount succesfull!");
     #endif
     File nF = _FSYS.open("/!doNotFormat", "w");
     nF.close();
     filesysMounted = true;
   }
-  else
-  {
+  else {
     //-- Serious problem with the Filesystem
     #ifdef _SPIFFS
       DebugTln("SPIFFS Mount failed!");
@@ -54,8 +52,7 @@ void setupSysLogger(const char* versionInfo)
   //sysLog.setDebugLvl(4);
   //sysLog.setOutput(&Serial, 115200);
 
-  if (!sysLog.begin(_SYSLOG_LINES, _SYSLOG_LINE_LEN)) 
-  {
+  if (!sysLog.begin(_SYSLOG_LINES, _SYSLOG_LINE_LEN)) {
     DebugTln("sysLog.begin() error!");
     delay(1000);
   }
@@ -63,7 +60,6 @@ void setupSysLogger(const char* versionInfo)
   writeToSysLog("-- new start ------------------------------------");                         
   //writeToSysLog("**** Booting....[%s]", String(_FW_VERSION).c_str());
   writeToSysLog("**** Booting....[%s]", versionInfo);
-  
 } //  setupSysLogger()
 
 
@@ -76,10 +72,10 @@ void setupPsram()
   int32_t PsramStart = ESP.getFreePsram();
   int32_t PsramEnd;
 
-  DebugTf("Total Psram [%d bytes], Used [%d bytes], Psram Free [%d bytes]\r\n"
-                       , ESP.getPsramSize()
-                                        , (ESP.getPsramSize() - ESP.getFreePsram())
-                                                               , ESP.getFreePsram());
+  DebugTf("Total Psram [%d bytes], Used [%d bytes], Psram Free [%d bytes]\r\n",
+                        ESP.getPsramSize(),
+                       (ESP.getPsramSize() - ESP.getFreePsram()),
+                        ESP.getFreePsram());
   
   tlgrmTmpData = (char *) ps_malloc(_TLGRM_LEN);
   PsramEnd     = ESP.getFreePsram();
@@ -154,11 +150,10 @@ void setupPsram()
   //DebugTf("Used [%d]bytes, Psram Free [%d]bytes [after]\r\n", (PsramStart - PsramEnd), ESP.getFreePsram() );
   PsramStart  = PsramEnd;
 
-  DebugTf("Total Psram [%d bytes], Used [%d bytes], Psram Free [%d bytes]\r\n"
-                       , ESP.getPsramSize()
-                                        , (ESP.getPsramSize() - ESP.getFreePsram())
-                                                               , ESP.getFreePsram());
-
+  DebugTf("Total Psram [%d bytes], Used [%d bytes], Psram Free [%d bytes]\r\n",
+                        ESP.getPsramSize(),
+                       (ESP.getPsramSize() - ESP.getFreePsram()),
+                        ESP.getFreePsram());
 } //setupPsram()
 
 
@@ -168,12 +163,9 @@ bool setupIsFsPopulated()
 {
   bool tmpError = false;
   
-  if (DSMRfileExist(devSetting->IndexPage, __FUNCTION__, false) )
-  {
-    if (strcmp(devSetting->IndexPage, "DSMRindex.html") != 0)
-    {
-      if (devSetting->IndexPage[0] != '/')
-      {
+  if (DSMRfileExist(devSetting->IndexPage, __FUNCTION__, false)) {
+    if (strcmp(devSetting->IndexPage, "DSMRindex.html") != 0) {
+      if (devSetting->IndexPage[0] != '/') {
         char tempPage[50] = "/";
 #ifdef _LITTLEFS
         tempPage[0] = '/';
@@ -181,31 +173,28 @@ bool setupIsFsPopulated()
         strlcat(tempPage, devSetting->IndexPage, _INDEXPAGE_LEN);
         strlcpy(devSetting->IndexPage, tempPage, _INDEXPAGE_LEN);
       }
-      hasAlternativeIndex        = true;
+      hasAlternativeIndex = true;
     }
-    else  hasAlternativeIndex    = false;
+    else {
+      hasAlternativeIndex = false;
+    }
   }
-  if (!hasAlternativeIndex && !DSMRfileExist("DSMRindex.html", __FUNCTION__, false) )
-  {
+  if (!hasAlternativeIndex && !DSMRfileExist("DSMRindex.html", __FUNCTION__, false)) {
     tmpError = true;
   }
-  if (!hasAlternativeIndex)    //--- there's no alternative index.html
-  {
+  if (!hasAlternativeIndex) {   //--- there's no alternative index.html
     DSMRfileExist("DSMRindex.js",    __FUNCTION__, false);
     DSMRfileExist("DSMRindex.css",   __FUNCTION__, false);
     DSMRfileExist("DSMRgraphics.js", __FUNCTION__, false);
   }
-  if (!DSMRfileExist("FSmanager.html", __FUNCTION__, true))
-  {
+  if (!DSMRfileExist("FSmanager.html", __FUNCTION__, true)) {
     tmpError = true;
   }
-  if (!DSMRfileExist("FSmanager.css", __FUNCTION__, true))
-  {
+  if (!DSMRfileExist("FSmanager.css", __FUNCTION__, true)) {
     tmpError = true;
   }
 
   return tmpError;
-  
 } //  setupIsFsPopulated()
 
 

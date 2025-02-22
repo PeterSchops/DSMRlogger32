@@ -109,7 +109,6 @@ input {
   -webkit-flex-flow: column wrap;
   justify-content: flex-start;
   margin-top: 10px;
-
 }
 
 /*--------------------- N A V - B A R -----------------*/
@@ -216,7 +215,7 @@ input {
 .right-0  {right: 0; padding-right: 10px; }
 .left-0   {left:  0; padding-left:  10px; }
             
-/* --- next 4 are for the API doc page -------- */
+// --- next 4 are for the API doc page -------- 
 .div1 { 
   float: left;  
   margin-left: 20px; 

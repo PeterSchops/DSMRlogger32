@@ -9,7 +9,7 @@
 ***************************************************************************
 */
 #include "restAPI.h"
-
+#include "timeStuff.h"
 
 //=======================================================================
 void processAPI()
@@ -20,95 +20,79 @@ void processAPI()
 
   strlcpy( URI, httpServer.uri().c_str(), sizeof(URI) );
 
-  if (httpServer.method() == HTTP_GET)
-        DebugTf("from[%s] URI[%s] method[GET] \r\n"
-                  , httpServer.client().remoteIP().toString().c_str()
-                  , URI);
-  else  DebugTf("from[%s] URI[%s] method[PUT] \r\n"
-                  , httpServer.client().remoteIP().toString().c_str()
-                  , URI);
-
-  if (ESP.getFreeHeap() < 8500) // to prevent firmware from crashing!
-  {
+  if (httpServer.method() == HTTP_GET) {
+    DebugTf("from[%s] URI[%s] method[GET] \r\n", httpServer.client().remoteIP().toString().c_str(), URI);
+  }
+  else {
+    DebugTf("from[%s] URI[%s] method[PUT] \r\n", httpServer.client().remoteIP().toString().c_str(), URI);
+  }
+  if (ESP.getFreeHeap() < 8500) {  // to prevent firmware from crashing!
     DebugTf("==> Bailout due to low heap (%d bytes))\r\n", ESP.getFreeHeap() );
-    writeToSysLog("from[%s][%s] Bailout low heap (%d bytes)"
-                        , httpServer.client().remoteIP().toString().c_str()
-                        , URI
-                        , ESP.getFreeHeap() );
+    writeToSysLog("from[%s][%s] Bailout low heap (%d bytes)", httpServer.client().remoteIP().toString().c_str(), URI, ESP.getFreeHeap() );
     httpServer.send(500, "text/plain", "500: internal server error (low heap)\r\n");
     return;
   }
 
   int8_t wc = splitString(URI, '/', words, 10);
 
-  if (Verbose2)
-  {
+  if (Verbose2) {
     DebugT(">>");
-    for (int w=0; w<wc; w++)
-    {
+    for (int w=0; w<wc; w++) {
       Debugf("word[%d] => [%s], ", w, words[w].c_str());
     }
     Debugln(" ");
   }
 
-  if (words[1] != "api" || words[2] != "v2")
-  {
+  if ((words[1] != "api") or (words[2] != "v2")) {
     //-- I will only serve v2 version
     sendApiNotFound(URI);
     return;
   }
 
-  if (words[3] == "sm")
-  {
+  if (words[3] == "sm") {
     processApiV2Sm(words[4].c_str(), words[5].c_str());
     return;
   } //-- api/v2/sm ...
 
   //-- api/v2/dev ..
-  if (words[3] == "dev")
-  {
+  if (words[3] == "dev") {
     processApiV2Dev(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
     return;
   }
 
   //-- api/v2/shield ..
-  if (words[3] == "shield")
-  {
+  if (words[3] == "shield") {
     processApiV2Shield(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
     return;
   }
 
   //-- api/v2/hist ..
-  if (words[3] == "hist")
-  {
+  if (words[3] == "hist") {
     processApiV2Hist(URI, words[4].c_str(), words[5].c_str(), words[6].c_str());
     return;
   }
   //-- unknown api call
   sendApiNotFound(URI);
-
 } // processAPI()
 
 
 //====================================================
 void processApiV2Sm(const char* apiId, const char* oneField)
 {
-  if (strcmp(apiId, "actual") == 0)
-  {
-    //--- new api. 
+  //-- api/v2/sm/actual
+  if (strcmp(apiId, "actual") == 0) {
     onlyIfPresent = true;
     copyToFieldsArray(actualArray, actualElements);
     sendJsonV2smApi(apiId);
     return;
   }
-  //-- api/v2/sm
-  if (strcmp(apiId, "fields") == 0)
-  {
+
+  //-- api/v2/sm/fields
+  if (strcmp(apiId, "fields") == 0) {
     //--- new api. 
     onlyIfPresent = false;
     memset(fieldsArray, 0, sizeof(fieldsArray));
-    if (strlen(oneField) > 1)
-    {
+    if (strlen(oneField) > 1) {
       DebugTf("apiID[%s], oneField[%s]\r\n", apiId, oneField);
       strlcpy(fieldsArray[0], "timestamp", 34);
       strlcpy(fieldsArray[1], oneField, 34);
@@ -117,19 +101,18 @@ void processApiV2Sm(const char* apiId, const char* oneField)
     sendJsonV2smApi(apiId);
     return;
   }
-  if (strcmp(apiId, "info") == 0)
-  {
+
+  //-- api/v2/sm/info
+  if (strcmp(apiId, "info") == 0) {
     onlyIfPresent = true;
     copyToFieldsArray(infoArray, infoElements);
     sendJsonV2smApi(apiId);
     return;
   }
 
-  if (strcmp(apiId, "settings") == 0)
-  {
-    //--- new api. 
-    if (httpServer.method() == HTTP_PUT || httpServer.method() == HTTP_POST)
-    {
+  //-- api/v2/sm/settings
+  if (strcmp(apiId, "settings") == 0) {
+    if ((httpServer.method() == HTTP_PUT) || (httpServer.method() == HTTP_POST)) {
       //------------------------------------------------------------
       // json string: {"name":"Interval","value":9}
       // json string: {"name":"TelegramInterval","value":123.45}
@@ -149,25 +132,24 @@ void processApiV2Sm(const char* apiId, const char* oneField)
       httpServer.send(200, "application/json", httpServer.arg(0));
       writeToSysLog("DSMReditor: Slimme Meter Field[%s] changed to [%s]", field, newValue);
     }
-    else
-    {
+    else {
       sendSMsettings();
     }
     return;
   }
 
-  if (strcmp(apiId, "telegram") == 0)
-  {
+  //-- api/v2/sm/telegram
+  if (strcmp(apiId, "telegram") == 0) {
     int16_t thisCRC=CRC16(0x0000, (unsigned char *) tlgrmRaw, strlen(tlgrmRaw));
     char crcChar[10] = {};
     snprintf(crcChar, sizeof(crcChar), "!%04x\r\n", (0xffff & thisCRC));
     strlcat(tlgrmRaw, crcChar, _TLGRM_LEN);
-    if (Verbose1) 
+    if (Verbose1) {
       DebugTf("Telegram (%d chars):\r\n%s", strlen(tlgrmRaw), tlgrmRaw);
+    }
     httpServer.send(200, "application/plain", tlgrmRaw);
     return;
   }
-
 } //  processApiV2Sm()
 
 
@@ -175,14 +157,12 @@ void processApiV2Sm(const char* apiId, const char* oneField)
 void processApiV2Dev(const char *URI, const char *apiId, const char *word5, const char *word6)
 {
   DebugTf("apiId[%s], word5[%s], word6[%s]\r\n", apiId, word5, word6);
-  if (strcmp(apiId, "info") == 0)
-  {
+  if (strcmp(apiId, "info") == 0) {
     sendDeviceInfo();
     return;
   }
   
-  if (strcmp(apiId, "time") == 0)
-  {
+  if (strcmp(apiId, "time") == 0) {
     sendDeviceTime();
     return;
   }
@@ -274,11 +254,9 @@ void processApiV2Dev(const char *URI, const char *apiId, const char *word5, cons
     return;
   }
 
-  if (strcmp(apiId, "shield") == 0)
-  {
+  if (strcmp(apiId, "shield") == 0) {
     DebugTln("Handle /api/v2/dev/shield..");
-    if (httpServer.method() == HTTP_PUT || httpServer.method() == HTTP_POST)
-    {
+    if ((httpServer.method() == HTTP_PUT) || (httpServer.method() == HTTP_POST)) {
       //------------------------------------------------------------
       // json string: {"name":"mqtt_broker","value":"192.168.1.2"}
       // json string: {"name":"mqtt_interval","value":12}
@@ -295,26 +273,24 @@ void processApiV2Dev(const char *URI, const char *apiId, const char *word5, cons
       //-- convert HH:MM to minutes
       String fieldName = doc["name"];
       String fieldValue = {};
-      if ((fieldName.substring(0, 16) == "shld_activeStart") || (fieldName.substring(0, 15) == "shld_activeStop"))
-      {
+      if ((fieldName.substring(0, 16) == "shld_activeStart") || (fieldName.substring(0, 15) == "shld_activeStop")) {
         DebugTf("... Found [%s]\r\n", fieldName.c_str());
         fieldValue = doc["value"].as<String>();
         // Split the string into hours and minutes
         int separatorIndex = fieldValue.indexOf(':');
-        uint8_t hours = fieldValue.substring(0, separatorIndex).toInt();    // Extract hours part
-        uint8_t minutes = fieldValue.substring(separatorIndex + 1).toInt(); // Extract minutes part
+        uint8_t hours   = static_cast<uint8_t>(fieldValue.substring(0, separatorIndex).toInt());  // Extract hours part
+        uint8_t minutes = static_cast<uint8_t>(fieldValue.substring(separatorIndex + 1).toInt()); // Extract minutes part
         // Convert HH:MM back to minutes
         uint16_t tmpValue = (hours * 60) + minutes;
         doc["value"] = String(tmpValue);
         DebugTf("[%s]: set to newValue[%d/%s]\r\n", fieldName, tmpValue, doc["value"].as<String>().c_str());
       }
-      if (fieldName.substring(0, 12) == "shld_GPIOpin") 
-      {
+      if (fieldName.substring(0, 12) == "shld_GPIOpin") {
         DebugTf("... Found [%s]\r\n", fieldName.c_str());
         int8_t fieldInt8 = doc["value"].as<int>();
-        if (fieldInt8 < 0)  fieldInt8 = -1;
-        else if (fieldInt8 > 13) fieldInt8 = 14;
-        else fieldInt8 = 13;
+        if      (fieldInt8 < 0)  { fieldInt8 = -1; }
+        else if (fieldInt8 > 13) { fieldInt8 = 14; }
+        else                     { fieldInt8 = 13; }
         doc["value"] = String(fieldInt8);
         DebugTf("[%s]: set to newValue[%d/%s]\r\n", fieldName, fieldInt8, doc["value"].as<String>().c_str());
       }
@@ -327,21 +303,18 @@ void processApiV2Dev(const char *URI, const char *apiId, const char *word5, cons
       memset(newValue, 0, sizeof(newValue));
       httpServer.send(200, "application/json", httpServer.arg(0));
     }
-    else
-    {
+    else {
       sendShieldSettings();
     }
     return;
   }
   
-  if (strcmp(apiId, "debug") == 0)
-  {
+  if (strcmp(apiId, "debug") == 0) {
     sendDeviceDebug(URI, word5);
     return;
   }
   
   sendApiNotFound(URI);
-
 } // processApiV2Dev()
 
 
@@ -602,16 +575,8 @@ void sendDeviceInfo()
   char theTime[20] = {0};
 
   DebugTln("/api/v2/dev/info");
-  snprintf(theTime, sizeof(theTime), "%02d-%02d-%04d %02d:%02d:%02d"
-                                                    , localtime(&now)->tm_mday
-                                                    , localtime(&now)->tm_mon 
-                                                    , localtime(&now)->tm_year + 1900
-                                                    , localtime(&now)->tm_hour
-                                                    , localtime(&now)->tm_min
-                                                    , localtime(&now)->tm_sec
-              );
+  snprintf(theTime, sizeof(theTime), "%s", currentDateTimeString().c_str());
 
-//  char gMsg[_GMSG_LEN] = {};
   memset(jsonBuff, 0, _JSONBUFF_LEN);
   
   //-- Allocate the JsonDocument
@@ -715,8 +680,7 @@ void sendShieldInfo()
 {
   char compileOptions[200] = "";
   char theTime[20] = {0};
-  time(&now);
-  int thisTimeMinutes = (localtime(&now)->tm_hour * 60) + localtime(&now)->tm_min;
+  int thisTimeMinutes = currentMinutes();
 
   DebugTln("/api/v2/shield/info");
 
@@ -764,23 +728,9 @@ void sendDeviceTime()
 {
   memset(jsonBuff, 0, _JSONBUFF_LEN);
   char theTime[22]    = {0};
-  char theTimeRev[22] = {0};
+  //char theTimeRev[22] = {0};
 
-  snprintf(theTime, sizeof(theTime), "%02d-%02d-%04d %02d:%02d:%02d"
-                                                    , localtime(&now)->tm_mday
-                                                    , localtime(&now)->tm_mon + 1
-                                                    , localtime(&now)->tm_year + 1900
-                                                    , localtime(&now)->tm_hour
-                                                    , localtime(&now)->tm_min
-                                                    , localtime(&now)->tm_sec);
-
-  snprintf(theTimeRev, sizeof(theTimeRev), "%04d-%02d-%02d %02d:%02d:%02d"
-                                                    , localtime(&now)->tm_year + 1900
-                                                    , localtime(&now)->tm_mon + 1
-                                                    , localtime(&now)->tm_mday
-                                                    , localtime(&now)->tm_hour
-                                                    , localtime(&now)->tm_min
-                                                    , localtime(&now)->tm_sec);
+  snprintf(theTime, sizeof(theTime), "%s", currentDateTimeString().c_str());
   DebugTf("/api/v2/dev/time [%s]\r\n", theTime);
   
   //-- Allocate the JsonDocument
@@ -789,7 +739,7 @@ void sendDeviceTime()
   doc["devtime"];
   doc["devtime"]["timestamp"]   = lastTlgrmTime.Timestamp;
   doc["devtime"]["time"]        = theTime;
-  doc["devtime"]["time_rev"]    = theTimeRev;
+  //doc["devtime"]["time_rev"]    = theTimeRev;
   doc["devtime"]["epoch"]       = time(0);
   doc["devtime"]["uptime"]      = upTime();
   doc["devtime"]["uptime_secs"] = upTimeSeconds;
@@ -1540,11 +1490,9 @@ void copyToFieldsArray(const char inArray[][35], int elemts)
   memset(fieldsArray, 0, sizeof(fieldsArray));
   //if (Verbose2) DebugTln("start copying ....");
 
-  for ( i=0; i<elemts; i++)
-  {
+  for ( i=0; i<elemts; i++) {
     strncpy(fieldsArray[i], inArray[i], 34);
     //if (Verbose1) DebugTf("[%2d] => inArray[%s] fieldsArray[%s]\r\n", i, inArray[i], fieldsArray[i]);
-
   }
   fieldsElements = i;
 

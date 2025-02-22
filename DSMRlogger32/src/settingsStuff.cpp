@@ -17,14 +17,13 @@ void writeSmSettings()
   DebugTf("Writing to [%s] ..\r\n", _SETTINGS_FILE);
   
   File file = _FSYS.open(_SETTINGS_FILE, "w"); // open for reading and writing
-  if (!file)
-  {
+  if (!file) {
     DebugTf("open(%s, 'w') FAILED!!! --> Bailout\r\n", _SETTINGS_FILE);
     return;
   }
   yield();
 
-  if (devSetting->TelegramInterval < 2)  devSetting->TelegramInterval = 10;
+  if (devSetting->TelegramInterval < 2) { devSetting->TelegramInterval = 10; }
 
   DebugTln(F("Start writing setting data .."));
 
@@ -54,16 +53,14 @@ void writeSmSettings()
   //DebugTln("---------------------------------------------------");
   // Serialize JSON to file
   bool success = serializeJsonPretty(doc, file) > 0;
-  if (!success)
-  {
+  if (!success) {
     DebugTln("Failed to serialize and write devSetting settings to file");
   }
 
   file.close();
 
   Debugln(F(" done"));
-  if (Verbose1)
-  {
+  if (Verbose1) {
     DebugTln(F("Wrote this:"));
     DebugT(F("EnergyDeliveredT1 = "));
     Debugln(String(smSetting->EDT1, 5));
@@ -92,21 +89,19 @@ void writeSmSettings()
     DebugT(F("WaterVasteKosten = "));
     Debugln(String(smSetting->WNBK, 2));//water network cost
     DebugT(F("OledType = "));
-    if (devSetting->OledType == 1)      Debugln("SDD1306");
-    else if (devSetting->OledType == 2) Debugln("SH1306");
-    else                             Debugln("None");
+    if (devSetting->OledType == 1)      { Debugln("SDD1306"); }
+    else if (devSetting->OledType == 2) { Debugln("SH1306"); }
+    else                                { Debugln("None"); }
     DebugT(F("OledSleep = "));
     Debugln(devSetting->OledSleep);
     DebugT(F("OledFlip = "));
-    if (devSetting->OledFlip)  Debugln(F("Yes"));
-    else                    Debugln(F("No"));
+    if (devSetting->OledFlip) { Debugln(F("Yes")); }
+    else                      { Debugln(F("No")); }
 
     DebugT(F("SmHasFaseInfo"));
-    if (smSetting->SmHasFaseInfo == 1) Debugln("Yes");
-    else                             Debugln("No");
-
+    if (smSetting->SmHasFaseInfo == 1) { Debugln("Yes"); }
+    else                               { Debugln("No"); }
   } // Verbose1
-
 } // writeSmSettings()
 
 
@@ -120,8 +115,7 @@ void readSmSettings(bool show)
 
   DebugTf(" %s ..\r\n", _SETTINGS_FILE);
   
-  if (!_FSYS.exists(_SETTINGS_FILE))
-  {
+  if (!_FSYS.exists(_SETTINGS_FILE)) {
     DebugTln(F(" .. file not found! --> created file!"));
     smSetting->PreDSMR40      = 0;
     smSetting->EDT1           = 0.0;
@@ -139,11 +133,10 @@ void readSmSettings(bool show)
   }
 
   file = _FSYS.open(_SETTINGS_FILE, "r");
-  if (!file)
-  {
-      DebugTf(" .. something went wrong opening [%s]\r\n", _SETTINGS_FILE);
-      delay(100);
-      return;
+  if (!file) {
+    DebugTf(" .. something went wrong opening [%s]\r\n", _SETTINGS_FILE);
+    delay(100);
+    return;
   }
  
   DebugTln(F("Reading settings:\r"));
@@ -155,8 +148,7 @@ void readSmSettings(bool show)
   DeserializationError err = deserializeJson(doc, file);
 
   //-- This may fail if the JSON is invalid
-  if (err)
-  {
+  if (err) {
     DebugT("Failed to deserialize logger settings: ");
     Debugln(err.f_str());
     file.close();
@@ -189,10 +181,10 @@ void readSmSettings(bool show)
 
   DebugTln(F(" .. done\r"));
 
-  if (smSetting->SmHasFaseInfo != 0)  smSetting->SmHasFaseInfo = 1;
-  else                                smSetting->SmHasFaseInfo = 0;
+  if (smSetting->SmHasFaseInfo != 0) { smSetting->SmHasFaseInfo = 1; }
+  else                               { smSetting->SmHasFaseInfo = 0; }
 
-  if (!show) return;
+  if (!show) { return; }
 
   Debugln(F("\r\n==== Smart Meter settings ========================================\r"));
   Debugf("   Pre DSMR 40 (0=No, 1=Yes) : %s\r\n",     smSetting->PreDSMR40 ? "Yes":"No");
@@ -212,7 +204,6 @@ void readSmSettings(bool show)
   Debugf("  SM Fase Info (0=No, 1=Yes) : %s\r\n",     smSetting->SmHasFaseInfo ? "Yes":"No");
 
   Debugln(F("-\r"));
-
 } // readSmSettings()
 
 
@@ -243,7 +234,6 @@ void updateSmSettings(const char *field, const char *newValue)
     else                               { smSetting->SmHasFaseInfo = 0; }
   }
   writeSmSettings();
-
 } // updateSmSettings()
 
 
@@ -260,8 +250,8 @@ void writeDevSettings(bool show)
   }
   yield();
 
-  if (strlen(devSetting->IndexPage) < 7) { strlcpy(devSetting->IndexPage, "DSMRindex.html", (_INDEXPAGE_LEN -1)); }
-  if (devSetting->MQTTbrokerPort < 1)    { devSetting->MQTTbrokerPort = 1883; }
+  if (strlen(devSetting->IndexPage) < 7)   { strlcpy(devSetting->IndexPage, "DSMRindex.html", (_INDEXPAGE_LEN -1)); }
+  if (devSetting->MQTTbrokerPort < 1)              { devSetting->MQTTbrokerPort = 1883; }
   if (devSetting->NoHourSlots  < _NO_HOUR_SLOTS_)  { devSetting->NoHourSlots  = _NO_HOUR_SLOTS_; }
   if (devSetting->NoDaySlots   < _NO_DAY_SLOTS_)   { devSetting->NoDaySlots   = _NO_DAY_SLOTS_; }
   if (devSetting->NoMonthSlots < _NO_MONTH_SLOTS_) { devSetting->NoMonthSlots = _NO_MONTH_SLOTS_; }
@@ -319,7 +309,6 @@ void writeDevSettings(bool show)
   if (show) { showDevSettings(); }
 
   Debugln("done ..");
-
 } // writeDevSettings()
 
 

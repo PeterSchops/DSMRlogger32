@@ -166,25 +166,21 @@ void sendMQTTData()
             , MQTTclient.connected()
             , mqttIsConnected, stateMQTT);
   }
-  if (!MQTTclient.connected())
-  {
-    if ( DUE( reconnectMQTTtimer) || mqttIsConnected)
-    {
+  if (!MQTTclient.connected()) {
+    if (DUE(reconnectMQTTtimer) || mqttIsConnected) {
       mqttIsConnected = false;
       connectMQTT();
     }
-    else
-    {
+    else {
       DebugTf("trying to reconnect in less than %d minutes\r\n", (TIME_LEFT_MIN(reconnectMQTTtimer) +1) );
     }
-    if ( !mqttIsConnected )
-    {
+    if (!mqttIsConnected) {
       DebugTln("no connection with a MQTT broker ..");
       return;
     }
   }
 
-  memset(fieldTable,  0, (sizeof(fieldTableStruct) *100));
+  memset(fieldTable,  0, (sizeof(fieldTableStruct) * 100));
   memset(fieldsArray, 0, sizeof(fieldsArray));
   fieldTableCount = 0;
 
@@ -193,14 +189,12 @@ void sendMQTTData()
   addToTable("gas_delivered", gasDelivered);
   addToTable("water_delivered", waterDelivered);
 
-  for(int i=0; i<fieldTableCount; i++)
-  {
+  for(int i=0; i<fieldTableCount; i++) {
     memset(jsonBuff, 0, _JSONBUFF_LEN);
     //-- Allocate the JsonDocument
     DynamicJsonDocument doc(3000);
 
-    switch (fieldTable[i].cType)
-    {
+    switch (fieldTable[i].cType) {
       case 'i': //Debugf("val(%c)[%d]\r\n", fieldTable[i].cType, fieldTable[i].type.iValue);
                 doc[fieldTable[i].cName] = fieldTable[i].type.iValue;
                 break;
@@ -220,8 +214,7 @@ void sendMQTTData()
     //-- calculate maxPayload:
     //-- https://arduino.stackexchange.com/questions/76840/pubsubclient-mqtt-max-packet-size-how-is-it-calculated
     int maxBuff = MQTT_MAX_PACKET_SIZE - MQTT_MAX_HEADER_SIZE - 2  - strlen(devSetting->MQTTtopTopic);
-    if (jsonBuff[maxBuff] != 0)
-    {
+    if (jsonBuff[maxBuff] != 0) {
       //-dbg-Debugln(jsonBuff);
       jsonBuff[maxBuff-5] = '+';
       jsonBuff[maxBuff-4] = '+';
@@ -231,15 +224,12 @@ void sendMQTTData()
       jsonBuff[maxBuff]   =  0;
     }
 
-    if (!MQTTclient.publish(devSetting->MQTTtopTopic, jsonBuff) )
-    {
+    if (!MQTTclient.publish(devSetting->MQTTtopTopic, jsonBuff)) {
       DebugTf("Error publish(%s) [%s] [%d bytes]\r\n", devSetting->MQTTtopTopic
                                                      , jsonBuff
                                                      , (strlen(devSetting->MQTTtopTopic) + strlen(jsonBuff)));
     }
-
   } //-- for all enttries in table
-
 } // sendMQTTData()
 
 /***************************************************************************

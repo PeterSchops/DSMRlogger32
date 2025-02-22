@@ -17,8 +17,7 @@ void pulseHeart(bool force)
   
   if (skipHeartbeats || lostWiFiConnection) return;
   
-  if (force || ((millis()-pulseTimer) > _PULSE_TIME))
-  {
+  if (force || ((millis()-pulseTimer) > _PULSE_TIME)) {
     if (force) { DebugTln("Send Heartbeat to WD ..."); }
     pulseTimer = millis();
     digitalWrite(_PIN_HEARTBEAT, !digitalRead(_PIN_HEARTBEAT));

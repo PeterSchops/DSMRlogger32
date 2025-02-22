@@ -1,4 +1,3 @@
-
 #pragma once
 /*
 ** See MIT license at the end of this file
@@ -17,14 +16,14 @@ class UpdateManager {
   public:
 	UpdateManager();
 	void setProgressCallback(ProgressCallback callback);
-  bool feedback(int8_t);
+    bool feedback(int8_t);
 
 	void updateFirmware(const char *url, ProgressCallback callback = nullptr);
-  void updateSpiffs(const char *url, ProgressCallback callback = nullptr);
+    void updateSpiffs(const char *url, ProgressCallback callback = nullptr);
 
   private:
 	int 	  _lastOtaCommand;
-  int8_t  _feedback;
+    int8_t  _feedback;
 
 	ProgressCallback _progressCallback;
 	u_int8_t _lastPercentage;
@@ -35,8 +34,7 @@ class UpdateManager {
 	void onEnd();
 	void onError(ota_error_t error);
 	bool httpUpdateFirmware(const char *url);
-  bool httpUpdateSpiffs(const char *url);
-
+    bool httpUpdateSpiffs(const char *url);
 };
 
 /**********************************************************************************

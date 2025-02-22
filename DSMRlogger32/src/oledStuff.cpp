@@ -14,53 +14,34 @@ SSD1306AsciiWire oled;
 
 void oled_Print_Msg(uint8_t, String, uint16_t);
 
-//static bool     buttonState = LOW;
-//static uint8_t  msgMode = 0;
-//static bool     boolDisplay = true;
-//static uint8_t  settingOledType = 1;  // 0=none, 1=SSD1306, 2=SH1106
-//static uint16_t settingOledSleep;
-//static uint8_t  settingOledFlip;
-
-uint8_t     lineHeight, charHeight;
-
 //===========================================================================================
 void checkFlashButton()
 {
   //-- if the display timer is turned off, then don't check flashbutton
-  if (devSetting->OledSleep == 0) return;  
+  if (devSetting->OledSleep == 0) { return; }
 
   //--check if the displaytimer is due...
-  if ( (devSetting->OledSleep > 0) && boolDisplay && DUE(oledSleepTimer) )
-  {
+  if ((devSetting->OledSleep > 0) && boolDisplay && DUE(oledSleepTimer)) {
     DebugTln("Switching display off..");
     oled.clear();
     boolDisplay = false;
   }
   //-- check the button and turn it on.
-  if (digitalRead(_FLASH_BUTTON) == LOW && buttonState == LOW)
-  {
+  if (digitalRead(_FLASH_BUTTON) == LOW && buttonState == LOW) {
     DebugTln(F("Pressed the FlashButton!"));
     buttonState = HIGH;
   }
-  else if (digitalRead(_FLASH_BUTTON) == HIGH && buttonState == HIGH)
-  {
+  else if (digitalRead(_FLASH_BUTTON) == HIGH && buttonState == HIGH) {
     buttonState = LOW;
     boolDisplay = !boolDisplay;
-    if (boolDisplay)
-    {
-      DebugTln(F("Switching display on.."));
-    }
-    else
-    {
-      DebugTln(F("Switching display off.."));
-    }
+    if (boolDisplay) { DebugTln(F("Switching display on..")); }
+    else             { DebugTln(F("Switching display off..")); }
     oled.clear();
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
     oled_Print_Msg(2, "Wacht ...", 5);
     msgMode = 0; //reset the display loop
     RESTART_TIMER(oledSleepTimer);
   }
-
 } // checkFlashButton()
 
 
@@ -69,28 +50,23 @@ void oled_Init()
 {
   DebugTln("Wire.begin() ......");
   Wire.begin();
-  if (devSetting->OledType == 2)
-        oled.begin(&SH1106_128x64, I2C_ADDRESS);
-  else  oled.begin(&Adafruit128x64, I2C_ADDRESS);
+  if (devSetting->OledType == 2) { oled.begin(&SH1106_128x64, I2C_ADDRESS); }
+  else                           { oled.begin(&Adafruit128x64, I2C_ADDRESS); }
 
   oled.setFont(X11fixed7x14B);  // this gives us 4 rows by 18 chars
-  charHeight  = oled.fontHeight();
-  lineHeight  = oled.displayHeight() / 4;
-  DebugTf("OLED is [%3dx%3d], charHeight[%d], lineHeight[%d], nrLines[%d]\r\n", oled.displayWidth()
-          , oled.displayHeight()
-          , charHeight, lineHeight, 4);
+  uint8_t charHeight  = oled.fontHeight();
+  uint8_t lineHeight  = oled.displayHeight() / 4;
+  DebugTf("OLED is [%3dx%3d], charHeight[%d], lineHeight[%d], nrLines[%d]\r\n", oled.displayWidth(), oled.displayHeight(), charHeight, lineHeight, 4);
   boolDisplay = true;
-  if (devSetting->OledFlip)  oled.displayRemap(true);
+  if (devSetting->OledFlip) { oled.displayRemap(true); }
   RESTART_TIMER(oledSleepTimer);
   DebugTln("oled_Init() Done ..");
-
 }   // oled_Init()
 
 //===========================================================================================
 void oled_Clear()
 {
   oled.clear();
-
 }   // oled_Clear
 
 
@@ -98,22 +74,20 @@ void oled_Clear()
 DECLARE_TIMER_MS(timer, 0);
 void oled_Print_Msg(uint8_t line, String message, uint16_t wait)
 {
-  if (!boolDisplay) return;
+  if (!boolDisplay) { return; }
 
   message += "                    ";
+  uint8_t lineHeight = oled.displayHeight() / 4;
   oled.setCursor(0, ((line * lineHeight)/8));
   oled.print(message.c_str());
 
-  if (wait>0)
-  {
+  if (wait>0) {
     CHANGE_INTERVAL_MS(timer, wait);
     RESTART_TIMER(timer);
-    while (!DUE(timer))
-    {
+    while (!DUE(timer)) {
       delay(1);
     }
   }
-
 }   // oled_Print_Msg()
 
 

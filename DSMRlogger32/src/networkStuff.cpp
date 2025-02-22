@@ -10,8 +10,6 @@
 */
 #include "networkStuff.h"
 
-bool        isConnected = false;
-
 //-- gets called when WiFiManager enters configuration mode
 //===========================================================================================
 void configModeCallback (WiFiManager *myWiFiManager)
@@ -24,15 +22,13 @@ void configModeCallback (WiFiManager *myWiFiManager)
   DebugTln(WiFi.softAPIP());
   //if you used auto generated SSID, print it
   DebugTln(myWiFiManager->getConfigPortalSSID());
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     oled_Clear();
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
     oled_Print_Msg(1, "AP mode active", 0);
     oled_Print_Msg(2, "Connect to:", 0);
     oled_Print_Msg(3, myWiFiManager->getConfigPortalSSID(), 0);
   }
-
 } // configModeCallback()
 
 
@@ -47,8 +43,7 @@ void startWiFi(const char *hostname, int timeOut, bool eraseCredentials)
 
   DebugTf("startWiFi ...[%s]\r\n",  thisAP.c_str());
 
-  if (eraseCredentials) 
-  {
+  if (eraseCredentials) {
     manageWiFi.resetSettings();
     delay(1000);
     ESP.restart();
@@ -68,11 +63,9 @@ void startWiFi(const char *hostname, int timeOut, bool eraseCredentials)
   //--- if it does not connect it starts an access point with the specified name
   //--- here  "DSMR-WS-<MAC>"
   //--- and goes into a blocking loop awaiting configuration
-  if (!manageWiFi.autoConnect(thisAP.c_str()))
-  {
+  if (!manageWiFi.autoConnect(thisAP.c_str())) {
     DebugTln(F("failed to connect and hit timeout"));
-    if (devSetting->OledType > 0)
-    {
+    if (devSetting->OledType > 0) {
       oled_Clear();
       oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
       oled_Print_Msg(1, "Failed to connect", 0);
@@ -83,12 +76,10 @@ void startWiFi(const char *hostname, int timeOut, bool eraseCredentials)
     DebugTf(" took [%d] milli-seconds ==> ERROR!\r\n", (millis() - lTime));
     neoPixOn(0, neoPixRed);
   }
-  else
-  {
+  else {
     DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
   }
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     oled_Clear();
   }
   
@@ -107,7 +98,6 @@ void startWiFi(const char *hostname, int timeOut, bool eraseCredentials)
   neoPixOn(0, neoPixBlue);
 
   pulseHeart(true);
-  
 } // startWiFi()
 
 
@@ -118,7 +108,6 @@ void startTelnet()
   Debugln("\r\n");
   DebugTln("Telnet server started ..\r\n");
   TelnetStream.flush();
-
 } // startTelnet()
 
 
@@ -129,18 +118,15 @@ void startMDNS(const char *Hostname)
   
   MDNS.end(); //-- end service
   DebugTf("[1] mDNS setup as [%s.local]\r\n", Hostname);
-  if (MDNS.begin(Hostname))               // Start the mDNS responder for Hostname.local
-  {
+  if (MDNS.begin(Hostname)) {              // Start the mDNS responder for Hostname.local
     DebugTf("[2] mDNS responder started as [%s.local]\r\n", Hostname);
     writeToSysLog("mDNS responder started as [%s.local]", Hostname);
   }
-  else
-  {
+  else {
     DebugTln("[3] Error setting up MDNS responder!\r\n");
     writeToSysLog("Error setting up MDNS responder!");
   }
   MDNS.addService("http", "tcp", 80);
-
 } // startMDNS()
 
 /***************************************************************************

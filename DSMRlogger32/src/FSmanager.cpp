@@ -321,29 +321,24 @@ void setupFSmanager()
 
   httpServer.onNotFound([]()
   {
-    if (Verbose1) DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(httpServer.uri()).c_str());
+    if (Verbose1) { DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(httpServer.uri()).c_str()); }
 
-    if (httpServer.uri().indexOf("/api/") == 0) 
-    {
+    if (httpServer.uri().indexOf("/api/") == 0) {
       if (Verbose1) DebugTf("next: processAPI(%s)\r\n", String(httpServer.uri()).c_str());
       processAPI();
     }
-    else if (httpServer.uri().indexOf("/format") == 0) 
-    {
+    else if (httpServer.uri().indexOf("/format") == 0) {
       formatFS();
     }
-    else
-    {
+    else {
       DebugTf("next: handleFile(%s)\r\n"
                       , String(httpServer.urlDecode(httpServer.uri())).c_str());
 
-      if (!handleFile(httpServer.urlDecode(httpServer.uri())))
-      {
+      if (!handleFile(httpServer.urlDecode(httpServer.uri()))) {
         httpServer.send(404, "text/plain", "FileNotFound");
       }
     }
   });
-
 } //  setupFS()
 
 
@@ -360,19 +355,16 @@ bool handleList()
   File root = _FSYS.open("/");
 
   File dir  = root.openNextFile();
-  while (dir && (catPos < (_FSYS_MAX_FILES-2)) )
-  {
+  while (dir && (catPos < (_FSYS_MAX_FILES-2))) {
     yield();
     //-- Ordner und Dateien zur Liste hinzufügen
-    if (dir.isDirectory())
-    {
+    if (dir.isDirectory()) {
       DebugTf("Found Directory [%s]\r\n", dir.name());
       uint8_t ran {0};
       snprintf(thisDir, sizeof(thisDir), "/%s/", dir.name());
       File fold = _FSYS.open(thisDir);
       fold.openNextFile();
-      while (fold && (catPos < (_FSYS_MAX_FILES-2)) )
-      {
+      while (fold && (catPos < (_FSYS_MAX_FILES-2))) {
         yield();
         //DebugTf("[%s] Found file [%s]\r\n", thisDir, fold.name());
         ran++;
@@ -383,8 +375,7 @@ bool handleList()
         catPos++;
         fold = dir.openNextFile();
       }
-      if (catPos > (_FSYS_MAX_FILES-3) )
-      {
+      if (catPos > (_FSYS_MAX_FILES-3)) {
         snprintf(catalog[catPos].fDir,  sizeof(catalog[0].fDir), "");
         snprintf(catalog[catPos].fName, sizeof(catalog[0].fName), "  TO-MANY-FILES-ON-FILESYSTEM ");
         catalog[catPos].fSize = 0;
@@ -395,16 +386,14 @@ bool handleList()
         DebugTf("To many files in the FileSystem (only %d shown)!\r\n", (catPos-2));
         catPos++;
       }
-      if (!ran)
-      {
+      if (!ran) {
         snprintf(catalog[catPos].fDir,  sizeof(catalog[0].fDir), "%s", dir.name());
         snprintf(catalog[catPos].fName, sizeof(catalog[0].fName), "");
         catalog[catPos].fSize = 0;
         catPos++;
       }
     }
-    else
-    {
+    else {
       //DebugTf("Found file [%s]\r\n", dir.name());
       snprintf(catalog[catPos].fDir, sizeof(catalog[0].fDir), "");
       snprintf(catalog[catPos].fName, sizeof(catalog[0].fName), "%s", dir.name());
@@ -420,8 +409,7 @@ bool handleList()
   qsort(catalog, catPos, sizeof(catalog[0]), sortFunction);
 
   String temp = "[";
-  for (int i=0; i<catPos; i++)
-  {
+  for (int i=0; i<catPos; i++) {
     if (temp != "[") temp += "\n,";
     temp += "{\"folder\":\"" + String(catalog[i].fDir)
             + "\",\"name\":\"" + String(catalog[i].fName)
@@ -434,7 +422,6 @@ bool handleList()
 
   httpServer.send(200, "application/json", temp);
   return true;
-
 } //  handleList()
 
 
@@ -445,24 +432,21 @@ void deleteRecursive(const char *path)
   char fName[33] = {};
 
   DebugTf("path is [%s]\r\n", path);
-  if (_FSYS.remove(path) )
-  {
+  if (_FSYS.remove(path)) {
     DebugTf("Looks like [%s] was a file! Removed!\r\n", path);
     writeToSysLog("File [%s] removed by user!", path);
     return;
   }
 
   //-- is path a "folder"??
-  if (String(path).lastIndexOf('/') == 0)  //-- yes! it's a folder
-  {
+  if (String(path).lastIndexOf('/') == 0) { //-- yes! it's a folder
     snprintf(mName, sizeof(mName), "%s", path);
     DebugTf("Remove folder [%s]\r\n", mName);
     writeToSysLog("Folder [%s] removed by user", mName);
-    if (mName[0] != '/') snprintf(mName, sizeof(mName), "%s", path);
+    if (mName[0] != '/') { snprintf(mName, sizeof(mName), "%s", path); }
     File map = _FSYS.open(mName);
     File file = map.openNextFile();
-    while(file)
-    {
+    while(file) {
       snprintf(cBuff, sizeof(cBuff), "%s/%s", mName, file.name());
       file.close();
       deleteRecursive(cBuff);
@@ -479,70 +463,58 @@ void deleteRecursive(const char *path)
   if (mName[0] != '/') snprintf(mName, sizeof(mName), "/%s", path);
   snprintf(fName, sizeof(fName), "%s", String(path).substring(String(path).lastIndexOf('/')+1));
   DebugTf("Remove file [%s][%s]\r\n", mName, fName);
-  if (_FSYS.remove(mName) )
-  {
+  if (_FSYS.remove(mName)) {
     DebugTf("File [%s] removed\r\n", mName);
     writeToSysLog("File [%s] removed by user", mName);
   }
-  else
-  {
+  else {
     DebugTf("ERROR! File [%s] is NOT  removed!\r\n", mName);
     writeToSysLog("ERROR trying to remove File [%s]", mName);
   }
-
 } //  deleteRecursive()
 
 
 //===========================================================================================
 bool handleFile(String &&path)
 {
-
-  if (httpServer.hasArg("new"))
-  {
+  if (httpServer.hasArg("new")) {
     char folderName[50] = {};
 
     snprintf(folderName, sizeof(folderName), "/%s", httpServer.arg("new").c_str());
     DebugTf("New folderName [%s]\r\n", folderName);
-    if (_FSYS.mkdir(folderName))
-    {
+    if (_FSYS.mkdir(folderName)) {
       strlcat(folderName, "/dummy.txt", sizeof(folderName));
       DebugTf("Dummy file [%s] created\r\n", folderName);
       //-- folder won't stick without a file in it????
       File dummy = _FSYS.open(folderName, FILE_WRITE);
-      if (dummy)
-      {
+      if (dummy) {
         dummy.println("Dummy");
         dummy.close();
         DebugTf("Dummy file [%s] created\r\n", folderName);
       }
-      else
-      {
+      else {
         DebugTf("ERROR: creating Dummy file [%s]\r\n", folderName);
       }
     }
-    else
-    {
+    else {
       DebugTf("ERROR: mkdir(%s) failed!\r\n", folderName);
     }
   } //  create folder
   if (httpServer.hasArg("sort")) return handleList();
-  if (httpServer.hasArg("delete"))
-  {
+  if (httpServer.hasArg("delete")) {
     deleteRecursive(httpServer.arg("delete").c_str());
     sendResponce();
     return true;
   }
-  if (!_FSYS.exists("/FSmanager.html"))
-  {
+  if (!_FSYS.exists("/FSmanager.html")) {
     //-- ermöglicht das hochladen der FSmanager.html
     httpServer.send(200, "text/html", _FSYS.begin() ? HELPER : WARNING);
   }
-  if (path.endsWith("/")) path += "/index.html";
+  if (path.endsWith("/")) { path += "/index.html"; }
   //-- Vorrübergehend für den Admin Tab
   //if (path == "/FSmanager.html") sendResponce();
   //return _FSYS.exists(path) ? ({File f = _FSYS.open(path, "r"); httpServer.streamFile(f, mime::getContentType(path)); f.close(); true;}) : false;
   return _FSYS.exists(path) ? ({File f = _FSYS.open(path, "r"); httpServer.streamFile(f, getContentType(path)); f.close(); true;}) : false;
-
 } //  handleFile()
 
 
@@ -551,36 +523,30 @@ void handleFileUpload()
 {
   static File fsUploadFile;
   HTTPUpload &upload = httpServer.upload();
-  if (upload.status == UPLOAD_FILE_START)
-  {
+  if (upload.status == UPLOAD_FILE_START) {
     //-- Datei geselecteerd
-    if (upload.filename.length() < 2)
-    {
+    if (upload.filename.length() < 2) {
       DebugTln("No file selected! Abort.");
       return;
     }
     //-- Dateinamen auf 30 Zeichen kürzen
-    if (upload.filename.length() > 30)
-    {
+    if (upload.filename.length() > 30) {
       upload.filename = upload.filename.substring(upload.filename.length() - 30, upload.filename.length());
     }
     DebugTln("FileUpload Name: " + upload.filename);
     fsUploadFile = SPIFFS.open("/" + httpServer.urlDecode(upload.filename), "w");
   }
-  else if (upload.status == UPLOAD_FILE_WRITE)
-  {
+  else if (upload.status == UPLOAD_FILE_WRITE) {
     DebugTln("FileUpload Data: " + (String)upload.currentSize);
     if (fsUploadFile)
       fsUploadFile.write(upload.buf, upload.currentSize);
   }
-  else if (upload.status == UPLOAD_FILE_END)
-  {
+  else if (upload.status == UPLOAD_FILE_END) {
     if (fsUploadFile)
       fsUploadFile.close();
     DebugTln("FileUpload Size: " + (String)upload.totalSize);
     httpServer.sendContent(Header);
   }
-
 } // handleFileUpload()
 
 
@@ -592,15 +558,12 @@ const char* reverse_strstr(const char* haystack, const char* needle, const char*
   size_t needle_len = strlen(needle);
   const char* p;
 
-  if (needle_len == 0) 
-  {
+  if (needle_len == 0) {
     return haystack_end;
   }
 
-  for (p = haystack_end - needle_len; p >= haystack; --p) 
-  {
-    if (strncmp(p, needle, needle_len) == 0) 
-    {
+  for (p = haystack_end - needle_len; p >= haystack; --p) {
+    if (strncmp(p, needle, needle_len) == 0) {
       return p;
     }
   }
@@ -624,49 +587,38 @@ void RFUlistFiles(const char* startWith)
   DynamicJsonDocument doc(1024);
   JsonArray fileArray = doc.to<JsonArray>();
   
-  if (httpCode > 0) 
-  {
+  if (httpCode > 0) {
     int contentLength = http.getSize();
-    if (contentLength > 0) 
-    {
+    if (contentLength > 0) {
       char* htmlContent = (char*)malloc(contentLength + 1);
-      if (htmlContent) 
-      {
+      if (htmlContent) {
         int bytesRead = http.getStream().readBytes(htmlContent, contentLength);
         htmlContent[bytesRead] = '\0'; // Null-terminate the string
 
         const char* pos = htmlContent;
         const char* htmlEnd = htmlContent + bytesRead;
-        while ((pos = strstr(pos, ".bin")) != NULL) 
-        {
+        while ((pos = strstr(pos, ".bin")) != NULL) {
           const char* hrefPos = reverse_strstr(htmlContent, "href=\"", pos);
-          if (hrefPos != NULL && hrefPos < pos) 
-          {
+          if (hrefPos != NULL && hrefPos < pos) {
             const char* startPos = hrefPos + 6; // Move past 'href="'
             const char* endPos = strchr(startPos, '"');
-            if (endPos != NULL && endPos > startPos) 
-            {
+            if (endPos != NULL && endPos > startPos) {
               char fileName[256];
               size_t fileNameLen = endPos - startPos;
-              if (fileNameLen < sizeof(fileName)) 
-              {
+              if (fileNameLen < sizeof(fileName)) {
                 strncpy(fileName, startPos, fileNameLen);
                 fileName[fileNameLen] = '\0';
                 if (strstr(fileName, ".bin") == fileName + strlen(fileName) - 4 &&
-                    strncmp(fileName, startWith, strlen(startWith)) == 0) 
-                {
+                    strncmp(fileName, startWith, strlen(startWith)) == 0) {
                   // Check for duplicates
                   bool isDuplicate = false;
-                  for (JsonVariant v : fileArray) 
-                  {
-                    if (strcmp(v.as<const char*>(), fileName) == 0) 
-                    {
+                  for (JsonVariant v : fileArray) {
+                    if (strcmp(v.as<const char*>(), fileName) == 0) {
                       isDuplicate = true;
                       break;
                     }
                   }
-                  if (!isDuplicate) 
-                  {
+                  if (!isDuplicate) {
                     fileArray.add(fileName);
                     nrFiles++;
                   }
@@ -678,27 +630,23 @@ void RFUlistFiles(const char* startWith)
         }
         free(htmlContent);
       }
-      else 
-      {
+      else {
         DebugTln("Memory allocation failed");
         fileArray.add("Memory allocation failed");
       }
     }
-    else 
-    {
+    else {
       DebugTln("Empty content received");
       fileArray.add("Empty content received");
     }
   } 
-  else 
-  {
+  else {
     DebugTln("Error fetching files ...");
     fileArray.add("Error fetching files");
   }
   http.end();
 
-  if (nrFiles == 0)
-  {
+  if (nrFiles == 0) {
     DebugTln("No matching files found ...");
     fileArray.add("No matching files found");
   }
@@ -706,7 +654,6 @@ void RFUlistFiles(const char* startWith)
   serializeJsonPretty(doc, jsonBuff, _JSONBUFF_LEN);
   DebugTln(jsonBuff);
   httpServer.send(200, "application/json", jsonBuff);
-
 } // RFUlistFiles()
 
 
@@ -718,25 +665,21 @@ void handleRemoteUpdate()
   char updateServerURI[100] = {};
   DebugTln("handleRemoteUpdate() ...");
 
-  if (httpServer.method() == HTTP_GET) 
-  {
-      httpServer.send(200, "text/html", RFUindexHtml);
+  if (httpServer.method() == HTTP_GET) {
+    httpServer.send(200, "text/html", RFUindexHtml);
   } 
-  else if (httpServer.method() == HTTP_POST) 
-  {
+  else if (httpServer.method() == HTTP_POST) {
     char action[16] = {};
     char newVersionNr[32] = {};
 
-    for(int a=0; a<httpServer.args(); a++)
-    {
-      if (Verbose1) DebugTf("arg[%d]: [%s] = [%s]\r\n", a, httpServer.argName(a).c_str(), httpServer.arg(a).c_str());
+    for(int a=0; a<httpServer.args(); a++) {
+      if (Verbose1) { DebugTf("arg[%d]: [%s] = [%s]\r\n", a, httpServer.argName(a).c_str(), httpServer.arg(a).c_str()); }
     }
 
     strlcpy(action, httpServer.arg("action").c_str(), sizeof(action));
     DebugTf("action: [%s]\r\n", action);
 
-    if (strncmp(action, "Return", 6) == 0) 
-    {
+    if (strncmp(action, "Return", 6) == 0) {
       DebugTln("Return requested. No update performed.");
       doRedirect("Back to FSmanager", 2, "/FSmanager.html", false);
     }
@@ -745,16 +688,14 @@ void handleRemoteUpdate()
         strlcpy(newVersionNr, httpServer.arg("firmwareVersion").c_str(), sizeof(newVersionNr));
     else if (strncmp(action, "updateSpiffs", 12) == 0) 
         strlcpy(newVersionNr, httpServer.arg("spiffsVersion").c_str(), sizeof(newVersionNr));
-    else
-    {
+    else {
       DebugTln("Invalid POST data received");
       doRedirect("Back to FSmanager", 2, "/FSmanager.html", false);
       return;
     }
     
     DebugTf("Update requested. New version: %s\r\n", newVersionNr);
-    if (strncmp(newVersionNr, "No Updates Found", 16) == 0)
-    {
+    if (strncmp(newVersionNr, "No Updates Found", 16) == 0) {
       DebugTf("(%s) No Firmware Update!\r\n", __FUNCTION__);
       doRedirect("Wait for redirect ...", 5, "/FSmanager.html", false);
       return;
@@ -767,51 +708,42 @@ void handleRemoteUpdate()
 
     DebugTf("(%s) Starting %s upload!\r\n", __FUNCTION__, action);
 
-    if (strncmp(action, "updateFirmware", 14) == 0)
-    {
+    if (strncmp(action, "updateFirmware", 14) == 0) {
       doRedirect("Wait for firmware update to complete ...", 120, "/", false);      
       //-- Shorthand
-      updateManager.updateFirmware(updateServerURI, [](u_int8_t progress) 
-      {
-        if ((progress % 70) == 0) 
-        {
+      updateManager.updateFirmware(updateServerURI, [](u_int8_t progress) {
+        if ((progress % 70) == 0) {
           Debugln('.');
           pulseHeart();
         }
         else Debug('.');
       });
     }
-    else if (strncmp(action, "updateSpiffs", 12) == 0)
-    {
+    else if (strncmp(action, "updateSpiffs", 12) == 0) {
       doRedirect("Wait for spiffs update to complete ...", 80, "/", false);      
       //-- Shorthand
-      updateManager.updateSpiffs(updateServerURI, [](u_int8_t progress) 
-      {
-        if ((progress % 70) == 0) 
-        {
+      updateManager.updateSpiffs(updateServerURI, [](u_int8_t progress) {
+        if ((progress % 70) == 0) {
           Debugln('.');
           pulseHeart();
         }
         else Debug('.');
       });
     }
-    else
-    {
+    else {
       DebugTf("(%s) Invalid update action!\r\n", __FUNCTION__);
       doRedirect("Back to FSmanager", 2, "/FSmanager.html", false);
       return;
     }
 
-    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_ERROR)) 
-    { 
+    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_ERROR)) { 
       DebugTf("\r\n(%s) Update ERROR\r\n", __FUNCTION__);
       httpServer.send(200, "text/html", "Update ERROR!");
       delay(1000);
       ESP.restart();
       delay(3000);
     }
-    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_OK)) 
-    { 
+    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_OK)) { 
       Debugf("\r\n(%s) Update OK\r\n", __FUNCTION__);
       httpServer.send(200, "text/html", "Update Succesfull!");
       delay(1000);
@@ -821,7 +753,6 @@ void handleRemoteUpdate()
   }
 
   doRedirect("Back to FSmanager", 2, "/FSmanager.html", false);
-
 } //  handleRemoteUpdate()
 
 //===========================================================================================
@@ -830,7 +761,6 @@ void formatFS()      // Formatiert das Filesystem
   DebugTln("formatting Filesystem ..");
   _FSYS.format();
   sendResponce();
-
 } //  formatFS()
 
 
@@ -839,7 +769,6 @@ void listFS()
 {
   DebugTln("send Filesystem data ..");
   sendResponce();
-
 } //  listFS()
 
 
@@ -848,7 +777,6 @@ void sendResponce()
 {
   httpServer.sendHeader("Location", "/FSmanager.html");
   httpServer.send(303, "message/http");
-
 } //  sendResponse()
 
 
@@ -857,7 +785,6 @@ const String formatBytes(size_t const &bytes)
 {
   // lesbare Anzeige der Speichergrößen
   return bytes < 1024 ? static_cast<String>(bytes) + " Byte" : bytes < 1048576 ? static_cast<String>(bytes / 1024.0) + " KB" : static_cast<String>(bytes / 1048576.0) + " MB";
-
 } //  formatBytes()
 
 //=====================================================================================
@@ -865,7 +792,6 @@ void reBootESP()
 {
   DebugTln("Redirect and ReBoot ..");
   doRedirect("Reboot DSMRlogger32 ..", 50, "/", true);
-
 } // reBootESP()
 
 //=====================================================================================
@@ -882,8 +808,7 @@ void doRedirect(String msg, int wait, const char *URL, bool reboot)
     "</head>"
     "<body><h1>"+String(_DEFAULT_HOSTNAME)+"</h1>"
     "<h3>"+msg+"</h3>";
-  if (String(URL).indexOf("/updateIndex") == 0)
-  {
+  if (String(URL).indexOf("/updateIndex") == 0) {
     redirectHTML += "<br>If this does not work just type \"<b>http://"+String(_DEFAULT_HOSTNAME)+".local/update\"";
     redirectHTML += "</b>as URL!<br>";
   }
@@ -909,14 +834,12 @@ void doRedirect(String msg, int wait, const char *URL, bool reboot)
 
   DebugTln(msg);
   httpServer.send(200, "text/html", redirectHTML);
-  if (reboot)
-  {
+  if (reboot) {
     writeToSysLog("Redirect to [%s]", URL);
     delay(5000);
     ESP.restart();
     delay(5000);
   }
-
 } // doRedirect()
 
 
@@ -937,7 +860,6 @@ String getContentType(String filename)
   else if (filename.endsWith(".zip"))   return "application/x-zip";
   else if (filename.endsWith(".gz"))    return "application/x-gzip";
   return "text/plain";
-
 } // getContentType()
 
 
@@ -948,11 +870,10 @@ int sortFunction(const void *cmp1, const void *cmp2)
   struct _catStruct *ia = (struct _catStruct *)cmp1;
   struct _catStruct *ib = (struct _catStruct *)cmp2;
   #ifdef _SPIFFS
-      return strcmp(ia->fName, ib->fName);
+    return strcmp(ia->fName, ib->fName);
   #else
-      return strcmp(ia->fDir, ib->fDir);
+    return strcmp(ia->fDir, ib->fDir);
   #endif
-
 } //  sortFunction()
 
 /*eof*/

@@ -1,61 +1,12 @@
 /*
 ***************************************************************************
 **  Program  : DSMRlogger32 (restAPI)
-*/
-//     _FW_VERSION format "vx.y.z (dd-mm-yyyy)
-const char* _FW_VERSION = "v5.4.3 (16-02-2025)";
-/*
+**
 **  Copyright (c) 2022, 2023, 2024 Willem Aandewiel
 **
 **  TERMS OF USE: MIT License. See bottom of file.
 ***************************************************************************
 **
-**  platformio.ini for DSMR-logger32 Revision 5 (ESP32):
-**
-**    [platformio]
-**    workspace_dir = .pio.nosync
-**    default_envs = DSMRlogger32
-**    
-**    [env:DSMRlogger32]
-**    platform = espressif32
-**    board = esp32dev
-**    framework = arduino
-**    ;board_build.partitions = min_spiffs.csv
-**    ;board_build.partitions = huge_app.csv
-**    board_build.partitions = ./partitions32.csv
-**    board_build.filesystem = spiffs
-**    board_build.flash_mode = qio
-**    board_build.f_flash = 80000000
-**    monitor_speed = 115200
-**    upload_speed = 230400
-**    ;-- change next line to your system
-**    upload_port = /dev/cu.usbserial-3224142
-**    build_flags = -w
-**    ;      CORE_DEBUG_LEVEL: (0)NoLogging, (1)Error, (2)Warning, (3)Info, (4)Debug, (5)Verbose
-**        -D CORE_DEBUG_LEVEL=3
-**    	  -D BOARD_HAS_PSRAM
-**    lib_ldf_mode = deep+
-**    lib_deps = 
-**    	https://github.com/mrWheel/SPIFFS_SysLogger
-**    	https://github.com/mrWheel/dsmr2Lib
-**      https://github.com/mrWheel/TimeSyncLib
-**    	greiman/SSD1306Ascii@^1.3.5
-**    	jandrassy/TelnetStream@^1.3.0
-**    	tzapu/WiFiManager@^2.0.17
-**    	adafruit/Adafruit NeoPixel@^1.12.3
-**      bblanchon/ArduinoJson@6.21.5
-**    	knolleary/PubSubClient@^2.8
-**    monitor_filters = 
-**    	esp32_exception_decoder
-
-**
-**  partition32.csv
-**    # Name,   Type, SubType, Offset,  Size, Flags
-**    nvs,      data, nvs,     0x9000,  0x5000,
-**    otadata,  data, ota,     0xe000,  0x2000,
-**    app0,     app,  ota_0,   0x10000, 0x180000,  
-**    app1,     app,  ota_1,   0x190000,0x180000,  
-**    spiffs,   data, spiffs,  0x310000,0x80000,
 **
 **  Coding Style  ( http://astyle.sourceforge.net/astyle.html#_Quick_Start )
 **   - Allman style (-A1)
@@ -70,7 +21,6 @@ const char* _FW_VERSION = "v5.4.3 (16-02-2025)";
 **  use:  astyle -A1 -s2 -S -xW -w -Y -xg- k3 *.{ino|h}
 **
 **  remove <filename>.orig afterwards
-**    
 */
 
 /*
@@ -82,9 +32,11 @@ const char* _FW_VERSION = "v5.4.3 (16-02-2025)";
 **   https://mrwheel-docs.gitbook.io/DSMRlogger32/
 */
 
-/******************** don't change anything below this comment **********************/
 
 #include "DSMRlogger32.h"
+
+//     _FW_VERSION format "vx.y.z (dd-mm-yyyy)
+const char* _FW_VERSION = AUTO_VERSION;
 
 //=======================================================================
 float typecastValue(TimestampedFixedValue i)
@@ -105,17 +57,16 @@ time_t        now;
 //===========================================================================================
 void displayStatus()
 {
-  if (devSetting->OledType > 0)
-  {
-    switch(msgMode)
-    {
+  if (devSetting->OledType > 0) {
+    switch(msgMode) {
       case 1:
         {
           memset(fChar, 0, _FCHAR_LEN);
           //----- _FW_VERSION format "vx.y.z (dd-mm-eeyy)"
           //-----                     012345  8901234567
           snprintf(fChar, _FCHAR_LEN, "%s", _FW_VERSION);
-          int d=0, s=0;
+          int d = 0;
+          int s = 0;
           for (s=0; s<6; s++) {gMsg[d++] = fChar[s];}
           gMsg[d++] = ' ';  gMsg[d++] = ' ';
           for (s=8; s<18; s++) {gMsg[d++] = fChar[s];}
@@ -132,8 +83,7 @@ void displayStatus()
         break;
       case 4:
         if (runAPmode)  snprintf(gMsg, _GMSG_LEN, "SSID: %s", devSetting->Hostname);
-        else
-        {
+        else {
           if (WiFi.status() != WL_CONNECTED)
                 snprintf(gMsg, _GMSG_LEN, "**** NO  WIFI ****");
           else  snprintf(gMsg, _GMSG_LEN, "IP %s", WiFi.localIP().toString().c_str());
@@ -316,7 +266,7 @@ void setup()
     oled_Init();
     oled_Clear();  // clear the screen so we can paint the menu.
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
-    int8_t sPos = String(_FW_VERSION).indexOf(' ');
+    int8_t sPos = static_cast<int8_t>(String(_FW_VERSION).indexOf(' '));
     snprintf(gMsg,  _GMSG_LEN, "(c)2024..2025 [%s]", String(_FW_VERSION).substring(0, sPos).c_str());
     oled_Print_Msg(1, gMsg, 0);
     oled_Print_Msg(2, " Peter Schops", 0);
@@ -344,7 +294,7 @@ void setup()
     }
   }
 
-  while(!psramFound()) {
+  if (!psramFound()) {
     DebugTln("*******************************************");
     DebugTln("**   This module does not have PSRAM!!   **");
     DebugTln("** Firmware will not run on this module! **");
@@ -384,23 +334,8 @@ void setup()
     }
     time(&now);
     DebugTln(F("NTP server set!\r\n\r"));
-    DebugTf("NTP Date/Time: %02d-%02d-%04d %02d:%02d:%02d\r\n",
-                                            localtime(&now)->tm_mday, 
-                                            localtime(&now)->tm_mon+1, 
-                                            localtime(&now)->tm_year+1900,  
-                                            localtime(&now)->tm_hour, 
-                                            localtime(&now)->tm_min,
-                                            localtime(&now)->tm_sec 
-            );
-    writeToSysLog("NTP Date/Time: %02d-%02d-%04d %02d:%02d:%02d",
-                                            localtime(&now)->tm_mday, 
-                                            localtime(&now)->tm_mon+1, 
-                                            localtime(&now)->tm_year+1900,  
-                                            localtime(&now)->tm_hour, 
-                                            localtime(&now)->tm_min,
-                                            localtime(&now)->tm_sec 
-            );
-
+    DebugTf("NTP Date/Time: %s\r\n", currentDateTimeString().c_str());
+    writeToSysLog("NTP Date/Time: %s", currentDateTimeString().c_str());
     if (devSetting->OledType > 0) {
       oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
       oled_Print_Msg(3, "NTP gestart", 1500);
@@ -566,7 +501,6 @@ void delayms(unsigned long delay_ms)
   while (!DUE(timer_delay_ms)) {
     doSystemTasks();
   }
-
 } // delayms()
 
 
@@ -574,16 +508,13 @@ void delayms(unsigned long delay_ms)
 void doTaskShield()
 {
   int actPower = 0;
-  time(&now);
-  int thisTimeMinutes = (localtime(&now)->tm_hour * 60) + localtime(&now)->tm_min;
+  int thisTimeMinutes = currentMinutes();
 
-  if (digitalRead(_FLASH_BUTTON) == LOW)
-  {
+  if (digitalRead(_FLASH_BUTTON) == LOW) {
     relay0.flipSwitch();
     relay1.flipSwitch();
   }
-  if (DUE(shieldTimer))
-  {
+  if (DUE(shieldTimer)) {
     if (Verbose1) { DebugTln("doTaskShield.."); }
     if (relay0.isActive(thisTimeMinutes)) {
       //-- do whats needed for the Shield
