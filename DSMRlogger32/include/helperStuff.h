@@ -3,6 +3,7 @@
 
 //============ Includes ====================
 #include "arduinoGlue.h"
+#include "restAPI.h"
 
 DECLARE_TIMER_EXTERN(publishMQTTtimer);
 

@@ -5,9 +5,6 @@
 #include "arduinoGlue.h"
 #include "Shield32.h"
 
-extern Shield32 relay0;
-extern Shield32 relay1;
-
 
 DECLARE_TIMER_EXTERN(publishMQTTtimer);
 DECLARE_TIMER_EXTERN(reconnectMQTTtimer);

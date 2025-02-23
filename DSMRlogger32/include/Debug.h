@@ -1,5 +1,4 @@
-#ifndef DEBUG_H
-#define DEBUG_H
+#pragma once 
 
 /*
 ***************************************************************************
@@ -12,22 +11,36 @@
 **  TERMS OF USE: MIT License. See bottom of file.
 ***************************************************************************
 */
-//============ Includes ====================
-#include "arduinoGlue.h"
 
-char _bol[128];
-void _debugBOL(const char *fn, int line)
-{
-  time(&now);
-  struct tm  tstruct;
-  localtime_r(&now, &tstruct);
+void _debugBOL(const char *fn, int line);
 
-  snprintf(_bol, sizeof(_bol), "[%02d:%02d:%02d] %-20.20s(%4d): ", tstruct.tm_hour, tstruct.tm_min, tstruct.tm_sec, fn, line);
+#define DebugT(...)     ({ _debugBOL(__FUNCTION__, __LINE__);  \
+    Debug(__VA_ARGS__);                                        \
+    DebugFlush();                                              \
+  })
+#define DebugTln(...)   ({ _debugBOL(__FUNCTION__, __LINE__);  \
+    Debugln(__VA_ARGS__);                                      \
+    DebugFlush();                                              \
+  })
+#define DebugTf(...)    ({ _debugBOL(__FUNCTION__, __LINE__);  \
+    Debugf(__VA_ARGS__);                                       \
+    DebugFlush();                                              \
+  })
 
-  Serial.print (_bol);
-  Serial.flush();       //esp32
-  TelnetStream.print (_bol);
-  TelnetStream.flush(); //esp32
-}
 
-#endif // DEBUG_H
+
+#define Debug(...)      ({ Serial.print(__VA_ARGS__);          \
+    TelnetStream.print(__VA_ARGS__);                           \
+    DebugFlush();                                              \
+  })
+#define Debugln(...)    ({ Serial.println(__VA_ARGS__);        \
+    TelnetStream.println(__VA_ARGS__);                         \
+    DebugFlush();                                              \
+  })
+#define Debugf(...)     ({ Serial.printf(__VA_ARGS__);         \
+    TelnetStream.printf(__VA_ARGS__);                          \
+    DebugFlush();                                              \
+  })
+#define DebugFlush()    ({ Serial.flush();                     \
+    TelnetStream.flush();                                      \
+  })

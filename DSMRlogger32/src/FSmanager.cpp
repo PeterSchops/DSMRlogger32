@@ -33,8 +33,7 @@
 
 char cBuff[100] = {};
 
-struct _catStruct
-{
+struct _catStruct {
   char fDir[35];
   char fName[35];
   int fSize;
@@ -169,62 +168,63 @@ const char RFUindexHtml[] = R"(
 const char Header[] = "HTTP/1.1 303 OK\r\nLocation:FSmanager.html\r\nCache-Control: no-cache\r\n";
 
 // This function defines the content of the update page
-void handleUpdatePage() {
+void handleUpdatePage()
+{
   // Simple update page with [Update Firmware], [Update SPIFFS], and [Return] buttons
   httpServer.send(200, "text/html",
-    "<h1>DSMR-logger32  (Local Update)</h1>"
-    "<style>"
-    "  body { background-color: lightblue; }"
-    "  .file-input { display: none; }"
-    "  .file-label { display: inline-block; padding: 6px 12px; cursor: pointer; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; width: 180px; text-align: center; }"
-    "  .update-form { display: flex; align-items: center; margin-bottom: 10px; }"
-    "  .filename-label { margin: 0 10px; min-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }"
-    "  .submit-button { width: 150px; }"
-    "  .error-message { color: red; margin-left: 10px; }"
-    "</style>"
-    "<form method='POST' action='/update' enctype='multipart/form-data' class='update-form' id='firmware-form'>"
-    "<input type='file' name='update' id='firmware-file' class='file-input' accept='.bin'>"
-    "<label for='firmware-file' class='file-label'>Choose Firmware File</label>"
-    "<span id='firmware-label' class='filename-label'></span>"
-    "<input type='submit' value='Update Firmware' class='submit-button' id='firmware-submit' disabled>"
-    "<span id='firmware-error' class='error-message'></span>"
-    "</form>"
-    "<form method='POST' action='/update?spiffs=1' enctype='multipart/form-data' class='update-form' id='spiffs-form'>"
-    "<input type='file' name='update' id='spiffs-file' class='file-input' accept='.bin'>"
-    "<label for='spiffs-file' class='file-label'>Choose SPIFFS File</label>"
-    "<span id='spiffs-label' class='filename-label'></span>"
-    "<input type='submit' value='Update SPIFFS' class='submit-button' id='spiffs-submit' disabled>"
-    "<span id='spiffs-error' class='error-message'></span>"
-    "</form>"
-    "<button onclick=\"location.href='/'\" style='width: 150px;'>Cancel Update</button>"
-    "<script>"
-    "function updateFileName(inputId, labelId, submitId, errorId) {"
-    "  const input = document.getElementById(inputId);"
-    "  const label = document.getElementById(labelId);"
-    "  const submit = document.getElementById(submitId);"
-    "  const error = document.getElementById(errorId);"
-    "  input.addEventListener('change', function(e) {"
-    "    const file = e.target.files[0];"
-    "    if (file) {"
-    "      if (file.name.toLowerCase().endsWith('.bin')) {"
-    "        label.textContent = file.name;"
-    "        submit.disabled = false;"
-    "        error.textContent = '';"
-    "      } else {"
-    "        label.textContent = '';"
-    "        submit.disabled = true;"
-    "        error.textContent = 'Please select a .bin file';"
-    "      }"
-    "    } else {"
-    "      label.textContent = '';"
-    "      submit.disabled = true;"
-    "      error.textContent = '';"
-    "    }"
-    "  });"
-    "}"
-    "updateFileName('firmware-file', 'firmware-label', 'firmware-submit', 'firmware-error');"
-    "updateFileName('spiffs-file', 'spiffs-label', 'spiffs-submit', 'spiffs-error');"
-    "</script>");
+                  "<h1>DSMR-logger32  (Local Update)</h1>"
+                  "<style>"
+                  "  body { background-color: lightblue; }"
+                  "  .file-input { display: none; }"
+                  "  .file-label { display: inline-block; padding: 6px 12px; cursor: pointer; background-color: #f0f0f0; border: 1px solid #ccc; border-radius: 4px; width: 180px; text-align: center; }"
+                  "  .update-form { display: flex; align-items: center; margin-bottom: 10px; }"
+                  "  .filename-label { margin: 0 10px; min-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }"
+                  "  .submit-button { width: 150px; }"
+                  "  .error-message { color: red; margin-left: 10px; }"
+                  "</style>"
+                  "<form method='POST' action='/update' enctype='multipart/form-data' class='update-form' id='firmware-form'>"
+                  "<input type='file' name='update' id='firmware-file' class='file-input' accept='.bin'>"
+                  "<label for='firmware-file' class='file-label'>Choose Firmware File</label>"
+                  "<span id='firmware-label' class='filename-label'></span>"
+                  "<input type='submit' value='Update Firmware' class='submit-button' id='firmware-submit' disabled>"
+                  "<span id='firmware-error' class='error-message'></span>"
+                  "</form>"
+                  "<form method='POST' action='/update?spiffs=1' enctype='multipart/form-data' class='update-form' id='spiffs-form'>"
+                  "<input type='file' name='update' id='spiffs-file' class='file-input' accept='.bin'>"
+                  "<label for='spiffs-file' class='file-label'>Choose SPIFFS File</label>"
+                  "<span id='spiffs-label' class='filename-label'></span>"
+                  "<input type='submit' value='Update SPIFFS' class='submit-button' id='spiffs-submit' disabled>"
+                  "<span id='spiffs-error' class='error-message'></span>"
+                  "</form>"
+                  "<button onclick=\"location.href='/'\" style='width: 150px;'>Cancel Update</button>"
+                  "<script>"
+                  "function updateFileName(inputId, labelId, submitId, errorId) {"
+                  "  const input = document.getElementById(inputId);"
+                  "  const label = document.getElementById(labelId);"
+                  "  const submit = document.getElementById(submitId);"
+                  "  const error = document.getElementById(errorId);"
+                  "  input.addEventListener('change', function(e) {"
+                  "    const file = e.target.files[0];"
+                  "    if (file) {"
+                  "      if (file.name.toLowerCase().endsWith('.bin')) {"
+                  "        label.textContent = file.name;"
+                  "        submit.disabled = false;"
+                  "        error.textContent = '';"
+                  "      } else {"
+                  "        label.textContent = '';"
+                  "        submit.disabled = true;"
+                  "        error.textContent = 'Please select a .bin file';"
+                  "      }"
+                  "    } else {"
+                  "      label.textContent = '';"
+                  "      submit.disabled = true;"
+                  "      error.textContent = '';"
+                  "    }"
+                  "  });"
+                  "}"
+                  "updateFileName('firmware-file', 'firmware-label', 'firmware-submit', 'firmware-error');"
+                  "updateFileName('spiffs-file', 'spiffs-label', 'spiffs-submit', 'spiffs-error');"
+                  "</script>");
 }
 
 
@@ -237,78 +237,67 @@ void setupFSmanager()
   httpServer.on("/listFS", listFS);
   httpServer.on("/ReBoot", reBootESP);
   httpServer.on("/RFUupdate", handleRemoteUpdate);  //-- route for remote update
-  httpServer.on("/RFUlistFirmware", []() { RFUlistFiles("firmware"); });
-  httpServer.on("/RFUlistSpiffs",   []() { RFUlistFiles("spiffs"); });
+  httpServer.on("/RFUlistFirmware", []() {
+    RFUlistFiles("firmware");
+  });
+  httpServer.on("/RFUlistSpiffs",   []() {
+    RFUlistFiles("spiffs");
+  });
 
   //-- Override the update handler to include the resetWatchdog() call
-  httpServer.on("/update", HTTP_POST, []() 
-  {
+  httpServer.on("/update", HTTP_POST, []() {
     // This block is executed when the update finishes
-    if (Update.hasError()) 
-    {
+    if (Update.hasError()) {
       writeToSysLog("Update failed!");
       httpServer.send(200, "text/html", "Update Failed! <a href='/'>Return to Home</a>");
-    } 
-    else 
-    {
+    } else {
       //httpServer.send(200, "text/html", "Update Successful! Rebooting... <a href='/'>Return to Home</a>");
       writeToSysLog("Update successful!");
       delay(100);
       ESP.restart();
     }
-  }, []() 
-  {
+  }, []() {
     // Perform the actual update based on the incoming file
-    HTTPUpload& upload = httpServer.upload();
-    if (upload.status == UPLOAD_FILE_START) 
-    {
+    HTTPUpload &upload = httpServer.upload();
+    if (upload.status == UPLOAD_FILE_START) {
       DebugTf("Update: %s\n", upload.filename.c_str());
       writeToSysLog("Update [%s]... ", upload.filename.c_str());
 
       // Call the watchdog reset function only once when update begins
       resetWatchdog();
-      if (httpServer.arg("spiffs") == "1")
-            doRedirect("Wait for SPIFFS update to complete ...", 40, "/", false);      
-      else  doRedirect("Wait for firmware update to complete ...", 60, "/", false);      
+      if (httpServer.arg("spiffs") == "1") {
+        doRedirect("Wait for SPIFFS update to complete ...", 40, "/", false);
+      } else {
+        doRedirect("Wait for firmware update to complete ...", 60, "/", false);
+      }
 
       // Check if we're updating SPIFFS or the firmware and start accordingly
       int updateSize = (httpServer.arg("spiffs") == "1") ? 0x80000 : 0x180000;  // 512KB for SPIFFS, 1.5MB for Firmware
-      if (!Update.begin(updateSize, (httpServer.arg("spiffs") == "1") ? U_SPIFFS : U_FLASH)) 
-      {
+      if (!Update.begin(updateSize, (httpServer.arg("spiffs") == "1") ? U_SPIFFS : U_FLASH)) {
         Update.printError(Serial);
       }
-    } 
-    else if (upload.status == UPLOAD_FILE_WRITE) 
-    {
+    } else if (upload.status == UPLOAD_FILE_WRITE) {
       // Write the uploaded data to the flash memory
-      if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) 
-      {
+      if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
         Update.printError(Serial);
-      } 
-      else 
-      {
+      } else {
         // Print a dot to show progress
         Debug('.');
         //-- poke WatchDog
         pulseHeart(false);
 
       }
-    } else if (upload.status == UPLOAD_FILE_END) 
-    {
+    } else if (upload.status == UPLOAD_FILE_END) {
       // Finish the update
-      if (Update.end(true)) 
-      {
+      if (Update.end(true)) {
         DebugTf("Update Success: %u bytes\n", upload.totalSize);
         writeToSysLog("Update Success: %u bytes", upload.totalSize);
         delay(100);  // Delay a little to allow the response to be sent
         ESP.restart();  // Restart the ESP32 after successful update
-      } 
-      else 
-      {
+      } else {
         Update.printError(Serial);
       }
-    } else if (upload.status == UPLOAD_FILE_ABORTED) 
-    {
+    } else if (upload.status == UPLOAD_FILE_ABORTED) {
       DebugTln("Update Aborted");
       writeToSysLog("Update Aborted!");
       httpServer.send(500, "text/plain", "Update Aborted!  <a href='/'>Return to Home</a>");
@@ -321,20 +310,21 @@ void setupFSmanager()
 
   httpUpdater.setup(&httpServer);
 
-  httpServer.onNotFound([]()
-  {
-    if (Verbose1) { DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(httpServer.uri()).c_str()); }
+  httpServer.onNotFound([]() {
+    if (Verbose1) {
+      DebugTf("in 'onNotFound()'!! [%s] => \r\n", String(httpServer.uri()).c_str());
+    }
 
     if (httpServer.uri().indexOf("/api/") == 0) {
-      if (Verbose1) DebugTf("next: processAPI(%s)\r\n", String(httpServer.uri()).c_str());
+      if (Verbose1) {
+        DebugTf("next: processAPI(%s)\r\n", String(httpServer.uri()).c_str());
+      }
       processAPI();
-    }
-    else if (httpServer.uri().indexOf("/format") == 0) {
+    } else if (httpServer.uri().indexOf("/format") == 0) {
       formatFS();
-    }
-    else {
+    } else {
       DebugTf("next: handleFile(%s)\r\n"
-                      , String(httpServer.urlDecode(httpServer.uri())).c_str());
+              , String(httpServer.urlDecode(httpServer.uri())).c_str());
 
       if (!handleFile(httpServer.urlDecode(httpServer.uri()))) {
         httpServer.send(404, "text/plain", "FileNotFound");
@@ -394,8 +384,7 @@ bool handleList()
         catalog[catPos].fSize = 0;
         catPos++;
       }
-    }
-    else {
+    } else {
       //DebugTf("Found file [%s]\r\n", dir.name());
       snprintf(catalog[catPos].fDir, sizeof(catalog[0].fDir), "");
       snprintf(catalog[catPos].fName, sizeof(catalog[0].fName), "%s", dir.name());
@@ -405,14 +394,16 @@ bool handleList()
     dir = root.openNextFile();
   }
   #ifdef _SPIFFS
-    //-- SPIFFS hack. it works but why???
-    catPos--;
+  //-- SPIFFS hack. it works but why???
+  catPos--;
   #endif
   qsort(catalog, catPos, sizeof(catalog[0]), sortFunction);
 
   String temp = "[";
   for (int i=0; i<catPos; i++) {
-    if (temp != "[") temp += "\n,";
+    if (temp != "[") {
+      temp += "\n,";
+    }
     temp += "{\"folder\":\"" + String(catalog[i].fDir)
             + "\",\"name\":\"" + String(catalog[i].fName)
             + "\",\"size\":\"" + formatBytes(catalog[i].fSize) + "\"}";
@@ -445,7 +436,9 @@ void deleteRecursive(const char *path)
     snprintf(mName, sizeof(mName), "%s", path);
     DebugTf("Remove folder [%s]\r\n", mName);
     writeToSysLog("Folder [%s] removed by user", mName);
-    if (mName[0] != '/') { snprintf(mName, sizeof(mName), "%s", path); }
+    if (mName[0] != '/') {
+      snprintf(mName, sizeof(mName), "%s", path);
+    }
     File map = _FSYS.open(mName);
     File file = map.openNextFile();
     while(file) {
@@ -454,22 +447,25 @@ void deleteRecursive(const char *path)
       deleteRecursive(cBuff);
       file  = map.openNextFile();
     }
-    if (_FSYS.rmdir(mName))
-          DebugTf("OK! [%s] removed\r\n", mName);
-    else  DebugTf("ERROR! [%s] NOT removed\r\n", mName);
+    if (_FSYS.rmdir(mName)) {
+      DebugTf("OK! [%s] removed\r\n", mName);
+    } else {
+      DebugTf("ERROR! [%s] NOT removed\r\n", mName);
+    }
     return;
   }
 
   //-- it's a file!
   snprintf(mName, sizeof(mName), "%s", path);
-  if (mName[0] != '/') snprintf(mName, sizeof(mName), "/%s", path);
+  if (mName[0] != '/') {
+    snprintf(mName, sizeof(mName), "/%s", path);
+  }
   snprintf(fName, sizeof(fName), "%s", String(path).substring(String(path).lastIndexOf('/')+1));
   DebugTf("Remove file [%s][%s]\r\n", mName, fName);
   if (_FSYS.remove(mName)) {
     DebugTf("File [%s] removed\r\n", mName);
     writeToSysLog("File [%s] removed by user", mName);
-  }
-  else {
+  } else {
     DebugTf("ERROR! File [%s] is NOT  removed!\r\n", mName);
     writeToSysLog("ERROR trying to remove File [%s]", mName);
   }
@@ -493,16 +489,16 @@ bool handleFile(String &&path)
         dummy.println("Dummy");
         dummy.close();
         DebugTf("Dummy file [%s] created\r\n", folderName);
-      }
-      else {
+      } else {
         DebugTf("ERROR: creating Dummy file [%s]\r\n", folderName);
       }
-    }
-    else {
+    } else {
       DebugTf("ERROR: mkdir(%s) failed!\r\n", folderName);
     }
   } //  create folder
-  if (httpServer.hasArg("sort")) return handleList();
+  if (httpServer.hasArg("sort")) {
+    return handleList();
+  }
   if (httpServer.hasArg("delete")) {
     deleteRecursive(httpServer.arg("delete").c_str());
     sendResponce();
@@ -512,7 +508,9 @@ bool handleFile(String &&path)
     //-- ermöglicht das hochladen der FSmanager.html
     httpServer.send(200, "text/html", _FSYS.begin() ? HELPER : WARNING);
   }
-  if (path.endsWith("/")) { path += "/index.html"; }
+  if (path.endsWith("/")) {
+    path += "/index.html";
+  }
   //-- Vorrübergehend für den Admin Tab
   //if (path == "/FSmanager.html") sendResponce();
   //return _FSYS.exists(path) ? ({File f = _FSYS.open(path, "r"); httpServer.streamFile(f, mime::getContentType(path)); f.close(); true;}) : false;
@@ -537,15 +535,15 @@ void handleFileUpload()
     }
     DebugTln("FileUpload Name: " + upload.filename);
     fsUploadFile = SPIFFS.open("/" + httpServer.urlDecode(upload.filename), "w");
-  }
-  else if (upload.status == UPLOAD_FILE_WRITE) {
+  } else if (upload.status == UPLOAD_FILE_WRITE) {
     DebugTln("FileUpload Data: " + (String)upload.currentSize);
-    if (fsUploadFile)
+    if (fsUploadFile) {
       fsUploadFile.write(upload.buf, upload.currentSize);
-  }
-  else if (upload.status == UPLOAD_FILE_END) {
-    if (fsUploadFile)
+    }
+  } else if (upload.status == UPLOAD_FILE_END) {
+    if (fsUploadFile) {
       fsUploadFile.close();
+    }
     DebugTln("FileUpload Size: " + (String)upload.totalSize);
     httpServer.sendContent(Header);
   }
@@ -555,10 +553,10 @@ void handleFileUpload()
 
 //===========================================================================================
 // Custom reverse string search function
-const char* reverse_strstr(const char* haystack, const char* needle, const char* haystack_end) 
+const char *reverse_strstr(const char *haystack, const char *needle, const char *haystack_end)
 {
   size_t needle_len = strlen(needle);
-  const char* p;
+  const char *p;
 
   if (needle_len == 0) {
     return haystack_end;
@@ -575,7 +573,7 @@ const char* reverse_strstr(const char* haystack, const char* needle, const char*
 
 
 //===========================================================================================
-void RFUlistFiles(const char* startWith) 
+void RFUlistFiles(const char *startWith)
 {
   uint8_t nrFiles = 0;
 
@@ -585,25 +583,25 @@ void RFUlistFiles(const char* startWith)
   HTTPClient http;
   http.begin(_REMOTE_UPDATESERVER);
   int httpCode = http.GET();
-  
+
   DynamicJsonDocument doc(1024);
   JsonArray fileArray = doc.to<JsonArray>();
-  
+
   if (httpCode > 0) {
     int contentLength = http.getSize();
     if (contentLength > 0) {
-      char* htmlContent = (char*)malloc(contentLength + 1);
+      char *htmlContent = (char *)malloc(contentLength + 1);
       if (htmlContent) {
         int bytesRead = http.getStream().readBytes(htmlContent, contentLength);
         htmlContent[bytesRead] = '\0'; // Null-terminate the string
 
-        const char* pos = htmlContent;
-        const char* htmlEnd = htmlContent + bytesRead;
+        const char *pos = htmlContent;
+        const char *htmlEnd = htmlContent + bytesRead;
         while ((pos = strstr(pos, ".bin")) != NULL) {
-          const char* hrefPos = reverse_strstr(htmlContent, "href=\"", pos);
+          const char *hrefPos = reverse_strstr(htmlContent, "href=\"", pos);
           if (hrefPos != NULL && hrefPos < pos) {
-            const char* startPos = hrefPos + 6; // Move past 'href="'
-            const char* endPos = strchr(startPos, '"');
+            const char *startPos = hrefPos + 6; // Move past 'href="'
+            const char *endPos = strchr(startPos, '"');
             if (endPos != NULL && endPos > startPos) {
               char fileName[256];
               size_t fileNameLen = endPos - startPos;
@@ -615,7 +613,7 @@ void RFUlistFiles(const char* startWith)
                   // Check for duplicates
                   bool isDuplicate = false;
                   for (JsonVariant v : fileArray) {
-                    if (strcmp(v.as<const char*>(), fileName) == 0) {
+                    if (strcmp(v.as<const char *>(), fileName) == 0) {
                       isDuplicate = true;
                       break;
                     }
@@ -631,18 +629,15 @@ void RFUlistFiles(const char* startWith)
           pos += 4; // Move past ".bin"
         }
         free(htmlContent);
-      }
-      else {
+      } else {
         DebugTln("Memory allocation failed");
         fileArray.add("Memory allocation failed");
       }
-    }
-    else {
+    } else {
       DebugTln("Empty content received");
       fileArray.add("Empty content received");
     }
-  } 
-  else {
+  } else {
     DebugTln("Error fetching files ...");
     fileArray.add("Error fetching files");
   }
@@ -669,13 +664,14 @@ void handleRemoteUpdate()
 
   if (httpServer.method() == HTTP_GET) {
     httpServer.send(200, "text/html", RFUindexHtml);
-  } 
-  else if (httpServer.method() == HTTP_POST) {
+  } else if (httpServer.method() == HTTP_POST) {
     char action[16] = {};
     char newVersionNr[32] = {};
 
     for(int a=0; a<httpServer.args(); a++) {
-      if (Verbose1) { DebugTf("arg[%d]: [%s] = [%s]\r\n", a, httpServer.argName(a).c_str(), httpServer.arg(a).c_str()); }
+      if (Verbose1) {
+        DebugTf("arg[%d]: [%s] = [%s]\r\n", a, httpServer.argName(a).c_str(), httpServer.arg(a).c_str());
+      }
     }
 
     strlcpy(action, httpServer.arg("action").c_str(), sizeof(action));
@@ -686,16 +682,16 @@ void handleRemoteUpdate()
       doRedirect("Back to FSmanager", 2, "/FSmanager.html", false);
     }
 
-    if (strncmp(action, "updateFirmware", 14) == 0) 
-        strlcpy(newVersionNr, httpServer.arg("firmwareVersion").c_str(), sizeof(newVersionNr));
-    else if (strncmp(action, "updateSpiffs", 12) == 0) 
-        strlcpy(newVersionNr, httpServer.arg("spiffsVersion").c_str(), sizeof(newVersionNr));
-    else {
+    if (strncmp(action, "updateFirmware", 14) == 0) {
+      strlcpy(newVersionNr, httpServer.arg("firmwareVersion").c_str(), sizeof(newVersionNr));
+    } else if (strncmp(action, "updateSpiffs", 12) == 0) {
+      strlcpy(newVersionNr, httpServer.arg("spiffsVersion").c_str(), sizeof(newVersionNr));
+    } else {
       DebugTln("Invalid POST data received");
       doRedirect("Back to FSmanager", 2, "/FSmanager.html", false);
       return;
     }
-    
+
     DebugTf("Update requested. New version: %s\r\n", newVersionNr);
     if (strncmp(newVersionNr, "No Updates Found", 16) == 0) {
       DebugTf("(%s) No Firmware Update!\r\n", __FUNCTION__);
@@ -705,47 +701,47 @@ void handleRemoteUpdate()
     snprintf(updateServerURI, sizeof(updateServerURI), "%s/%s", _REMOTE_UPDATESERVER, newVersionNr);
 
     DebugTf("updateServerURI(): newVersionNr [%s]\r\n", newVersionNr);
-    
+
     UpdateManager updateManager;
 
     DebugTf("(%s) Starting %s upload!\r\n", __FUNCTION__, action);
 
     if (strncmp(action, "updateFirmware", 14) == 0) {
-      doRedirect("Wait for firmware update to complete ...", 120, "/", false);      
+      doRedirect("Wait for firmware update to complete ...", 120, "/", false);
       //-- Shorthand
       updateManager.updateFirmware(updateServerURI, [](u_int8_t progress) {
         if ((progress % 70) == 0) {
           Debugln('.');
           pulseHeart();
+        } else {
+          Debug('.');
         }
-        else Debug('.');
       });
-    }
-    else if (strncmp(action, "updateSpiffs", 12) == 0) {
-      doRedirect("Wait for spiffs update to complete ...", 80, "/", false);      
+    } else if (strncmp(action, "updateSpiffs", 12) == 0) {
+      doRedirect("Wait for spiffs update to complete ...", 80, "/", false);
       //-- Shorthand
       updateManager.updateSpiffs(updateServerURI, [](u_int8_t progress) {
         if ((progress % 70) == 0) {
           Debugln('.');
           pulseHeart();
+        } else {
+          Debug('.');
         }
-        else Debug('.');
       });
-    }
-    else {
+    } else {
       DebugTf("(%s) Invalid update action!\r\n", __FUNCTION__);
       doRedirect("Back to FSmanager", 2, "/FSmanager.html", false);
       return;
     }
 
-    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_ERROR)) { 
+    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_ERROR)) {
       DebugTf("\r\n(%s) Update ERROR\r\n", __FUNCTION__);
       httpServer.send(200, "text/html", "Update ERROR!");
       delay(1000);
       ESP.restart();
       delay(3000);
     }
-    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_OK)) { 
+    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_OK)) {
       Debugf("\r\n(%s) Update OK\r\n", __FUNCTION__);
       httpServer.send(200, "text/html", "Update Succesfull!");
       delay(1000);
@@ -848,19 +844,33 @@ void doRedirect(String msg, int wait, const char *URL, bool reboot)
 //===========================================================================================
 String getContentType(String filename)
 {
-  if (httpServer.hasArg("download"))    return "application/octet-stream";
-  else if (filename.endsWith(".htm"))   return "text/html";
-  else if (filename.endsWith(".html"))  return "text/html";
-  else if (filename.endsWith(".css"))   return "text/css";
-  else if (filename.endsWith(".js"))    return "application/javascript";
-  else if (filename.endsWith(".png"))   return "image/png";
-  else if (filename.endsWith(".gif"))   return "image/gif";
-  else if (filename.endsWith(".jpg"))   return "image/jpeg";
-  else if (filename.endsWith(".ico"))   return "image/x-icon";
-  else if (filename.endsWith(".xml"))   return "text/xml";
-  else if (filename.endsWith(".pdf"))   return "application/x-pdf";
-  else if (filename.endsWith(".zip"))   return "application/x-zip";
-  else if (filename.endsWith(".gz"))    return "application/x-gzip";
+  if (httpServer.hasArg("download")) {
+    return "application/octet-stream";
+  } else if (filename.endsWith(".htm")) {
+    return "text/html";
+  } else if (filename.endsWith(".html")) {
+    return "text/html";
+  } else if (filename.endsWith(".css")) {
+    return "text/css";
+  } else if (filename.endsWith(".js")) {
+    return "application/javascript";
+  } else if (filename.endsWith(".png")) {
+    return "image/png";
+  } else if (filename.endsWith(".gif")) {
+    return "image/gif";
+  } else if (filename.endsWith(".jpg")) {
+    return "image/jpeg";
+  } else if (filename.endsWith(".ico")) {
+    return "image/x-icon";
+  } else if (filename.endsWith(".xml")) {
+    return "text/xml";
+  } else if (filename.endsWith(".pdf")) {
+    return "application/x-pdf";
+  } else if (filename.endsWith(".zip")) {
+    return "application/x-zip";
+  } else if (filename.endsWith(".gz")) {
+    return "application/x-gzip";
+  }
   return "text/plain";
 } // getContentType()
 
@@ -872,10 +882,8 @@ int sortFunction(const void *cmp1, const void *cmp2)
   struct _catStruct *ia = (struct _catStruct *)cmp1;
   struct _catStruct *ib = (struct _catStruct *)cmp2;
   #ifdef _SPIFFS
-    return strcmp(ia->fName, ib->fName);
+  return strcmp(ia->fName, ib->fName);
   #else
-    return strcmp(ia->fDir, ib->fDir);
+  return strcmp(ia->fDir, ib->fDir);
   #endif
 } //  sortFunction()
-
-/*eof*/

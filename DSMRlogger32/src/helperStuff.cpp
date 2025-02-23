@@ -11,14 +11,17 @@
 #include "helperStuff.h"
 #include "neoPixelStuff.h"
 
+extern uint16_t        fieldTableCount;                   		//-- from DSMRlogger32
+
 //===========================================================================================
 void pulseHeart(bool force)
 {
   static uint32_t pulseTimer;
-  
+  const uint32_t PULSE_TIME = 5000;
+
   if (skipHeartbeats || lostWiFiConnection) return;
   
-  if (force || ((millis()-pulseTimer) > _PULSE_TIME)) {
+  if (force || ((millis()-pulseTimer) > PULSE_TIME)) {
     if (force) { DebugTln("Send Heartbeat to WD ..."); }
     pulseTimer = millis();
     digitalWrite(_PIN_HEARTBEAT, !digitalRead(_PIN_HEARTBEAT));
@@ -341,7 +344,7 @@ void pushToActualStore(const char *cName, float fValue)
 
 //=======================================================================
 void pushTlgrmToActualStore()
-{
+{  
   memset(fieldTable, 0, (sizeof(fieldTableStruct) * 100));
   fieldTableCount = 0;
   onlyIfPresent = true;
@@ -353,7 +356,9 @@ void pushTlgrmToActualStore()
   tlgrmData.applyEach(addSmToActualStore());
   pushToActualStore("gas_delivered", gasDelivered);
   pushToActualStore("water_delivered", waterDelivered);
-
+  //peakPowerCurrentQuarter;
+  //peakPowerCurrentMonth;
+  
   actualStoreCount++;
 
   if ((actualStoreCount % 1000) == 0) {

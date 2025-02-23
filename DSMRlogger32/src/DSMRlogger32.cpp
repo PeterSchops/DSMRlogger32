@@ -34,6 +34,61 @@
 
 #include "DSMRlogger32.h"
 
+//===========================GLOBAL VAR'S======================================
+ESPSL                  sysLog;
+WiFiClient             wifiClient;
+myWiFiStruct           myWiFi;
+Shield32               relay0;
+Shield32               relay1;
+MyData                 tlgrmData;
+PubSubClient           MQTTclient(wifiClient);
+HardwareSerial         SMserial (1);//-- use UART1 for SMserial
+WebServer              httpServer (80);
+HTTPUpdateServer       httpUpdater(true);
+P1Reader               slimmeMeter(&SMserial, _DTR_ENABLE);//-- ESP32 core does no longer accept -1 as a GPIO pin
+
+char                  *tlgrmTmpData;
+char                  *tlgrmRaw;
+char                  *jsonBuff;
+char                  *gMsg;
+char                  *fChar;
+
+fieldTableStruct      *fieldTable; 
+uint16_t               fieldTableCount = 0;
+settingSmStruct       *smSetting;
+settingDevStruct      *devSetting;
+settingShieldStruct   *shieldSetting[2];
+actualDataStruct      *actualStore;
+timeStruct             lastTlgrmTime;
+timeStruct             prevTlgrmTime;
+
+time_t      actT;
+
+char        newTimestamp[_TIMESTAMP_LEN] = {0};
+uint32_t    slotErrors = 0;
+uint32_t    nrReboots  = 0;
+uint32_t    loopCount  = 0;
+uint32_t    telegramCount = 0;
+uint32_t    telegramsAtStart = 0;
+uint32_t    telegramErrors = 0;
+uint8_t     tmpNoHourSlots;
+uint8_t     tmpNoDaySlots;
+uint8_t     tmpNoMonthSlots;
+bool        tmpAlterRingSlots = false;
+bool        showRaw = false;
+int8_t      showRawCount = 0;
+float       gasDelivered;
+float       waterDelivered;
+float       peakPowerCurrentQuarter;//read
+//float     peakPowerCurrentHour;//calculate
+//float     peakPowerCurrentDay;//calculate
+//float     peakPowerCurrentMonth;
+uint32_t    antiWearTimer = 0;
+bool        updatedRINGfiles = false;
+
+float typecastValue(TimestampedFixedValue i);               
+float typecastValue(FixedValue i);                          
+
 //     _FW_VERSION format "vx.y.z (dd-mm-yyyy)
 const char *_FW_VERSION = AUTO_VERSION;
 
@@ -50,7 +105,6 @@ float typecastValue(FixedValue i)
 }
 
 TimeSync timeSync; //-- new, not in Arduino version
-struct tm timeinfo;
 time_t now;
 
 //===========================================================================================

@@ -6,10 +6,6 @@
 #include "Shield32.h"
 
 DECLARE_TIMER_EXTERN(antiWearTimer);
-
-extern Shield32 relay0;
-extern Shield32 relay1;
-extern time_t   now;
    
 //============ Prototypes ==================
 void processApiV2Sm(const char* apiId, const char* oneField);
@@ -28,6 +24,7 @@ void sendJsonActualHist();
 void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uint8_t limit, bool sortDesc);
 void listFieldsArray(char inArray[][35]);                   
 void sendApiNotFound(const char *URI);                      
-
+//-- Used in: DSMRlogger32.cpp, restAPI.cpp
+bool isInFieldsArray(const char *lookUp, int elemts);       
 
 #endif // RESTAPI_H

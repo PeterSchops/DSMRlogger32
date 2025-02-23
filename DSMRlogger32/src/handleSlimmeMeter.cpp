@@ -122,6 +122,7 @@ void processSlimmemeter()
 
     if (!tlgrmData.timestamp_present) {
       struct tm  tstruct;
+      extern time_t now;
       localtime_r(&now, &tstruct);
 
       snprintf (gMsg,  _GMSG_LEN, "%02d%02d%02d%02d%02d%02d\0\0",

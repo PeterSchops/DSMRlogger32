@@ -26,12 +26,15 @@ int8_t              reconnectAttempts = 0;
 char                lastMQTTtimestamp[15] = "-";
 char                mqttBuff[100];
 
-/*				*** enum moved to arduinoGlue.h ***
+
 enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_IS_CONNECTED, MQTT_STATE_ERROR };
-*/
 enum states_of_MQTT stateMQTT = MQTT_STATE_INIT;
 
 String            MQTTclientId;
+
+extern uint16_t        fieldTableCount;                   		//-- from restAPI
+extern char            fieldsArray[50][35];                   //-- from restAPI
+
 
 //===========================================================================================
 void connectMQTT()

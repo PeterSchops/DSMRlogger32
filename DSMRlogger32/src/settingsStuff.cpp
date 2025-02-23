@@ -13,6 +13,9 @@
 #include "FSYSstuff.h"
 #include "neoPixelStuff.h"
 
+extern Shield32 relay0;
+extern Shield32 relay1;
+
 //=======================================================================
 void writeSmSettings()
 {

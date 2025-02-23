@@ -11,6 +11,8 @@
 #include "timeStuff.h"
 #include "helperStuff.h"
 
+extern time_t now;
+
 //===========================================================================================
 void logNtpTime()
 {
@@ -19,7 +21,6 @@ void logNtpTime()
     writeToSysLog("NTP Date/Time: %s", currentDateTimeString().c_str());
   }
   //ntpEventId = setEvent(logNtpTime, now()+3600);
-
 } //  logNtpTime()
 
 
@@ -213,7 +214,9 @@ timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType)
 
   //-- for compatibility with the Arduino code base we have
   //-- to subtract '1' from the Year to get the same monthSlot's
-  newTime.Months      = ((newTime.Year -1) * 12) + newTime.Month;
+  const uint32_t SECS_PER_DAY = 86400;
+  const uint32_t SECS_PER_HOUR = 3600;
+  newTime.Months = ((newTime.Year - 1) * 12) + newTime.Month;
   newTime.monthsHist  = devSetting->NoMonthSlots;
   newTime.monthSlot   = (newTime.Months % newTime.monthsHist);
   newTime.Days        = newTime.epoch / SECS_PER_DAY;
@@ -262,8 +265,7 @@ timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType)
 //===========================================================================================
 timeStruct buildTimeStruct(const char *timeStamp, uint16_t maxHourSlots, uint16_t maxDaySlots, uint16_t maxMonthSlots)
 {
-  struct tm  timeInfo = {0};
-  timeStruct thisTime = {0};
+  timeStruct localThisTime = {0};
 
   if (Verbose2) {
     DebugTf("--->given.timeStamp[%s], maxHourSlot[%2d], maxDaySlot[%2d], maxMonthSlot[%2d]\r\n", timeStamp, maxHourSlots, maxDaySlots, maxMonthSlots);
@@ -274,17 +276,17 @@ timeStruct buildTimeStruct(const char *timeStamp, uint16_t maxHourSlots, uint16_
   if (maxMonthSlots < _NO_MONTH_SLOTS_) { maxMonthSlots  = _NO_MONTH_SLOTS_; }
 
   // Copy the timestamp and fill missing parts
-  strncpy(thisTime.Timestamp, timeStamp, _TIMESTAMP_LEN - 1);
-  thisTime.Timestamp[_TIMESTAMP_LEN - 1] = '\0';
-  fillMissingTimestamp(thisTime.Timestamp);
+  strncpy(localThisTime.Timestamp, timeStamp, _TIMESTAMP_LEN - 1);
+  localThisTime.Timestamp[_TIMESTAMP_LEN - 1] = '\0';
+  fillMissingTimestamp(localThisTime.Timestamp);
 
-  thisTime = calculateTime(thisTime, 0, RNG_HOURS);
+  localThisTime = calculateTime(localThisTime, 0, RNG_HOURS);
 
   if (Verbose1) {
     DebugTf("returning.timeStamp[%s],    hourSlot[%2d],    daySlot[%2d],    monthSlot[%2d]\r\n",
-            thisTime.Timestamp, thisTime.hourSlot, thisTime.daySlot, thisTime.monthSlot);
+      localThisTime.Timestamp, localThisTime.hourSlot, localThisTime.daySlot, localThisTime.monthSlot);
   }
-  return thisTime;
+  return localThisTime;
 } //  buildTimeStruct()
 
 

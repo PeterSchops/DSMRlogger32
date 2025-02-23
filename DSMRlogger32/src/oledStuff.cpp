@@ -47,6 +47,8 @@ void checkFlashButton()
 //===========================================================================================
 void oled_Init()
 {
+  const uint8_t I2C_ADDRESS = 0x3C;
+
   DebugTln("Wire.begin() ......");
   Wire.begin();
   if (devSetting->OledType == 2) { oled.begin(&SH1106_128x64, I2C_ADDRESS); }

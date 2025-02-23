@@ -20,14 +20,14 @@ extern Adafruit_NeoPixel neoPixels;               //-- from settingsStuff
 
 //-- from neoPixelStuff.h
 enum neoPixColor {
-  neoPixWhiteLow
-, neoPixWhite
-, neoPixRed
-, neoPixGreenLow
-, neoPixGreen
-, neoPixBlue
-, neoPixFade
-, neoPixBlink
+  neoPixWhiteLow,
+  neoPixWhite,
+  neoPixRed,
+  neoPixGreenLow,
+  neoPixGreen,
+  neoPixBlue,
+  neoPixFade,
+  neoPixBlink,
 };
 
 

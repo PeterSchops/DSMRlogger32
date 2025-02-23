@@ -12,6 +12,8 @@
 #include "helperStuff.h"
 #include "neoPixelStuff.h"
 
+extern myWiFiStruct myWiFi;                                           
+
 //-- gets called when WiFiManager enters configuration mode
 //===========================================================================================
 void configModeCallback (WiFiManager *myWiFiManager)

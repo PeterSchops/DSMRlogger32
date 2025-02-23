@@ -22,88 +22,51 @@
 #include <PubSubClient.h>
 #include <TimeSyncLib.h>
 #include "safeTimers.h"
-
-//-- used in DSMRlogger32.cpp
-extern struct tm    timeinfo;                                          //-- from timeStuff
-//-- used in handleTestdata.cpp, DSMRlogger32.cpp, restAPI.cpp, menuStuff.cpp, FSYSstuff.cpp, handleSlimmeMeter.cpp
-extern time_t       now;                                               //-- from timeStuff
+#include "Debug.h"
 
 //============ Defines & Macros====================
-#define MAXLINELENGTH     500   // longest normal line is 47 char (+3 for \r\n\0)
-#define I2C_ADDRESS 0x3C
-#define RST_PIN -1
-#define _SPIFFS
-#define FORMAT_SPIFFS_IF_FAILED true
-//-- from Debug.h -----------
-//-- not used anywhere
-void _debugBOL(const char *fn, int line);                   
 
-#define Debug(...)      ({ Serial.print(__VA_ARGS__);         \
-                           TelnetStream.print(__VA_ARGS__);   \
-                           DebugFlush();                       \
-                        })
-#define Debugln(...)    ({ Serial.println(__VA_ARGS__);       \
-                           TelnetStream.println(__VA_ARGS__); \
-                           DebugFlush();                       \
-                        })
-#define Debugf(...)     ({ Serial.printf(__VA_ARGS__);        \
-                           TelnetStream.printf(__VA_ARGS__);  \
-                           DebugFlush();                       \
-                        })
-#define DebugFlush()    ({ Serial.flush(); \
-                           TelnetStream.flush(); \
-                        })
-#define DebugT(...)     ({ _debugBOL(__FUNCTION__, __LINE__);  \
-                           Debug(__VA_ARGS__);                 \
-                           DebugFlush();                       \
-                        })
-#define DebugTln(...)   ({ _debugBOL(__FUNCTION__, __LINE__);  \
-                           Debugln(__VA_ARGS__);        \
-                           DebugFlush();                       \
-                        })
-#define DebugTf(...)    ({ _debugBOL(__FUNCTION__, __LINE__);  \
-                           Debugf(__VA_ARGS__);                \
-                           DebugFlush();                       \
-                        })
-#define _NEO_PIXELS_COUNT        2
-#ifdef ESP32_WROVER
-#define _NEO_PIN                23    //                 hardware
-#else //ESP32 S2 mini
-#define _NEO_PIN                18    //                 hardware
-#endif
-#define _NEO_CHANNEL           0
+
+#define _SPIFFS
 #define _FSYS SPIFFS
 
 #define writeToSysLog(...) ({ \
+        extern time_t now;   \
         struct tm  tstruct; \
         localtime_r(&now, &tstruct); \
-        sysLog.writeDbg(sysLog.buildD("[%04d-%02d-%02d %02d:%02d:%02d][%-12.12s] "  \
-                            , tstruct.tm_year+1900       \
-                            , tstruct.tm_mon+1           \
-                            , tstruct.tm_mday            \
-                            , tstruct.tm_hour            \
-                            , tstruct.tm_min             \
-                            , tstruct.tm_sec             \
-                            , __FUNCTION__)      \
-                            , ##__VA_ARGS__);    \
+        sysLog.writeDbg(sysLog.buildD("[%04d-%02d-%02d %02d:%02d:%02d][%-12.12s] ",  \
+                             tstruct.tm_year+1900,       \
+                             tstruct.tm_mon+1,           \
+                             tstruct.tm_mday,            \
+                             tstruct.tm_hour,            \
+                             tstruct.tm_min,             \
+                             tstruct.tm_sec,             \
+                             __FUNCTION__),              \
+                             ##__VA_ARGS__);             \
                            })
- 
-#define _SYSLOG_LINES          150
-#define _SYSLOG_LINE_LEN       120
-#define AMSTERDAM_POSIX       "CET-1CEST,M3.5.0,M10.5.0/3"    // Time in Amsterdam
+
+const uint16_t _SYSLOG_LINES = 150;
+const size_t _SYSLOG_LINE_LEN = 120;
+#define AMSTERDAM_POSIX "CET-1CEST,M3.5.0,M10.5.0/3" // Time in Amsterdam
 #define  tmYearToCalendar(Y) ((Y) + 1970)  // full four digit year 
 #define  CalendarYrToTm(Y)   ((Y) - 1970)
 #define _DEFAULT_HOSTNAME     "DSMR-ESP32"
 #define _REMOTE_UPDATESERVER  "https://www.aandewiel.nl/updates/DSMRlogger32/"
-#define _PULSE_TIME           5000
+
+
 #ifdef ESP32_WROVER
+#define _NEO_PIN                23    //                 hardware
+//#define RST_PIN -1
 #define SMRX                    18    //                 hardware                  
 #define SMTX                    -1    //                 hardware
 #define _PIN_WD_RESET            0    //-- GPIO00        hardware
 #define _PIN_HEARTBEAT           4    //                 hardware
 #define _DTR_ENABLE              5    //                 hardware
 #define LED_BUILTIN             15    //-- esp32         hardware
+#define _FLASH_BUTTON            0
 #else //ESP32 S2 mini
+#define _NEO_PIN                18    //                 hardware
+//#define RST_PIN -1
 #define SMRX                    37    //   GPIO37        hardware data in, can be any IO               
 #define SMTX                    -1    //                 hardware
 #define _PIN_WD_RESET            0    //-- GPIO00        hardware
@@ -112,56 +75,53 @@ void _debugBOL(const char *fn, int line);
 #define LED_BUILTIN             15    //-- GPIO15        hardware
 //      SDA                                GPIO08        hardware for OLED display
 //      SCL                                GPIO09        hardware for OLED display
+#define _FLASH_BUTTON            0
 #endif
-#define _SHIELD_TIME            10
-#define _TLGRM_LEN           10000    //-- probably a bit to long
-#define _JSONBUFF_LEN       220000    //-- 60000 is needed for 190 Hour History
-#define _GMSG_LEN              512
-#define _FCHAR_LEN              50
-#define _HOSTNAME_LEN           30
-#define _MY_SSID_LEN           100
-#define _MY_PASSWD_LEN         100
-#define _INDEXPAGE_LEN          50
-#define _MQTT_BROKER_LEN       101
-#define _MQTT_USER_LEN          40
-#define _MQTT_PASSWD_LEN        40
-#define _MQTT_TOPTOPIC_LEN      21
-#define _FIELDTABLE_CNAME_LEN  100
-#define _FIELDTABLE_CVALUE_LEN 100
+const int _SHIELD_TIME = 10;
+const size_t _TLGRM_LEN = 10000;      //-- probably a bit to long
+const size_t _JSONBUFF_LEN = 220000;  //-- 60000 is needed for 190 Hour History
+const size_t _GMSG_LEN = 512;
+const size_t _FCHAR_LEN = 50;
+const size_t _HOSTNAME_LEN = 30;
+const size_t _INDEXPAGE_LEN = 50;
+const size_t _MQTT_BROKER_LEN = 101;
+const size_t _MQTT_USER_LEN = 40;
+const size_t _MQTT_PASSWD_LEN = 40;
+const size_t _MQTT_TOPTOPIC_LEN = 21;
 #define _SETTINGS_FILE        "/DSMRsmSettings.json"
 #define _SYSTEM_FILE          "/DSMRdevSettings.json"
 #define _SHIELD_FILE          "/DSMRShieldSettings.json"
 #define _STATUS_FILE          "/DSMRstatus.csv"
 #define LED_ON                 LOW
 #define LED_OFF               HIGH
-#define _GLOW_TIME             300
-#define _FLASH_BUTTON            0
-#define _FSYS_MAX_FILES         30
-#define _MQTT_BUFF_MAX         200
-#define _TIMESTAMP_LEN          14  // yymmddhhmmssX\0
-#define _PSRAM_LIMIT           100
-#define RNG_HOURS         1
-#define RNG_DAYS          2
-#define RNG_MONTHS        3
-#define RNG_YEARS         4
-#define DATA_FORMAT       "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;"
+#define _GLOW_TIME             300 //ms
+
+const int _FSYS_MAX_FILES = 30;
+// #define _MQTT_BUFF_MAX         200
+const size_t _TIMESTAMP_LEN = 14; // yymmddhhmmssX\0
+const size_t _PSRAM_LIMIT = 100;
+enum ringType
+{
+  RNG_HOURS = 1,
+  RNG_DAYS = 2,
+  RNG_MONTHS = 3,
+  RNG_YEARS = 4,
+};
+
+#define DATA_FORMAT "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;"
 #define DATA_CSV_HEADER   "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;       WDT;#%5d"
-#define DATA_RECLEN       83  //-- compatible with reclen API firmware
+const size_t DATA_RECLEN = 83; //-- compatible with reclen API firmware
 #define HOURS_FILE        "/RINGhours.csv"
-#define _NO_HOUR_SLOTS_   (48 +1)
-#define DAYS_FILE         "/RINGdays.csv"
-#define _NO_DAY_SLOTS_    (14 +1)
-#define MONTHS_FILE       "/RINGmonths.csv"
-#define _NO_MONTH_SLOTS_  (24 +1)
-#define SECS_PER_HOUR         3600
-#define SECS_PER_DAY         86400
-#define _MAX_ACTUAL_STORE  500 //linked with _JSONBUFF_LEN
-
-//============ Structs, Unions & Enums ============
-//-- from DSMRlogger32.h
-//enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
+const uint16_t _NO_HOUR_SLOTS_ = (48 + 1);
+#define DAYS_FILE "/RINGdays.csv"
+const uint16_t _NO_DAY_SLOTS_ = (14 + 1);
+#define MONTHS_FILE "/RINGmonths.csv"
+const uint16_t _NO_MONTH_SLOTS_ = (24 + 1);
+const uint16_t _MAX_ACTUAL_STORE = 500; // linked with _JSONBUFF_LEN
 
 //-- from DSMRlogger32.h
+const size_t _MY_SSID_LEN   = 100;
+const size_t _MY_PASSWD_LEN = 100;
 struct myWiFiStruct
 {
   char      SSID[_MY_SSID_LEN];
@@ -171,10 +131,9 @@ struct myWiFiStruct
   IPAddress ipDNS; 
   IPAddress ipSubnet;
 };
-//-- used in DSMRlogger32.cpp
-extern myWiFiStruct myWiFi;                                            //-- from networkStuff
 
 //-- from DSMRlogger32.h
+const size_t _FIELDTABLE_CVALUE_LEN = 100;
 union t
 {
   char      cValue[_FIELDTABLE_CVALUE_LEN];
@@ -184,6 +143,7 @@ union t
 };
 
 //-- from DSMRlogger32.h
+const size_t _FIELDTABLE_CNAME_LEN = 100;
 struct fieldTableStruct
 {
   char      cName[_FIELDTABLE_CNAME_LEN];
@@ -310,34 +270,19 @@ struct showValues
   }
 };
 
-//-- Used in: DSMRlogger32.cpp, restAPI.cpp
-bool isInFieldsArray(const char *lookUp, int elemts);       
 
 //=======================================================================
+//TODO move to DSMRlogger.h 
 template<typename Item>
 Item &typecastValue(Item &i)
 {
   return i;
 }
 
-//-- Used in: DSMRlogger32.cpp
-float typecastValue(TimestampedFixedValue i);               
-//-- Used in: DSMRlogger32.cpp
-float typecastValue(FixedValue i);                          
 
-//-- not used extern char            fieldName[40];                     		//-- from DSMRlogger32
-//-- used in restAPI.cpp, helperStuff.cpp
-extern uint16_t        fieldTableCount;                   		//-- from DSMRlogger32
-//-- used in restAPI.cpp
-extern char            fieldsArray[50][35];                   		//-- from DSMRlogger32
-//-- used in DSMRlogger32.cpp
-extern int             fieldsElements;                    		//-- from DSMRlogger32
 
-//-- from DSMRlogger32.ino
 
-//-- from handleTestdata.ino
-enum runStates { SInit, SMonth, SDay, SHour, SNormal };
-
+extern int fieldsElements; //-- from restAPI
 
 using MyData = ParsedData<
               identification,              /* String */
@@ -412,6 +357,7 @@ using MyData = ParsedData<
               mbus4_delivered_dbl          /* TimestampedFixedValue */
               >;
 
+
 //============ Extern Variables ============
 //-- used in DSMRlogger32.cpp, settingsStuff.cpp
 extern const char*     _FW_VERSION;                           //-- from DSMRlogger32.cpp
@@ -439,6 +385,8 @@ extern const char*     flashMode[];                       		//-- from DSMRlogger
 //-- used in handleTestdata.cpp, restAPI.cpp, FSYSstuff.cpp, helperStuff.cpp, handleSlimmeMeter.cpp
 extern float           gasDelivered;                      		//-- from DSMRlogger32
 extern float           waterDelivered;                    		//-- from DSMRlogger32
+extern float           peakPowerCurrentQuarter;
+extern float           peakPowerCurrentMonth;
 //-- used in helperStuff.cpp
 extern uint32_t        glowTimer0;                        		//-- from DSMRlogger32
 //-- used in DSMRlogger32.cpp, handleSlimmeMeter.cpp, FSYSstuff.cpp

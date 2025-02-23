@@ -3,6 +3,8 @@
 #include <Adafruit_NeoPixel.h>
 #include "neoPixelStuff.h"
 
+const int _NEO_PIXELS_COUNT = 2;
+
 Adafruit_NeoPixel neoPixels = Adafruit_NeoPixel(_NEO_PIXELS_COUNT, _NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 //----------------------------------------------------------------

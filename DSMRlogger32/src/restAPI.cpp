@@ -12,6 +12,17 @@
 #include "timeStuff.h"
 #include "helperStuff.h"
 #include "FSYSstuff.h"
+//#include "DSMRlogger32.h"
+
+//===========================GLOBAL VAR'S======================================
+char fieldsArray[50][35] = {{0}}; // to lookup fields
+int  fieldsElements      = 0;
+
+
+extern Shield32 relay0;
+extern Shield32 relay1;
+extern time_t   now;
+extern uint16_t        fieldTableCount;                   		//-- from DSMRlogger32
 
 //=======================================================================
 void processAPI()
