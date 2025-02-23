@@ -8,7 +8,12 @@
     "functional": "cpp",
     "tuple": "cpp",
     "type_traits": "cpp",
-    "utility": "cpp"
+    "utility": "cpp",
+    "*.tcc": "cpp",
+    "iomanip": "cpp",
+    "sstream": "cpp"
   },
-  "C_Cpp.errorSquiggles": "enabled"
+  "C_Cpp.errorSquiggles": "enabled",
+  "diffEditor.ignoreTrimWhitespace": true,
+  "sonarlint.pathToCompileCommands": "${workspaceFolder}/.pio.nosync/build/DSMRlogger32/compile_commands.json"
 }

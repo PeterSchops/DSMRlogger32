@@ -1,0 +1,30 @@
+#
+#  astyle options file
+#
+#   - Allman style 
+-A10
+#   - tab 2 spaces 
+-s2
+#   - Indent 'switch' blocks 
+--indent-switches
+#   - Indent preprocessor blocks 
+--indent-preproc-block
+--indent-preproc-define
+--indent-preproc-cond
+#   - Indent multi-line preprocessor definitions ending with a backslash 
+-w
+#   - Attach the closing 'while' of a 'do-while' statement
+--attach-closing-while
+#   - Indent C++ comments beginning in column one 
+-Y
+#   - Insert space padding after commas 
+--pad-comma
+#   - Attach a pointer or reference operator 
+-k3
+
+--attach-namespaces
+--attach-classes
+--attach-inlines
+
+
+--verbose
