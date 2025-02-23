@@ -15,7 +15,7 @@ void writeSmSettings()
 {
   yield();
   DebugTf("Writing to [%s] ..\r\n", _SETTINGS_FILE);
-  
+
   File file = _FSYS.open(_SETTINGS_FILE, "w"); // open for reading and writing
   if (!file) {
     DebugTf("open(%s, 'w') FAILED!!! --> Bailout\r\n", _SETTINGS_FILE);
@@ -29,7 +29,7 @@ void writeSmSettings()
 
   //-- Allocate the JsonDocument
   SpiRamJsonDocument  doc(3000);
-  
+
   //-- Fill JSON document from settings
   doc["preDSMR40"]          = smSetting->PreDSMR40;
   doc["EnergyDeliveredT1"]  = String(smSetting->EDT1, 5);
@@ -114,7 +114,7 @@ void readSmSettings(bool show)
   File file;
 
   DebugTf(" %s ..\r\n", _SETTINGS_FILE);
-  
+
   if (!_FSYS.exists(_SETTINGS_FILE)) {
     DebugTln(F(" .. file not found! --> created file!"));
     smSetting->PreDSMR40      = 0;
@@ -138,7 +138,7 @@ void readSmSettings(bool show)
     delay(100);
     return;
   }
- 
+
   DebugTln(F("Reading settings:\r"));
 
   //-- Allocate the JsonDocument
@@ -294,7 +294,7 @@ void writeDevSettings(bool show)
   }
 
   file.close();
-  
+
   if (devSetting->OledType > 2)          { devSetting->OledType = 1; }
   if (devSetting->OledFlip != 0)         { devSetting->OledFlip = 1; }
   else                                   { devSetting->OledFlip = 0; }
@@ -362,7 +362,7 @@ void readDevSettings(bool show)
 
   serializeJsonPretty(doc, jsonBuff, _JSONBUFF_LEN);
   //-dbg-Debugln(jsonBuff);
-  
+
   //-- Extract devSetting settings from the JSON document
   if (doc["hostname"])      { strlcpy(devSetting->Hostname,   doc["hostname"], (_HOSTNAME_LEN -1)); }
   if (doc["indexPage"])     { strlcpy(devSetting->IndexPage,  doc["indexPage"], (_INDEXPAGE_LEN -1)); }
@@ -394,7 +394,7 @@ void readDevSettings(bool show)
   if (devSetting->NeoBrightness ==  0) { devSetting->NeoBrightness =  50; }
   if (devSetting->NeoBrightness <  10) { devSetting->NeoBrightness =  10; }
   if (devSetting->NeoBrightness > 250) { devSetting->NeoBrightness = 250; }
-  neoPixels.setBrightness(devSetting->NeoBrightness);  
+  neoPixels.setBrightness(devSetting->NeoBrightness);
 
   if (strlen(devSetting->IndexPage)    < 7) { strlcpy(devSetting->IndexPage, "DSMRindex.html", (_INDEXPAGE_LEN -1)); }
   if (devSetting->TelegramInterval     < 2) { devSetting->TelegramInterval = 10; }
@@ -432,7 +432,7 @@ void writeShieldSettings(bool show)
   doc["shld_inversed0"]     = shieldSetting[0]->inversed;
   doc["shld_activeStart0"]  = shieldSetting[0]->activeStart;
   doc["shld_activeStop0"]   = shieldSetting[0]->activeStop;
-  doc["shld_onThreshold0"]  = shieldSetting[0]->onThreshold; 
+  doc["shld_onThreshold0"]  = shieldSetting[0]->onThreshold;
   doc["shld_offThreshold0"] = shieldSetting[0]->offThreshold;
   doc["shld_onDelay0"]      = shieldSetting[0]->onDelay;
   doc["shld_offDelay0"]     = shieldSetting[0]->offDelay;
@@ -441,7 +441,7 @@ void writeShieldSettings(bool show)
   doc["shld_inversed1"]     = shieldSetting[1]->inversed;
   doc["shld_activeStart1"]  = shieldSetting[1]->activeStart;
   doc["shld_activeStop1"]   = shieldSetting[1]->activeStop;
-  doc["shld_onThreshold1"]  = shieldSetting[1]->onThreshold; 
+  doc["shld_onThreshold1"]  = shieldSetting[1]->onThreshold;
   doc["shld_offThreshold1"] = shieldSetting[1]->offThreshold;
   doc["shld_onDelay1"]      = shieldSetting[1]->onDelay;
   doc["shld_offDelay1"]     = shieldSetting[1]->offDelay;
@@ -457,7 +457,7 @@ void writeShieldSettings(bool show)
   }
 
   file.close();
-  
+
   if ((shieldSetting[0]->GPIOpin != 13) && (shieldSetting[0]->GPIOpin != 14)) { shieldSetting[0]->GPIOpin = -1; }
   if (shieldSetting[0]->inversed < 0)         { shieldSetting[0]->inversed = 0; } 
   if (shieldSetting[0]->inversed > 1)         { shieldSetting[0]->inversed = 1; } 
@@ -472,12 +472,12 @@ void writeShieldSettings(bool show)
   if (shieldSetting[0]->offDelay >   36000)   { shieldSetting[0]->offDelay = 36000; }
 
   relay0.setup(shieldSetting[0]->GPIOpin, shieldSetting[0]->inversed,
-                                          shieldSetting[0]->activeStart, shieldSetting[0]->activeStop,
-                                          shieldSetting[0]->onThreshold, shieldSetting[0]->offThreshold,
-                                          shieldSetting[0]->onDelay, shieldSetting[0]->offDelay);
+               shieldSetting[0]->activeStart, shieldSetting[0]->activeStop,
+               shieldSetting[0]->onThreshold, shieldSetting[0]->offThreshold,
+               shieldSetting[0]->onDelay, shieldSetting[0]->offDelay);
 
   if ((shieldSetting[1]->GPIOpin != 13) && (shieldSetting[1]->GPIOpin != 14)) { shieldSetting[1]->GPIOpin = -1; }
-  if ((shieldSetting[0]->GPIOpin > 0) && (shieldSetting[1]->GPIOpin > 0)) {  
+  if ((shieldSetting[0]->GPIOpin > 0) && (shieldSetting[1]->GPIOpin > 0)) {
     if (shieldSetting[0]->GPIOpin == 13) { shieldSetting[1]->GPIOpin = 14; } 
     if (shieldSetting[0]->GPIOpin == 14) { shieldSetting[1]->GPIOpin = 13; } 
   }
@@ -494,9 +494,9 @@ void writeShieldSettings(bool show)
   if (shieldSetting[1]->offDelay >   36000)   { shieldSetting[1]->offDelay = 36000; }
 
   relay1.setup(shieldSetting[1]->GPIOpin, shieldSetting[1]->inversed,
-                                          shieldSetting[1]->activeStart, shieldSetting[1]->activeStop,
-                                          shieldSetting[1]->onThreshold, shieldSetting[1]->offThreshold,
-                                          shieldSetting[1]->onDelay, shieldSetting[1]->offDelay);
+               shieldSetting[1]->activeStart, shieldSetting[1]->activeStop,
+               shieldSetting[1]->onThreshold, shieldSetting[1]->offThreshold,
+               shieldSetting[1]->onDelay, shieldSetting[1]->offDelay);
 
   if (show) { showShieldSettings(); }
 
@@ -562,7 +562,7 @@ void readShieldSettings(bool show)
 
   serializeJsonPretty(doc, jsonBuff, _JSONBUFF_LEN);
   //Debugln(jsonBuff);
-  
+
   //-- Extract shieldSetting settings from the JSON document
   if (doc["shld_GPIOpin0"])        { shieldSetting[0]->GPIOpin      = doc["shld_GPIOpin0"].as<int>(); }
   if (doc["shld_inversed0"])       { shieldSetting[0]->inversed     = doc["shld_inversed0"].as<int>(); }
@@ -592,34 +592,34 @@ void readShieldSettings(bool show)
 //=======================================================================
 void showDevSettings()
 {
-    Debugln("\r\n==== System settings ============================================\r");
-    Debugf("                    Hostname : %s\r\n",     devSetting->Hostname);
-    Debugf("                  Index Page : %s\r\n",     devSetting->IndexPage);
-    Debugf("  Daily Reboot (0=Nee, 1=Ja) : %s\r\n",     devSetting->DailyReboot ? "Ja":"Nee");
-    Debugf("    run als AP (0=Nee, 1=Ja) : %s\r\n",     devSetting->runAPmode ? "Ja":"Nee");
-    Debugf("               Hours History : %d\r\n",     devSetting->NoHourSlots);
-    Debugf("                Days History : %d\r\n",     devSetting->NoDaySlots);
-    Debugf("              Months History : %d\r\n",     devSetting->NoMonthSlots);
-    Debugf("   Telegram Process Interval : %d\r\n",     devSetting->TelegramInterval);
-    Debugf("         OLED Type (0, 1, 2) : %d\r\n",     devSetting->OledType);
-    Debugf("OLED Sleep Min. (0=oneindig) : %d\r\n",     devSetting->OledSleep);
-    Debugf("     Flip Oled (0=No, 1=Yes) : %d\r\n",     devSetting->OledFlip);
-    Debugf("         NeoPixel Brightness : %d\r\n",     devSetting->NeoBrightness);
+  Debugln("\r\n==== System settings ============================================\r");
+  Debugf("                    Hostname : %s\r\n",     devSetting->Hostname);
+  Debugf("                  Index Page : %s\r\n",     devSetting->IndexPage);
+  Debugf("  Daily Reboot (0=Nee, 1=Ja) : %s\r\n",     devSetting->DailyReboot ? "Ja":"Nee");
+  Debugf("    run als AP (0=Nee, 1=Ja) : %s\r\n",     devSetting->runAPmode ? "Ja":"Nee");
+  Debugf("               Hours History : %d\r\n",     devSetting->NoHourSlots);
+  Debugf("                Days History : %d\r\n",     devSetting->NoDaySlots);
+  Debugf("              Months History : %d\r\n",     devSetting->NoMonthSlots);
+  Debugf("   Telegram Process Interval : %d\r\n",     devSetting->TelegramInterval);
+  Debugf("         OLED Type (0, 1, 2) : %d\r\n",     devSetting->OledType);
+  Debugf("OLED Sleep Min. (0=oneindig) : %d\r\n",     devSetting->OledSleep);
+  Debugf("     Flip Oled (0=No, 1=Yes) : %d\r\n",     devSetting->OledFlip);
+  Debugf("         NeoPixel Brightness : %d\r\n",     devSetting->NeoBrightness);
 
-    Debugln(F("\r\n==== MQTT settings ==============================================\r"));
-    Debugf("          MQTT broker URL/IP : %s:%d", devSetting->MQTTbroker, devSetting->MQTTbrokerPort);
-    if (MQTTclient.connected()) { Debugln(F(" (is Connected!)\r")); }
-    else                        { Debugln(F(" (NOT Connected!)\r")); }
-    Debugf("                   MQTT user : %s\r\n", devSetting->MQTTuser);
-#ifdef _SHOW_PASSWRDS
-    Debugf("               MQTT password : %s\r\n", devSetting->MQTTpasswd);
-#else
-    Debug( "               MQTT password : *************\r\n");
-#endif
-    Debugf("          MQTT send Interval : %d\r\n", devSetting->MQTTinterval);
-    Debugf("              MQTT top Topic : %s\r\n", devSetting->MQTTtopTopic);
+  Debugln(F("\r\n==== MQTT settings ==============================================\r"));
+  Debugf("          MQTT broker URL/IP : %s:%d", devSetting->MQTTbroker, devSetting->MQTTbrokerPort);
+  if (MQTTclient.connected()) { Debugln(F(" (is Connected!)\r")); }
+  else                        { Debugln(F(" (NOT Connected!)\r")); }
+  Debugf("                   MQTT user : %s\r\n", devSetting->MQTTuser);
+  #ifdef _SHOW_PASSWRDS
+  Debugf("               MQTT password : %s\r\n", devSetting->MQTTpasswd);
+  #else
+  Debug( "               MQTT password : *************\r\n");
+  #endif
+  Debugf("          MQTT send Interval : %d\r\n", devSetting->MQTTinterval);
+  Debugf("              MQTT top Topic : %s\r\n", devSetting->MQTTtopTopic);
 
-    Debugln("-\r");
+  Debugln("-\r");
 
 } //  showDevSettings()
 
@@ -627,36 +627,34 @@ void showDevSettings()
 //=======================================================================
 void showShieldSettings()
 {
-    Debugln(F("\r\n==== SHIELD settings === relay0 =================================\r"));
-    if (shieldSetting[0]->GPIOpin == -1) {
-      Debugf("                     Relay-0 : not configured!");    
-    }
-    else {
-      Debugf("            Relay-0 GPIO pin : %d \r\n", shieldSetting[0]->GPIOpin);
-      Debugf("  Relay-0 Has Inverted Logic : %s\r\n", (shieldSetting[0]->inversed ? "Yes":"No"));
-      Debugf("        Relay-0 Start Active : %02d:%02d \r\n", (shieldSetting[0]->activeStart / 60), (shieldSetting[0]->activeStart % 60));
-      Debugf("         Relay-0 Stop Active : %02d:%02d \r\n", (shieldSetting[0]->activeStop  / 60), (shieldSetting[0]->activeStop  % 60));
-      Debugf("        Relay-0 On Threshold : %d [Watt]\r\n", shieldSetting[0]->onThreshold);
-      Debugf("       Relay-0 Off Threshold : %d [Watt]\r\n", shieldSetting[0]->offThreshold);
-      Debugf("            Relay-0 On Delay : %d [seconden]\r\n", shieldSetting[0]->onDelay);
-      Debugf("           Relay-0 Off Delay : %d [seconden]\r\n", shieldSetting[0]->offDelay);
-    }
-    Debugln(F("\r\n==== SHIELD settings === relay1 =================================\r"));
-    if (shieldSetting[1]->GPIOpin == -1) {
-      Debugf("                     Relay-1 : not configured!");    
-    }
-    else {
-      Debugf("            Relay-1 GPIO pin : %d \r\n", shieldSetting[1]->GPIOpin);
-      Debugf("  Relay-1 Has Inverted Logic : %s\r\n", (shieldSetting[1]->inversed ? "Yes":"No"));
-      Debugf("        Relay-1 Start Active : %02d:%02d \r\n", (shieldSetting[1]->activeStart / 60), (shieldSetting[1]->activeStart % 60));
-      Debugf("         Relay-1 Stop Active : %02d:%02d \r\n", (shieldSetting[1]->activeStop  / 60), (shieldSetting[1]->activeStop  % 60));
-      Debugf("        Relay-1 On Threshold : %d [Watt]\r\n", shieldSetting[1]->onThreshold);
-      Debugf("       Relay-1 Off Threshold : %d [Watt]\r\n", shieldSetting[1]->offThreshold);
-      Debugf("            Relay-1 On Delay : %d [seconden]\r\n", shieldSetting[1]->onDelay);
-      Debugf("           Relay-1 Off Delay : %d [seconden]\r\n", shieldSetting[1]->offDelay);
-    }
+  Debugln(F("\r\n==== SHIELD settings === relay0 =================================\r"));
+  if (shieldSetting[0]->GPIOpin == -1) {
+    Debugf("                     Relay-0 : not configured!");
+  } else {
+    Debugf("            Relay-0 GPIO pin : %d \r\n", shieldSetting[0]->GPIOpin);
+    Debugf("  Relay-0 Has Inverted Logic : %s\r\n", (shieldSetting[0]->inversed ? "Yes":"No"));
+    Debugf("        Relay-0 Start Active : %02d:%02d \r\n", (shieldSetting[0]->activeStart / 60), (shieldSetting[0]->activeStart % 60));
+    Debugf("         Relay-0 Stop Active : %02d:%02d \r\n", (shieldSetting[0]->activeStop  / 60), (shieldSetting[0]->activeStop  % 60));
+    Debugf("        Relay-0 On Threshold : %d [Watt]\r\n", shieldSetting[0]->onThreshold);
+    Debugf("       Relay-0 Off Threshold : %d [Watt]\r\n", shieldSetting[0]->offThreshold);
+    Debugf("            Relay-0 On Delay : %d [seconden]\r\n", shieldSetting[0]->onDelay);
+    Debugf("           Relay-0 Off Delay : %d [seconden]\r\n", shieldSetting[0]->offDelay);
+  }
+  Debugln(F("\r\n==== SHIELD settings === relay1 =================================\r"));
+  if (shieldSetting[1]->GPIOpin == -1) {
+    Debugf("                     Relay-1 : not configured!");
+  } else {
+    Debugf("            Relay-1 GPIO pin : %d \r\n", shieldSetting[1]->GPIOpin);
+    Debugf("  Relay-1 Has Inverted Logic : %s\r\n", (shieldSetting[1]->inversed ? "Yes":"No"));
+    Debugf("        Relay-1 Start Active : %02d:%02d \r\n", (shieldSetting[1]->activeStart / 60), (shieldSetting[1]->activeStart % 60));
+    Debugf("         Relay-1 Stop Active : %02d:%02d \r\n", (shieldSetting[1]->activeStop  / 60), (shieldSetting[1]->activeStop  % 60));
+    Debugf("        Relay-1 On Threshold : %d [Watt]\r\n", shieldSetting[1]->onThreshold);
+    Debugf("       Relay-1 Off Threshold : %d [Watt]\r\n", shieldSetting[1]->offThreshold);
+    Debugf("            Relay-1 On Delay : %d [seconden]\r\n", shieldSetting[1]->onDelay);
+    Debugf("           Relay-1 Off Delay : %d [seconden]\r\n", shieldSetting[1]->offDelay);
+  }
 
-    Debugln("-\r");
+  Debugln("-\r");
 
 } //  showShieldSettings()
 
@@ -668,7 +666,7 @@ void updateDevSettings(const char *field, const char *newValue)
 
   if (!strcasecmp(field, "hostname")) {
     strlcpy(devSetting->Hostname, newValue, 29);
-    if (strlen(devSetting->Hostname) < 1) strlcpy(devSetting->Hostname, _DEFAULT_HOSTNAME, 29);
+    if (strlen(devSetting->Hostname) < 1) { strlcpy(devSetting->Hostname, _DEFAULT_HOSTNAME, 29); }
     char *dotPntr = strchr(devSetting->Hostname, '.') ;
     if (dotPntr != NULL) {
       byte dotPos = (dotPntr-devSetting->Hostname);
@@ -694,7 +692,7 @@ void updateDevSettings(const char *field, const char *newValue)
       alterRingFile();
     }
   }
-  
+
   if (!strcasecmp(field, "oled_type")) {
     devSetting->OledType     = String(newValue).toInt();
     if (devSetting->OledType > 2) { devSetting->OledType = 1; }
@@ -714,9 +712,9 @@ void updateDevSettings(const char *field, const char *newValue)
     devSetting->NeoBrightness = String(newValue).toInt();
     if (devSetting->NeoBrightness <  10) { devSetting->NeoBrightness =  10; }
     if (devSetting->NeoBrightness > 250) { devSetting->NeoBrightness = 250; }
-    neoPixels.setBrightness(devSetting->NeoBrightness);  
+    neoPixels.setBrightness(devSetting->NeoBrightness);
   }
-  if (!strcasecmp(field, "tlgrm_interval")){
+  if (!strcasecmp(field, "tlgrm_interval")) {
     devSetting->TelegramInterval     = String(newValue).toInt();
     DebugTf("Change nextTelegram timer to [%d] seconds\r\n", devSetting->TelegramInterval);
     CHANGE_INTERVAL_SEC(nextTelegram, devSetting->TelegramInterval)

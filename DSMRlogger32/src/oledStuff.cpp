@@ -30,8 +30,7 @@ void checkFlashButton()
   if (digitalRead(_FLASH_BUTTON) == LOW && buttonState == LOW) {
     DebugTln(F("Pressed the FlashButton!"));
     buttonState = HIGH;
-  }
-  else if (digitalRead(_FLASH_BUTTON) == HIGH && buttonState == HIGH) {
+  } else if (digitalRead(_FLASH_BUTTON) == HIGH && buttonState == HIGH) {
     buttonState = LOW;
     boolDisplay = !boolDisplay;
     if (boolDisplay) { DebugTln(F("Switching display on..")); }

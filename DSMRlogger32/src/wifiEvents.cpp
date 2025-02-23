@@ -1,7 +1,7 @@
 /*
 ** espressif/arduino-esp32
 ** https://github.com/espressif/arduino-esp32/blob/master/libraries/WiFi/examples/WiFiClientEvents/WiFiClientEvents.ino
-** 
+**
 */
 //============ Includes ====================
 #include "wifiEvents.h"
@@ -18,7 +18,7 @@ void WiFiEvent(WiFiEvent_t event)
   DebugTf("[WiFi-event] event: [%d] ", event);
   static uint32_t disconnectWiFiStart = 0;
   switch (event) {
-    case ARDUINO_EVENT_WIFI_READY: 
+    case ARDUINO_EVENT_WIFI_READY:
       Debugln("WiFi interface ready");
       break;
     case ARDUINO_EVENT_WIFI_SCAN_DONE:
@@ -33,8 +33,8 @@ void WiFiEvent(WiFiEvent_t event)
     case ARDUINO_EVENT_WIFI_STA_CONNECTED:
       Debugln("Connected to access point");
       if ((lostWiFiCount % 25) == 0) {
-        writeToSysLog("Connected to AP successfully!");    
-      }                    
+        writeToSysLog("Connected to AP successfully!");
+      }
       //-- wait for IP address - lostWiFiConnection = false;
       break;
     case ARDUINO_EVENT_WIFI_STA_DISCONNECTED:
@@ -42,21 +42,21 @@ void WiFiEvent(WiFiEvent_t event)
       if (disconnectWiFiStart == 0) { disconnectWiFiStart = millis(); }
       if ((lostWiFiCount % 25) == 0) {
         Debugln("Disconnected from WiFi access point");
-        writeToSysLog("Disconnected from WiFi access point"); 
-      }                        
+        writeToSysLog("Disconnected from WiFi access point");
+      }
       lostWiFiConnection = true;
       break;
     case ARDUINO_EVENT_WIFI_STA_AUTHMODE_CHANGE:
       Debugln("Authentication mode of access point has changed");
-      writeToSysLog("Authentication mode of access point has changed");                         
+      writeToSysLog("Authentication mode of access point has changed");
       lostWiFiConnection = true;
       break;
     case ARDUINO_EVENT_WIFI_STA_GOT_IP:
       Debug("Obtained IP address: ");
       Debugln(WiFi.localIP());
       writeToSysLog("Obtained IP address [%s]; reconnect took [%.1f] seconds"
-                                              , WiFi.localIP().toString().c_str()
-                                              , (float)((millis() - disconnectWiFiStart) / 1000.0));                         
+                    , WiFi.localIP().toString().c_str()
+                    , (float)((millis() - disconnectWiFiStart) / 1000.0));
       lostWiFiConnection  = false;
       firstConnectionLost = true;
       disconnectWiFiStart = 0;
@@ -64,7 +64,7 @@ void WiFiEvent(WiFiEvent_t event)
       break;
     case ARDUINO_EVENT_WIFI_STA_LOST_IP:
       Debugln("Lost IP address and IP address is reset to 0");
-      writeToSysLog("Lost IP address and IP address is reset to 0");                         
+      writeToSysLog("Lost IP address and IP address is reset to 0");
       lostWiFiConnection = true;
       break;
     case ARDUINO_EVENT_WPS_ER_SUCCESS:
@@ -121,7 +121,7 @@ void WiFiEvent(WiFiEvent_t event)
     case ARDUINO_EVENT_ETH_GOT_IP:
       Debugln("Obtained IP address");
       break;
-    default: 
+    default:
       Debugln();
       break;
   } //  switch ..

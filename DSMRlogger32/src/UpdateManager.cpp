@@ -1,4 +1,3 @@
-
 #include "UpdateManager.h"
 #include "HTTPClient.h"
 #include "esp_log.h"
@@ -8,7 +7,6 @@ static const char *TAG = "UpdateManager";
 /**
  * @brief Construct a new UpdateManager::UpdateManager object
  */
-
 //---------------------------------------------------------------------------------------------
 UpdateManager::UpdateManager()
 {
@@ -26,7 +24,7 @@ UpdateManager::UpdateManager()
  * @param callback the callback function
  */
 //---------------------------------------------------------------------------------------------
-void UpdateManager::setProgressCallback(ProgressCallback callback) 
+void UpdateManager::setProgressCallback(ProgressCallback callback)
 {
   _progressCallback = callback;
 }
@@ -38,9 +36,11 @@ void UpdateManager::setProgressCallback(ProgressCallback callback)
  * @param callback the callback function (optional)
  */
 //---------------------------------------------------------------------------------------------
-void UpdateManager::updateFirmware(const char *url, ProgressCallback callback) 
+void UpdateManager::updateFirmware(const char *url, ProgressCallback callback)
 {
-  if (callback) { setProgressCallback(callback); }
+  if (callback) {
+    setProgressCallback(callback);
+  }
 
   _url = strdup(url);
   startUpdate();
@@ -53,9 +53,11 @@ void UpdateManager::updateFirmware(const char *url, ProgressCallback callback)
  * @param callback the callback function (optional)
  */
 //---------------------------------------------------------------------------------------------
-void UpdateManager::updateSpiffs(const char *url, ProgressCallback callback) 
+void UpdateManager::updateSpiffs(const char *url, ProgressCallback callback)
 {
-  if (callback) { setProgressCallback(callback); }
+  if (callback) {
+    setProgressCallback(callback);
+  }
 
   _url = strdup(url);
   ESP_LOGI(TAG, "Update: Updating SPIFFS: %s\n", _url);
@@ -77,7 +79,7 @@ void UpdateManager::updateSpiffs(const char *url, ProgressCallback callback)
  * @brief Start the update
  */
 //---------------------------------------------------------------------------------------------
-void UpdateManager::startUpdate() 
+void UpdateManager::startUpdate()
 {
   ESP_LOGI(TAG, "Update: Updating firmware: %s\n", _url);
   //Serial.printf("(%s) Update: Updating firmware: %s\n", __FUNCTION__, _url);
@@ -95,7 +97,7 @@ void UpdateManager::startUpdate()
  * @brief On start of the update
  */
 //---------------------------------------------------------------------------------------------
-void UpdateManager::onStart() 
+void UpdateManager::onStart()
 {
 }
 
@@ -106,13 +108,15 @@ void UpdateManager::onStart()
  * @param total the total
  */
 //---------------------------------------------------------------------------------------------
-void UpdateManager::onProgress(unsigned int progress, unsigned int total) 
+void UpdateManager::onProgress(unsigned int progress, unsigned int total)
 {
   float percent = progress / (total / 100.0);
 
   if ((u_int8_t)percent > _lastPercentage) {
     _lastPercentage = percent;
-    if (_progressCallback) { _progressCallback((int)percent); }
+    if (_progressCallback) {
+      _progressCallback((int)percent);
+    }
   }
 }
 
@@ -120,7 +124,7 @@ void UpdateManager::onProgress(unsigned int progress, unsigned int total)
  * @brief On end of the update
  */
 //---------------------------------------------------------------------------------------------
-void UpdateManager::onEnd() 
+void UpdateManager::onEnd()
 {
   ESP_LOGI(TAG, "Update Done!");
   Serial.printf("(%s) Update Done!\r\n", __FUNCTION__);
@@ -133,7 +137,7 @@ void UpdateManager::onEnd()
  * @param error the error
  */
 //---------------------------------------------------------------------------------------------
-void UpdateManager::onError(ota_error_t error) 
+void UpdateManager::onError(ota_error_t error)
 {
   ESP_LOGE(TAG, "Error[%u]: ", error);
   Serial.printf("(%s) Error[%u]: ", __FUNCTION__, error);
@@ -148,7 +152,7 @@ void UpdateManager::onError(ota_error_t error)
  * @return false if the update was not successful
  */
 //---------------------------------------------------------------------------------------------
-bool UpdateManager::httpUpdateFirmware(const char *url) 
+bool UpdateManager::httpUpdateFirmware(const char *url)
 {
   HTTPClient httpClient;
   httpClient.useHTTP10(true);
@@ -181,12 +185,16 @@ bool UpdateManager::httpUpdateFirmware(const char *url)
     if (sizePack) {
       int c = stream->readBytes(buff, ((sizePack > sizeof(buff)) ? sizeof(buff) : sizePack));
       Update.write(buff, c);
-      if (httpSize > 0) { httpSize -= c; }
+      if (httpSize > 0) {
+        httpSize -= c;
+      }
     }
     int percent = int(Update.progress() * 100 / httpClient.getSize());
     if (percent > _lastPercentage) {
       _lastPercentage = percent;
-      if (_progressCallback) { _progressCallback(percent); }
+      if (_progressCallback) {
+        _progressCallback(percent);
+      }
     }
   }
   if (!Update.end()) {
@@ -210,7 +218,7 @@ bool UpdateManager::httpUpdateFirmware(const char *url)
  * @return false if the update was not successful
  */
 //---------------------------------------------------------------------------------------------
-bool UpdateManager::httpUpdateSpiffs(const char *url) 
+bool UpdateManager::httpUpdateSpiffs(const char *url)
 {
   HTTPClient httpClient;
   httpClient.useHTTP10(true);
@@ -243,12 +251,16 @@ bool UpdateManager::httpUpdateSpiffs(const char *url)
     if (sizePack) {
       int c = stream->readBytes(buff, ((sizePack > sizeof(buff)) ? sizeof(buff) : sizePack));
       Update.write(buff, c);
-      if (httpSize > 0) { httpSize -= c; }
+      if (httpSize > 0) {
+        httpSize -= c;
+      }
     }
     int percent = int(Update.progress() * 100 / httpClient.getSize());
     if (percent > _lastPercentage) {
       _lastPercentage = percent;
-      if (_progressCallback) { _progressCallback(percent); }
+      if (_progressCallback) {
+        _progressCallback(percent);
+      }
     }
   }
   if (!Update.end()) {
@@ -265,7 +277,7 @@ bool UpdateManager::httpUpdateSpiffs(const char *url)
 }
 
 //--------------------------------------------------------------------
-bool UpdateManager::feedback(int8_t check) 
+bool UpdateManager::feedback(int8_t check)
 {
   if (check == _feedback) {
     _feedback = UPDATE_FEEDBACK_OK;

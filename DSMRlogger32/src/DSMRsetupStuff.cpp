@@ -13,31 +13,30 @@
 //===========================================================================================
 void setupFileSystem()
 {
-#ifdef _SPIFFS
+  #ifdef _SPIFFS
   DebugTln("USING [SPIFFS] as Filesystem!");
   //DebugT("FORMAT SPIFFS ...... ");
   //if (_FSYS.format())
   //      DebugTln("SPIFFS formatted!");
   //else  DebugTln("Error formatting SPIFFS!");
-#else
+  #else
   DebugTln("USING [LittleFS] as Filesystem!");
-#endif
+  #endif
   if (_FSYS.begin()) {
     #ifdef _SPIFFS
-      DebugTln("SPIFFS Mount succesfull!");
+    DebugTln("SPIFFS Mount succesfull!");
     #else
-      DebugTln("LittleFS Mount succesfull!");
+    DebugTln("LittleFS Mount succesfull!");
     #endif
     File nF = _FSYS.open("/!doNotFormat", "w");
     nF.close();
     filesysMounted = true;
-  }
-  else {
+  } else {
     //-- Serious problem with the Filesystem
     #ifdef _SPIFFS
-      DebugTln("SPIFFS Mount failed!");
+    DebugTln("SPIFFS Mount failed!");
     #else
-      DebugTln("LittleFS Mount failed!");
+    DebugTln("LittleFS Mount failed!");
     #endif
     filesysMounted = false;
   }
@@ -45,10 +44,10 @@ void setupFileSystem()
 
 
 //===========================================================================================
-void setupSysLogger(const char* versionInfo)
+void setupSysLogger(const char *versionInfo)
 {
   DebugTln("initiate SysLogger..");
-  
+
   //sysLog.setDebugLvl(4);
   //sysLog.setOutput(&Serial, 115200);
 
@@ -56,8 +55,8 @@ void setupSysLogger(const char* versionInfo)
     DebugTln("sysLog.begin() error!");
     delay(1000);
   }
-  writeToSysLog("    ");                         
-  writeToSysLog("-- new start ------------------------------------");                         
+  writeToSysLog("    ");
+  writeToSysLog("-- new start ------------------------------------");
   //writeToSysLog("**** Booting....[%s]", String(_FW_VERSION).c_str());
   writeToSysLog("**** Booting....[%s]", versionInfo);
 } //  setupSysLogger()
@@ -68,15 +67,15 @@ void setupPsram()
 {
   DebugTln("initiate Psram ..");
   psramInit();
-  
+
   int32_t PsramStart = ESP.getFreePsram();
   int32_t PsramEnd;
 
   DebugTf("Total Psram [%d bytes], Used [%d bytes], Psram Free [%d bytes]\r\n",
-                        ESP.getPsramSize(),
-                       (ESP.getPsramSize() - ESP.getFreePsram()),
-                        ESP.getFreePsram());
-  
+          ESP.getPsramSize(),
+          (ESP.getPsramSize() - ESP.getFreePsram()),
+          ESP.getFreePsram());
+
   tlgrmTmpData = (char *) ps_malloc(_TLGRM_LEN);
   PsramEnd     = ESP.getFreePsram();
   //DebugTf("Claim [%d]bytes for tlgrmTmpData\r\n", _TLGRM_LEN);
@@ -151,9 +150,9 @@ void setupPsram()
   PsramStart  = PsramEnd;
 
   DebugTf("Total Psram [%d bytes], Used [%d bytes], Psram Free [%d bytes]\r\n",
-                        ESP.getPsramSize(),
-                       (ESP.getPsramSize() - ESP.getFreePsram()),
-                        ESP.getFreePsram());
+          ESP.getPsramSize(),
+          (ESP.getPsramSize() - ESP.getFreePsram()),
+          ESP.getFreePsram());
 } //setupPsram()
 
 
@@ -162,20 +161,19 @@ void setupPsram()
 bool setupIsFsPopulated()
 {
   bool tmpError = false;
-  
+
   if (DSMRfileExist(devSetting->IndexPage, __FUNCTION__, false)) {
     if (strcmp(devSetting->IndexPage, "DSMRindex.html") != 0) {
       if (devSetting->IndexPage[0] != '/') {
         char tempPage[50] = "/";
-#ifdef _LITTLEFS
+        #ifdef _LITTLEFS
         tempPage[0] = '/';
-#endif
+        #endif
         strlcat(tempPage, devSetting->IndexPage, _INDEXPAGE_LEN);
         strlcpy(devSetting->IndexPage, tempPage, _INDEXPAGE_LEN);
       }
       hasAlternativeIndex = true;
-    }
-    else {
+    } else {
       hasAlternativeIndex = false;
     }
   }

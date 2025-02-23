@@ -15,13 +15,13 @@
 void processTelegram()
 {
   char record[DATA_RECLEN + 1] = {0};
-  
+
   DebugTf("Telegram[%d]=>tlgrmData.timestamp[%s]\r\n", telegramCount, tlgrmData.timestamp.c_str());
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-  
+
   //-- switch last->prev, new is last!!
   saveTimestamp(tlgrmData.timestamp.c_str());
-  
+
   //----- update OLED display ---------
   if (devSetting->OledType > 0) {
     String DT   = buildDateTimeString(tlgrmData.timestamp.c_str(), sizeof(tlgrmData.timestamp));
@@ -41,81 +41,78 @@ void processTelegram()
   }
 
   pushTlgrmToActualStore();
-  
+
   //-- if the Year changes update all three RING files
   if ((lastTlgrmTime.Year != prevTlgrmTime.Year) || !updatedRINGfiles) {
     buildDataRecordFromSM(record, prevTlgrmTime);
     updatedRINGfiles = true;
-    DebugTf("Update MONTHS, DAYS & HOURS RING-files..[%04d-%02d-%02d (%02d)] Changed Year! [%d/%d]\r\n", 
-                                                             prevTlgrmTime.Year,
-                                                             prevTlgrmTime.Month,
-                                                             prevTlgrmTime.Day,
-                                                             prevTlgrmTime.Hour,
-                                                             prevTlgrmTime.Year,
-                                                             lastTlgrmTime.Year);
+    DebugTf("Update MONTHS, DAYS & HOURS RING-files..[%04d-%02d-%02d (%02d)] Changed Year! [%d/%d]\r\n",
+            prevTlgrmTime.Year,
+            prevTlgrmTime.Month,
+            prevTlgrmTime.Day,
+            prevTlgrmTime.Hour,
+            prevTlgrmTime.Year,
+            lastTlgrmTime.Year);
     writeToSysLog("Update RING-files [%02d-%02d-%02d (%02d)] Changed Year! [%d/%d] - MONTHS, DAYS & HOURS",
-                                                             prevTlgrmTime.Year,
-                                                             prevTlgrmTime.Month,
-                                                             prevTlgrmTime.Day,
-                                                             prevTlgrmTime.Hour,
-                                                             prevTlgrmTime.Year,
-                                                             lastTlgrmTime.Year);
+                  prevTlgrmTime.Year,
+                  prevTlgrmTime.Month,
+                  prevTlgrmTime.Day,
+                  prevTlgrmTime.Hour,
+                  prevTlgrmTime.Year,
+                  lastTlgrmTime.Year);
     //-- Update all three RING files
     writeDataToRingFile(HOURS_FILE,  RNG_HOURS,  record, prevTlgrmTime);
     writeDataToRingFile(DAYS_FILE,   RNG_DAYS,   record, prevTlgrmTime);
     writeDataToRingFile(MONTHS_FILE, RNG_MONTHS, record, prevTlgrmTime);
-  }
-  else if (lastTlgrmTime.Month != prevTlgrmTime.Month) {
+  } else if (lastTlgrmTime.Month != prevTlgrmTime.Month) {
     buildDataRecordFromSM(record, prevTlgrmTime);
-    DebugTf("Update MONTHS, DAYS & HOURS RING-files..[%04d-%02d-%02d (%02d)] Changed Month! [%d/%d]\r\n", 
-                                                             prevTlgrmTime.Year,
-                                                             prevTlgrmTime.Month,
-                                                             prevTlgrmTime.Day,
-                                                             prevTlgrmTime.Hour,
-                                                             prevTlgrmTime.Month,
-                                                             lastTlgrmTime.Month);
+    DebugTf("Update MONTHS, DAYS & HOURS RING-files..[%04d-%02d-%02d (%02d)] Changed Month! [%d/%d]\r\n",
+            prevTlgrmTime.Year,
+            prevTlgrmTime.Month,
+            prevTlgrmTime.Day,
+            prevTlgrmTime.Hour,
+            prevTlgrmTime.Month,
+            lastTlgrmTime.Month);
     writeToSysLog("Update RING-files [%04d-%02d-%02d (%02d)] Changed Month! [%d/%d] - MONTHS, DAYS & HOURS",
-                                                             prevTlgrmTime.Year,
-                                                             prevTlgrmTime.Month,
-                                                             prevTlgrmTime.Day,
-                                                             prevTlgrmTime.Hour,
-                                                             prevTlgrmTime.Month,
-                                                             lastTlgrmTime.Month);
+                  prevTlgrmTime.Year,
+                  prevTlgrmTime.Month,
+                  prevTlgrmTime.Day,
+                  prevTlgrmTime.Hour,
+                  prevTlgrmTime.Month,
+                  lastTlgrmTime.Month);
     //-- If the Month changes update all three RING files
     writeDataToRingFile(HOURS_FILE,  RNG_HOURS,  record, prevTlgrmTime);
     writeDataToRingFile(DAYS_FILE,   RNG_DAYS,   record, prevTlgrmTime);
     writeDataToRingFile(MONTHS_FILE, RNG_MONTHS, record, prevTlgrmTime);
-  }
-  else if (lastTlgrmTime.Day   != prevTlgrmTime.Day) {
+  } else if (lastTlgrmTime.Day   != prevTlgrmTime.Day) {
     buildDataRecordFromSM(record, prevTlgrmTime);
-    DebugTf("Update DAYS & HOURS RING-files..[%02d-%02d-%02d (%02d)] Changed Day! [%d/%d]\r\n", 
-                                                             prevTlgrmTime.Year,
-                                                             prevTlgrmTime.Month,
-                                                             prevTlgrmTime.Day,
-                                                             prevTlgrmTime.Hour,
-                                                             prevTlgrmTime.Day,
-                                                             lastTlgrmTime.Day);
+    DebugTf("Update DAYS & HOURS RING-files..[%02d-%02d-%02d (%02d)] Changed Day! [%d/%d]\r\n",
+            prevTlgrmTime.Year,
+            prevTlgrmTime.Month,
+            prevTlgrmTime.Day,
+            prevTlgrmTime.Hour,
+            prevTlgrmTime.Day,
+            lastTlgrmTime.Day);
     writeToSysLog("Update RING-files [%02d-%02d-%02d (%02d)] Changed Day! [%d/%d] - DAYS & HOURS",
-                                                             prevTlgrmTime.Year,
-                                                             prevTlgrmTime.Month,
-                                                             prevTlgrmTime.Day,
-                                                             prevTlgrmTime.Hour,
-                                                             prevTlgrmTime.Day,
-                                                             lastTlgrmTime.Day);
+                  prevTlgrmTime.Year,
+                  prevTlgrmTime.Month,
+                  prevTlgrmTime.Day,
+                  prevTlgrmTime.Hour,
+                  prevTlgrmTime.Day,
+                  lastTlgrmTime.Day);
     //-- If the Day changes update only these two RING files
     writeDataToRingFile(HOURS_FILE, RNG_HOURS,  record, prevTlgrmTime);
     writeDataToRingFile(DAYS_FILE,  RNG_DAYS,   record, prevTlgrmTime);
-  }
-  else if (lastTlgrmTime.Hour != prevTlgrmTime.Hour) {
+  } else if (lastTlgrmTime.Hour != prevTlgrmTime.Hour) {
     buildDataRecordFromSM(record, prevTlgrmTime);
-    DebugTf("Update HOURS RING-files..[%02d-%02d-%02d (%02d)] Changed Hour! [%d/%d]\r\n", 
-                                                             prevTlgrmTime.Year,
-                                                             prevTlgrmTime.Month,
-                                                             prevTlgrmTime.Day,
-                                                             prevTlgrmTime.Hour,
-                                                             prevTlgrmTime.Hour,
-                                                             lastTlgrmTime.Hour);
-    /* 
+    DebugTf("Update HOURS RING-files..[%02d-%02d-%02d (%02d)] Changed Hour! [%d/%d]\r\n",
+            prevTlgrmTime.Year,
+            prevTlgrmTime.Month,
+            prevTlgrmTime.Day,
+            prevTlgrmTime.Hour,
+            prevTlgrmTime.Hour,
+            lastTlgrmTime.Hour);
+    /*
     writeToSysLog("Update HOURS RING-files [%02d-%02d-%02d (%02d)] Changed Hour! [%d/%d]"
                                                             , prevTlgrmTime.Year
                                                             , prevTlgrmTime.Month
@@ -139,8 +136,7 @@ void processTelegram()
     writeDataToRingFile(MONTHS_FILE, RNG_MONTHS, record, lastTlgrmTime);
     DebugTln("write last status..");
     writeLastStatus();
-  }
-  else {
+  } else {
     Debugln();
   }
 

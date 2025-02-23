@@ -13,8 +13,11 @@
 //==================================================================================
 void handleSlimmemeter()
 {
-if (showRaw) { processSlimmemeterRaw(); } //-- process telegrams in raw mode
-else         { processSlimmemeter(); }
+  if (showRaw) {
+    processSlimmemeterRaw();  //-- process telegrams in raw mode
+  } else         {
+    processSlimmemeter();
+  }
 } // handleSlimmemeter()
 
 
@@ -24,14 +27,12 @@ void processSlimmemeterRaw()
   DebugTf("handleSlimmerMeter RawCount=[%4d]\r\n", showRawCount);
   showRawCount++;
   showRaw = (showRawCount <= 20);
-  if (!showRaw)
-  {
+  if (!showRaw) {
     showRawCount  = 0;
     return;
   }
 
-  if (devSetting->OledType > 0)
-  {
+  if (devSetting->OledType > 0) {
     oled_Print_Msg(0, ">>DSMR-logger32<<", 0);
     oled_Print_Msg(1, "-------------------------", 0);
     oled_Print_Msg(2, "Raw Format", 0);
@@ -69,7 +70,9 @@ void processSlimmemeterRaw()
 void processSlimmemeter()
 {
   slimmeMeter.loop();
-  if (!slimmeMeter.available()) { return; }
+  if (!slimmeMeter.available()) {
+    return;
+  }
 
   DebugTf("telegramCount=[%d] telegramErrors=[%d]\r\n", telegramCount, telegramErrors);
   Debugln(F("\r\n[Time----] Function------------(line):\r"));
@@ -100,7 +103,9 @@ void processSlimmemeter()
       //--- this is a hack! The identification can have a backslash in it
       //--- that will ruin javascript processing :-(
       for (int i=0; i<tlgrmData.identification.length(); i++) {
-        if (tlgrmData.identification[i] == '\\') { tlgrmData.identification[i] = '='; }
+        if (tlgrmData.identification[i] == '\\') {
+          tlgrmData.identification[i] = '=';
+        }
         yield();
       }
     }
@@ -114,12 +119,16 @@ void processSlimmemeter()
     modifySmFaseInfo();
 
     if (!tlgrmData.timestamp_present) {
+      struct tm  tstruct;
+      localtime_r(&now, &tstruct);
+
       snprintf (gMsg,  _GMSG_LEN, "%02d%02d%02d%02d%02d%02d\0\0",
-                     (localtime(&now)->tm_year - 2000), localtime(&now)->tm_mon, localtime(&now)->tm_mday,
-                      localtime(&now)->tm_hour, localtime(&now)->tm_min, localtime(&now)->tm_sec);
-      if (localtime(&now)->tm_isdst > 0)
-            strlcat(gMsg, "S", _GMSG_LEN);
-      else  strlcat(gMsg, "W", _GMSG_LEN);
+                (tstruct.tm_year - 2000), tstruct.tm_mon, tstruct.tm_mday, tstruct.tm_hour, tstruct.tm_min, tstruct.tm_sec);
+      if (localtime(&now)->tm_isdst > 0) {
+        strlcat(gMsg, "S", _GMSG_LEN);
+      } else {
+        strlcat(gMsg, "W", _GMSG_LEN);
+      }
       tlgrmData.timestamp         = gMsg;
       tlgrmData.timestamp_present = true;
     }
@@ -133,15 +142,14 @@ void processSlimmemeter()
       DebugTln("showValues: ");
       tlgrmData.applyEach(showValues());
     }
-  }
-  else {                 // Parser error, print error
+  } else {               // Parser error, print error
     neoPixOn(1, neoPixRed);
     glowTimer1 = millis() + 5000;
     delay(1000);
     telegramErrors++;
     DebugTf("Parse error\r\n%s\r\n\r\n", tlgrmError.c_str());
     //--- set DTR to get a new telegram as soon as possible
-    slimmeMeter.enable(true); 
+    slimmeMeter.enable(true);
   }
 
   if (DUE(updateTlgrmCount)) {
@@ -179,8 +187,11 @@ float modifyMbusDelivered(int mbusType)
 {
   float tmpDelivered = 0;
 
-  if      (tlgrmData.mbus1_delivered_ntc_present) { tlgrmData.mbus1_delivered = tlgrmData.mbus1_delivered_ntc; } 
-  else if (tlgrmData.mbus1_delivered_dbl_present) { tlgrmData.mbus1_delivered = tlgrmData.mbus1_delivered_dbl; }
+  if      (tlgrmData.mbus1_delivered_ntc_present) {
+    tlgrmData.mbus1_delivered = tlgrmData.mbus1_delivered_ntc;
+  } else if (tlgrmData.mbus1_delivered_dbl_present) {
+    tlgrmData.mbus1_delivered = tlgrmData.mbus1_delivered_dbl;
+  }
   tlgrmData.mbus1_delivered_present     = true;
   tlgrmData.mbus1_delivered_ntc_present = false;
   tlgrmData.mbus1_delivered_dbl_present = false;
@@ -188,32 +199,47 @@ float modifyMbusDelivered(int mbusType)
     tmpDelivered = (float)(tlgrmData.mbus1_delivered * 1.0);
   }
 
-  if      (tlgrmData.mbus2_delivered_ntc_present) { tlgrmData.mbus2_delivered = tlgrmData.mbus2_delivered_ntc; }
-  else if (tlgrmData.mbus2_delivered_dbl_present) { tlgrmData.mbus2_delivered = tlgrmData.mbus2_delivered_dbl; }
+  if      (tlgrmData.mbus2_delivered_ntc_present) {
+    tlgrmData.mbus2_delivered = tlgrmData.mbus2_delivered_ntc;
+  } else if (tlgrmData.mbus2_delivered_dbl_present) {
+    tlgrmData.mbus2_delivered = tlgrmData.mbus2_delivered_dbl;
+  }
   tlgrmData.mbus2_delivered_present     = true;
   tlgrmData.mbus2_delivered_ntc_present = false;
   tlgrmData.mbus2_delivered_dbl_present = false;
-  if (smSetting->Mbus2Type > 0) { DebugTf("mbus2_delivered [%.3f]\r\n", (float)tlgrmData.mbus2_delivered); }
+  if (smSetting->Mbus2Type > 0) {
+    DebugTf("mbus2_delivered [%.3f]\r\n", (float)tlgrmData.mbus2_delivered);
+  }
   if ((smSetting->Mbus2Type == mbusType) && (tlgrmData.mbus2_device_type == mbusType)) {
     tmpDelivered = (float)(tlgrmData.mbus2_delivered * 1.0);
   }
 
-  if      (tlgrmData.mbus3_delivered_ntc_present) { tlgrmData.mbus3_delivered = tlgrmData.mbus3_delivered_ntc; }
-  else if (tlgrmData.mbus3_delivered_dbl_present) { tlgrmData.mbus3_delivered = tlgrmData.mbus3_delivered_dbl; }
+  if      (tlgrmData.mbus3_delivered_ntc_present) {
+    tlgrmData.mbus3_delivered = tlgrmData.mbus3_delivered_ntc;
+  } else if (tlgrmData.mbus3_delivered_dbl_present) {
+    tlgrmData.mbus3_delivered = tlgrmData.mbus3_delivered_dbl;
+  }
   tlgrmData.mbus3_delivered_present     = true;
   tlgrmData.mbus3_delivered_ntc_present = false;
   tlgrmData.mbus3_delivered_dbl_present = false;
-  if (smSetting->Mbus3Type > 0) { DebugTf("mbus3_delivered [%.3f]\r\n", (float)tlgrmData.mbus3_delivered); }
+  if (smSetting->Mbus3Type > 0) {
+    DebugTf("mbus3_delivered [%.3f]\r\n", (float)tlgrmData.mbus3_delivered);
+  }
   if ((smSetting->Mbus3Type == mbusType) && (tlgrmData.mbus3_device_type == mbusType)) {
     tmpDelivered = (float)(tlgrmData.mbus3_delivered * 1.0);
   }
 
-  if      (tlgrmData.mbus4_delivered_ntc_present) { tlgrmData.mbus4_delivered = tlgrmData.mbus4_delivered_ntc; }
-  else if (tlgrmData.mbus4_delivered_dbl_present) { tlgrmData.mbus4_delivered = tlgrmData.mbus4_delivered_dbl; }
+  if      (tlgrmData.mbus4_delivered_ntc_present) {
+    tlgrmData.mbus4_delivered = tlgrmData.mbus4_delivered_ntc;
+  } else if (tlgrmData.mbus4_delivered_dbl_present) {
+    tlgrmData.mbus4_delivered = tlgrmData.mbus4_delivered_dbl;
+  }
   tlgrmData.mbus4_delivered_present     = true;
   tlgrmData.mbus4_delivered_ntc_present = false;
   tlgrmData.mbus4_delivered_dbl_present = false;
-  if (smSetting->Mbus4Type > 0) { DebugTf("mbus4_delivered [%.3f]\r\n", (float)tlgrmData.mbus4_delivered); }
+  if (smSetting->Mbus4Type > 0) {
+    DebugTf("mbus4_delivered [%.3f]\r\n", (float)tlgrmData.mbus4_delivered);
+  }
   if ((smSetting->Mbus4Type == mbusType) && (tlgrmData.mbus4_device_type == mbusType)) {
     tmpDelivered = (float)(tlgrmData.mbus4_delivered * 1.0);
   }

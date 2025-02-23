@@ -17,7 +17,7 @@ void configModeCallback (WiFiManager *myWiFiManager)
   resetWatchdog(); //-- buy some time ..
   neoPixOn(0, neoPixWhite);
   neoPixOff(1);
-  
+
   DebugTln(F("Entered config mode\r"));
   DebugTln(WiFi.softAPIP());
   //if you used auto generated SSID, print it
@@ -75,22 +75,23 @@ void startWiFi(const char *hostname, int timeOut, bool eraseCredentials)
 
     DebugTf(" took [%d] milli-seconds ==> ERROR!\r\n", (millis() - lTime));
     neoPixOn(0, neoPixRed);
-  }
-  else {
+  } else {
     DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
   }
   if (devSetting->OledType > 0) {
     oled_Clear();
   }
-  
+
   strlcpy(myWiFi.SSID,     manageWiFi.getWiFiSSID().c_str(), _MY_SSID_LEN);
   strlcpy(myWiFi.password, manageWiFi.getWiFiPass().c_str(), _MY_PASSWD_LEN);
 
-  if (WiFi.softAPdisconnect(true))
-        DebugTln("WiFi Access Point disconnected and closed");
-  else  DebugTln("Hm.. could not disconnect WiFi Access Point! (maybe there was none?)\r\n");
+  if (WiFi.softAPdisconnect(true)) {
+    DebugTln("WiFi Access Point disconnected and closed");
+  } else {
+    DebugTln("Hm.. could not disconnect WiFi Access Point! (maybe there was none?)\r\n");
+  }
   DebugFlush();
-  
+
   DebugTf("startWiFi() took [%d] milli-seconds => OK!\r\n", (millis() - lTime));
 
   myWiFi.ipGateway = WiFi.gatewayIP();
@@ -114,15 +115,16 @@ void startTelnet()
 //=======================================================================
 void startMDNS(const char *Hostname)
 {
-  if (lostWiFiConnection) return;
-  
+  if (lostWiFiConnection) {
+    return;
+  }
+
   MDNS.end(); //-- end service
   DebugTf("[1] mDNS setup as [%s.local]\r\n", Hostname);
   if (MDNS.begin(Hostname)) {              // Start the mDNS responder for Hostname.local
     DebugTf("[2] mDNS responder started as [%s.local]\r\n", Hostname);
     writeToSysLog("mDNS responder started as [%s.local]", Hostname);
-  }
-  else {
+  } else {
     DebugTln("[3] Error setting up MDNS responder!\r\n");
     writeToSysLog("Error setting up MDNS responder!");
   }
