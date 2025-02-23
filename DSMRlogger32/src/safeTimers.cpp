@@ -100,22 +100,18 @@
 
 uint32_t __Due__(uint32_t &timer_due, uint32_t timer_interval, byte timerType)
 {
-  if ((int32_t)(millis() - timer_due) >= 0)
-  {
-    switch (timerType)
-    {
+  if ((int32_t)(millis() - timer_due) >= 0) {
+    switch (timerType) {
       case CATCH_UP_MISSED_TICKS:
         timer_due += timer_interval;
         break;
 
       case SKIP_MISSED_TICKS_WITH_SYNC:
-        if ( (millis() - timer_due) >= (timer_interval * 0.05) )
-        {
+        if ((millis() - timer_due) >= (timer_interval * 0.05)) {
           timer_due  += timer_interval;
           return 0;
         }
-        while ((int32_t)(millis() - timer_due) >= 0)
-        {
+        while ((int32_t)(millis() - timer_due) >= 0) {
           timer_due  += timer_interval;
           yield();
         }
@@ -144,23 +140,30 @@ uint32_t __TimeLeft__(uint32_t timer_due)
   // state=0  0-------T-D-------------------|------------------------------UMAX
 
   // state=1  0---T<========INT32_MAX========>-------------------------D---UMAX
-  if ( timer_due > (millis() + INT32_MAX) ) state = 1;  // millis() rolled-over
+  if (timer_due > (millis() + INT32_MAX)) {
+    state = 1;  // millis() rolled-over
+  }
 
   // state=2  0--------D<========INT32_MAX========>---------------T--------UMAX
-  if ( millis() > (timer_due + INT32_MAX) ) state = 2;  // _due rolled-over
+  if (millis() > (timer_due + INT32_MAX)) {
+    state = 2;  // _due rolled-over
+  }
 
-  switch(state)
-  {
+  switch(state) {
     case 1:     //--- millis() rolled-over
     case 2:     //--- _due rolled-over
-      if ( (int32_t)((timer_due + UINT32_MAX) - millis()) >= 0 )
+      if ((int32_t)((timer_due + UINT32_MAX) - millis()) >= 0) {
         tmp = (timer_due + UINT32_MAX) - millis();
-      else  tmp = 0;
+      } else {
+        tmp = 0;
+      }
       break;
     default:
-      if ( (int32_t)(timer_due - millis()) >= 0 )
+      if ((int32_t)(timer_due - millis()) >= 0) {
         tmp = timer_due - millis();
-      else  tmp = 0;
+      } else {
+        tmp = 0;
+      }
   }
 
   return (uint32_t)tmp;
@@ -170,11 +173,11 @@ uint32_t __TimeLeft__(uint32_t timer_due)
 // process variadic from macro's
 uint32_t getParam(int i, ...)
 {
-  uint32_t parm, p;
+  uint32_t parm;
+  uint32_t p;
   va_list vl;
   va_start(vl, i);
-  for (p=0; p<=i; p++)
-  {
+  for (p = 0; p <= i; p++) {
     parm=va_arg(vl, uint32_t);
   }
   va_end(vl);
