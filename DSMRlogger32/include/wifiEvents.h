@@ -7,6 +7,8 @@
 ** 
 */
 //============ Includes ====================
-#include "arduinoGlue.h"
+
+//-- Used in: DSMRlogger32.cpp, wifiEvents.cpp
+void WiFiEvent(WiFiEvent_t event);                          
 
 #endif // WIFIEVENTS_H

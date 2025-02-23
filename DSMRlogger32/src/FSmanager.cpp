@@ -1,5 +1,7 @@
 // ****************************************************************
 #include "FSmanager.h"
+#include "helperStuff.h"
+
 // Sketch Esp8266 Filesystem Manager spezifisch sortiert Modular(Tab)
 // created: Jens Fleischer, 2020-06-08
 // last mod: Jens Fleischer, 2020-09-02

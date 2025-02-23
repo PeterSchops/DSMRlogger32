@@ -10,6 +10,8 @@
 */
 #include "restAPI.h"
 #include "timeStuff.h"
+#include "helperStuff.h"
+#include "FSYSstuff.h"
 
 //=======================================================================
 void processAPI()

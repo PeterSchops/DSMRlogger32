@@ -12,7 +12,6 @@
 #include <WiFiManager.h>
 #include <FS.h>
 #include <esp_heap_caps.h>
-#include <Adafruit_NeoPixel.h>
 #include <SPIFFS_SysLogger.h>
 #include <HardwareSerial.h>
 #include <rom/rtc.h>
@@ -22,6 +21,7 @@
 #include <dsmr2.h>
 #include <PubSubClient.h>
 #include <TimeSyncLib.h>
+#include "safeTimers.h"
 
 //-- used in DSMRlogger32.cpp
 extern struct tm    timeinfo;                                          //-- from timeStuff
@@ -29,7 +29,7 @@ extern struct tm    timeinfo;                                          //-- from
 extern time_t       now;                                               //-- from timeStuff
 
 //============ Defines & Macros====================
-#define   MAXLINELENGTH     500   // longest normal line is 47 char (+3 for \r\n\0)
+#define MAXLINELENGTH     500   // longest normal line is 47 char (+3 for \r\n\0)
 #define I2C_ADDRESS 0x3C
 #define RST_PIN -1
 #define _SPIFFS
@@ -72,64 +72,18 @@ void _debugBOL(const char *fn, int line);
 #define _NEO_PIN                18    //                 hardware
 #endif
 #define _NEO_CHANNEL           0
-#define SKIP_MISSED_TICKS             0
-#define SKIP_MISSED_TICKS_WITH_SYNC   1
-#define CATCH_UP_MISSED_TICKS         2
-#define DECLARE_TIMER_EXTERN(timerName, ...) \
-    extern uint32_t timerName##_interval; \
-    extern uint32_t timerName##_due; \
-    extern byte timerName##_type;
-
-
-#define DECLARE_TIMER_MIN(timerName, ...) \
-  uint32_t timerName##_interval = (getParam(0, __VA_ARGS__, 0) * 60 * 1000), \
-                                         timerName##_due  = millis() \
-                                             +timerName##_interval \
-                                             +random(timerName##_interval / 3); \
-  byte     timerName##_type = getParam(1, __VA_ARGS__, 0);
-#define DECLARE_TIMER_SEC(timerName, ...) \
-  uint32_t timerName##_interval = (getParam(0, __VA_ARGS__, 0) * 1000), \
-                                         timerName##_due  = millis() \
-                                             +timerName##_interval \
-                                             +random(timerName##_interval / 3); \
-  byte     timerName##_type = getParam(1, __VA_ARGS__, 0);
-#define DECLARE_TIMER_MS(timerName, ...) \
-  uint32_t timerName##_interval = (getParam(0, __VA_ARGS__, 0)), \
-                                         timerName##_due  = millis() \
-                                             +timerName##_interval \
-                                             +random(timerName##_interval / 3); \
-  byte     timerName##_type = getParam(1, __VA_ARGS__, 0);
-#define DECLARE_TIMER   DECLARE_TIMER_MS
-#define CHANGE_INTERVAL_MIN(timerName, ...) \
-  timerName##_interval = (getParam(0, __VA_ARGS__, 0) *60*1000); \
-  timerName##_due  = millis() +timerName##_interval;
-#define CHANGE_INTERVAL_SEC(timerName, ...) \
-  timerName##_interval = (getParam(0, __VA_ARGS__, 0) *1000); \
-  timerName##_due  = millis() +timerName##_interval;
-#define CHANGE_INTERVAL_MS(timerName, ...) \
-  timerName##_interval = (getParam(0, __VA_ARGS__, 0) ); \
-  timerName##_due  = millis() +timerName##_interval;
-#define CHANGE_INTERVAL CHANGE_INTERVAL_MS
-#define TIME_LEFT(timerName)          ( __TimeLeft__(timerName##_due) )
-#define TIME_LEFT_MS(timerName)       ( (TIME_LEFT(timerName) ) )
-#define TIME_LEFT_MIN(timerName)      ( (TIME_LEFT(timerName) ) / (60 * 1000))
-#define TIME_LEFT_SEC(timerName)      ( (TIME_LEFT(timerName) ) / 1000 )
-#define TIME_PAST(timerName)          ( (timerName##_interval - TIME_LEFT(timerName)) )
-#define TIME_PAST_MS(timerName)       ( (TIME_PAST(timerName) )
-#define TIME_PAST_SEC(timerName)      ( (TIME_PAST(timerName) / 1000) )
-#define TIME_PAST_MIN(timerName)      ( (TIME_PAST(timerName) / (60*1000)) )
-#define RESTART_TIMER(timerName)      ( timerName##_due = millis()+timerName##_interval );
-#define DUE(timerName)                ( __Due__(timerName##_due, timerName##_interval, timerName##_type) )
 #define _FSYS SPIFFS
 
 #define writeToSysLog(...) ({ \
+        struct tm  tstruct; \
+        localtime_r(&now, &tstruct); \
         sysLog.writeDbg(sysLog.buildD("[%04d-%02d-%02d %02d:%02d:%02d][%-12.12s] "  \
-                            , localtime(&now)->tm_year+1900       \
-                            , localtime(&now)->tm_mon+1           \
-                            , localtime(&now)->tm_mday            \
-                            , localtime(&now)->tm_hour            \
-                            , localtime(&now)->tm_min             \
-                            , localtime(&now)->tm_sec             \
+                            , tstruct.tm_year+1900       \
+                            , tstruct.tm_mon+1           \
+                            , tstruct.tm_mday            \
+                            , tstruct.tm_hour            \
+                            , tstruct.tm_min             \
+                            , tstruct.tm_sec             \
                             , __FUNCTION__)      \
                             , ##__VA_ARGS__);    \
                            })
@@ -161,7 +115,7 @@ void _debugBOL(const char *fn, int line);
 #endif
 #define _SHIELD_TIME            10
 #define _TLGRM_LEN           10000    //-- probably a bit to long
-#define _JSONBUFF_LEN       200000    //-- 60000 is needed for 190 Hour History
+#define _JSONBUFF_LEN       220000    //-- 60000 is needed for 190 Hour History
 #define _GMSG_LEN              512
 #define _FCHAR_LEN              50
 #define _HOSTNAME_LEN           30
@@ -201,11 +155,11 @@ void _debugBOL(const char *fn, int line);
 #define _NO_MONTH_SLOTS_  (24 +1)
 #define SECS_PER_HOUR         3600
 #define SECS_PER_DAY         86400
-#define _MAX_ACTUAL_STORE  450 //--155 (~480 seems to be themax since water logging was added)
+#define _MAX_ACTUAL_STORE  500 //linked with _JSONBUFF_LEN
 
 //============ Structs, Unions & Enums ============
 //-- from DSMRlogger32.h
-enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
+//enum    { TAB_UNKNOWN, TAB_ACTUEEL, TAB_LAST24HOURS, TAB_LAST7DAYS, TAB_LAST24MONTHS, TAB_GRAPHICS, TAB_SYSINFO, TAB_EDITOR };
 
 //-- from DSMRlogger32.h
 struct myWiFiStruct
@@ -331,21 +285,8 @@ struct timeStruct
   uint16_t  hourSlot;   //-- active hour slot
 };
 
-//-- from neoPixelStuff.h
-enum neoPixColor {
-        neoPixWhiteLow
-      , neoPixWhite
-      , neoPixRed
-      , neoPixGreenLow
-      , neoPixGreen
-      , neoPixBlue
-      , neoPixFade
-      , neoPixBlink
-};
 
 
-//-- used in DSMRlogger32.cpp
-extern Adafruit_NeoPixel neoPixels;               //-- from settingsStuff
 
 //-- from FSYSstuff.ino
 struct listFileStruct
@@ -358,10 +299,8 @@ struct listFileStruct
 struct showValues
 {
   template<typename Item>
-  void apply(Item &i)
-  {
-    if (i.present())
-    {
+  void apply(Item &i) {
+    if (i.present()) {
       DebugT(Item::name);
       Debug(F(": "));
       Debug(i.val());
@@ -373,22 +312,6 @@ struct showValues
 
 //-- Used in: DSMRlogger32.cpp, restAPI.cpp
 bool isInFieldsArray(const char *lookUp, int elemts);       
-//-- Used in: DSMRlogger32.cpp, restAPI.cpp, helperStuff.cpp, MQTTstuff.cpp
-void addToTable(const char *cName, const char *cValue);     
-//-- Used in: DSMRlogger32.cpp, restAPI.cpp, helperStuff.cpp, MQTTstuff.cpp
-void addToTable(const char *cName, String sValue);          
-//-- Used in: DSMRlogger32.cpp, restAPI.cpp, helperStuff.cpp, MQTTstuff.cpp
-void addToTable(const char *cName, uint32_t uValue);        
-//-- Used in: DSMRlogger32.cpp, restAPI.cpp, helperStuff.cpp, MQTTstuff.cpp
-void addToTable(const char *cName, int32_t iValue);         
-//-- Used in: DSMRlogger32.cpp, restAPI.cpp, helperStuff.cpp, MQTTstuff.cpp
-void addToTable(const char *cName, float fValue);           
-//-- Used in: DSMRlogger32.cpp, helperStuff.cpp
-void pushToActualStore(const char *cName, String sValue);   
-//-- Used in: DSMRlogger32.cpp, helperStuff.cpp
-void pushToActualStore(const char *cName, float fValue);    
-//-- Used in: helperStuff.cpp, processTelegram.cpp
-void pushTlgrmToActualStore();                              
 
 //=======================================================================
 template<typename Item>
@@ -411,87 +334,16 @@ extern char            fieldsArray[50][35];                   		//-- from DSMRlo
 extern int             fieldsElements;                    		//-- from DSMRlogger32
 
 //-- from DSMRlogger32.ino
-struct buildJsonV2ApiSm
-{
-  bool  skip = false;
-
-  template<typename Item>
-  void apply(Item &i)
-  {
-    skip = false;
-    String Name = String(Item::name);
-    if (!isInFieldsArray(Name.c_str(), fieldsElements))
-    {
-      skip = true;
-    }
-    if (!skip)
-    {
-      if (i.present())
-      {
-        addToTable(Name.c_str(), typecastValue(i.val()));
-      }
-    }
-  }
-
-};
-
-//-- from DSMRlogger32.ino
-struct addSmToActualStore
-{
-  bool  skip = false;
-
-  template<typename Item>
-  void apply(Item &i)
-  {
-    skip = false;
-    String Name = String(Item::name);
-    if (!isInFieldsArray(Name.c_str(), fieldsElements))
-    {
-      skip = true;
-    }
-    if (!skip)
-    {
-      if (i.present())
-      {
-        pushToActualStore(Name.c_str(), typecastValue(i.val()));
-      }
-    }
-  }
-
-};
-
-//-- from helperStuff.ino
-struct SpiRamAllocator 
-{
-  void* allocate(size_t size) 
-  {
-//-- Used in: helperStuff.cpp
-    return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
-  }
-
-  void deallocate(void* pointer) 
-  {
-    heap_caps_free(pointer);
-  }
-
-  void* reallocate(void* ptr, size_t new_size) 
-  {
-//-- Used in: helperStuff.cpp
-    return heap_caps_realloc(ptr, new_size, MALLOC_CAP_SPIRAM);
-  }
-};
 
 //-- from handleTestdata.ino
 enum runStates { SInit, SMonth, SDay, SHour, SNormal };
 
-//-- from MQTTstuff.ino
-enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_IS_CONNECTED, MQTT_STATE_ERROR };
 
 using MyData = ParsedData<
               identification,              /* String */
               p1_version,                  /* String */ 
               p1_version_be,               /* String 0-0:96.1.4(50221) */
-              //grid_configuration,          /* String 1-0:94.32.1(400) */
+              // grid_configuration,          /* String 1-0:94.32.1(400) */
               timestamp,                   /* String 0-0:1.0.0(250219234430W) */
               equipment_id,                /* String 0-0:96.1.1() */
               peak_pwr_last_q,             /* FixedValue 1-0:1.4.0() */
@@ -505,15 +357,15 @@ using MyData = ParsedData<
               power_returned,              /* FixedValue 1-0:2.7.0(00.000*kW) */
               electricity_threshold,       /* FixedValue */
               electricity_switch_position, /* uint8_t */
-              electricity_failures,        /* uint32_t */
-              electricity_long_failures,   /* uint32_t */
-              electricity_failure_log,     /* String */
-              electricity_sags_l1,         /* uint32_t */
-              electricity_sags_l2,         /* uint32_t */ 
-              electricity_sags_l3,         /* uint32_t */
-              electricity_swells_l1,       /* uint32_t */
-              electricity_swells_l2,       /* uint32_t */ 
-              electricity_swells_l3,       /* uint32_t */
+              // electricity_failures,        /* uint32_t */
+              // electricity_long_failures,   /* uint32_t */
+              // electricity_failure_log,     /* String */
+              // electricity_sags_l1,         /* uint32_t */
+              // electricity_sags_l2,         /* uint32_t */ 
+              // electricity_sags_l3,         /* uint32_t */
+              // electricity_swells_l1,       /* uint32_t */
+              // electricity_swells_l2,       /* uint32_t */ 
+              // electricity_swells_l3,       /* uint32_t */
               message_short,               /* String */
               // message_long              /* String this one is too big and will crash the MCU */
               voltage_l1,                  /* FixedValue 1-0:32.7.0(239.2*V) */
@@ -559,10 +411,6 @@ using MyData = ParsedData<
               mbus4_delivered_ntc,         /* TimestampedFixedValue */
               mbus4_delivered_dbl          /* TimestampedFixedValue */
               >;
-
-//-- not used extern MyData      DSMRdata;
-
-using SpiRamJsonDocument = BasicJsonDocument<SpiRamAllocator>;
 
 //============ Extern Variables ============
 //-- used in DSMRlogger32.cpp, settingsStuff.cpp
@@ -742,15 +590,6 @@ void processSlimmemeter();
 void modifySmFaseInfo();                                    
 //-- Used in: handleTestdata.cpp, handleSlimmeMeter.cpp
 float modifyMbusDelivered(int mbusType);                                
-//-- from timeStuff.ino -----------
-//-- Used in: DSMRlogger32.cpp, timeStuff.cpp
-void logNtpTime();                                          
-//-- Used in: DSMRlogger32.cpp, processTelegram.cpp, timeStuff.cpp
-void saveTimestamp(const char *timeStamp);                  
-//-- Used in: timeStuff.cpp, FSYSstuff.cpp
-timeStruct buildTimeStruct(const char *timeStamp, uint16_t hourSlots , uint16_t daySlots , uint16_t monthSlots);
-//-- Used in: timeStuff.cpp, FSYSstuff.cpp
-timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType);
 
 //-- from FSmanager.ino -----------
 //-- Used in: FSmanager.cpp, DSMRlogger32.cpp
@@ -783,94 +622,7 @@ void readShieldSettings(bool show);
 //-- Used in: settingsStuff.cpp, restAPI.cpp
 void updateDevSettings(const char *field, const char *newValue);
 void updateShieldSettings(const char *field, const char *newValue);
-//-- from restAPI.ino -----------
-//-- Used in: FSmanager.cpp, restAPI.cpp, DSMRlogger32.cpp
-void processAPI();                                          
-//-- Used in: restAPI.cpp, helperStuff.cpp
-void copyToFieldsArray(const char inArray[][35], int elemts);
-//-- from networkStuff.ino -----------
-//-- Used in: DSMRlogger32.cpp, networkStuff.cpp, menuStuff.cpp
-void startWiFi(const char *hostname, int timeOut, bool eraseCredentials);
-//-- Used in: DSMRlogger32.cpp, networkStuff.cpp
-void startTelnet();                                         
-//-- Used in: DSMRlogger32.cpp, settingsStuff.cpp, networkStuff.cpp
-void startMDNS(const char *Hostname);                       
-//-- from helperStuff.ino -----------
-//-- Used in: DSMRlogger32.cpp, networkStuff.cpp, FSYSstuff.cpp, FSmanager.cpp, helperStuff.cpp
-void pulseHeart(bool force);                                
-//-- Used in: DSMRlogger32.cpp, networkStuff.cpp, FSYSstuff.cpp, FSmanager.cpp, helperStuff.cpp
-void pulseHeart();                                          
-//-- Used in: DSMRlogger32.cpp, helperStuff.cpp, networkStuff.cpp, menuStuff.cpp
-void resetWatchdog();                                       
-//-- Used in: helperStuff.cpp, MQTTstuff.cpp
-boolean isValidIP(IPAddress ip);                            
-//-- Used in: restAPI.cpp, helperStuff.cpp, FSYSstuff.cpp
-bool isValidTimestamp(const char *timeStamp, int8_t len);   
-//-- Used in: restAPI.cpp, helperStuff.cpp
-int8_t splitString(String inStrng, char delimiter, String wOut[], uint8_t maxWords);
-//-- Used in: DSMRlogger32.cpp, restAPI.cpp, helperStuff.cpp, menuStuff.cpp
-String upTime();                                            
-//-- Used in: helperStuff.cpp, timeStuff.cpp, FSYSstuff.cpp
-void strCpyFrm(char *dest, int maxLen, const char *src, uint8_t frm, uint8_t to);
-//-- Used in: DSMRlogger32.cpp, helperStuff.cpp
-float strToFloat(const char *s, int dec);                   
-//-- Used in: helperStuff.cpp, MQTTstuff.cpp
-double round1(double value);                                
-//-- Used in: helperStuff.cpp
-double round2(double value);                                
-//-- Used in: restAPI.cpp, helperStuff.cpp, MQTTstuff.cpp
-double round3(double value);                                
-//-- Used in: DSMRlogger32.cpp, helperStuff.cpp
-void getLastResetReason(RESET_REASON reason, char *txtReason, int txtReasonLen);
-//-- Used in: handleTestdata.cpp, restAPI.cpp, helperStuff.cpp, handleSlimmeMeter.cpp
-unsigned int CRC16(unsigned int crc, unsigned char *buf, int len);
-//-- from menuStuff.ino -----------
-//-- Used in: DSMRlogger32.cpp, menuStuff.cpp
-void wait4KeyInput();                                       
-//-- from DSMRsetupStuff.ino -----------
-//-- Used in: DSMRlogger32.cpp, DSMRsetupStuff.cpp
-void setupFileSystem();                                     
-//-- Used in: DSMRlogger32.cpp, DSMRsetupStuff.cpp
-void setupSysLogger(const char*);                                      
-//-- Used in: DSMRlogger32.cpp, DSMRsetupStuff.cpp
-void setupPsram();                                          
-//-- Used in: DSMRlogger32.cpp, DSMRsetupStuff.cpp
-bool setupIsFsPopulated();                                  
-//-- from FSYSstuff.ino -----------
-//-- Used in: DSMRlogger32.cpp, FSYSstuff.cpp
-void readLastStatus();                                      
-//-- Used in: DSMRlogger32.cpp, restAPI.cpp, FSYSstuff.cpp, menuStuff.cpp, processTelegram.cpp
-void writeLastStatus();                                     
-//-- Used in: processTelegram.cpp, FSYSstuff.cpp
-void buildDataRecordFromSM(char *recIn, timeStruct useTime);
-//-- Used in: restAPI.cpp, FSYSstuff.cpp
-uint16_t buildDataRecordFromJson(char *recIn, int recLen, String jsonIn);
-//-- Used in: restAPI.cpp, processTelegram.cpp, FSYSstuff.cpp
-void writeDataToRingFile(char *fileName, int8_t ringType, char *record, timeStruct slotTime);
-//-- Used in: FSYSstuff.cpp, restAPI.cpp, menuStuff.cpp
-void writeDataToRingFiles(timeStruct useTime);              
-//-- Used in: FSYSstuff.cpp, menuStuff.cpp
-void readAllSlots(char *record, int8_t ringType, const char *fileName, timeStruct thisTime);
-//-- Used in: settingsStuff.cpp, FSYSstuff.cpp
-bool alterRingFile();                                       
-//-- Used in: settingsStuff.cpp, FSYSstuff.cpp
-uint16_t readRingHistoryDepth(const char *fileName, int8_t ringType);
-//-- Used in: FSYSstuff.cpp, menuStuff.cpp
-void listFilesystem();                                      
-//-- Used in: FSYSstuff.cpp, menuStuff.cpp
-void eraseFile();                                           
-//-- Used in: DSMRsetupStuff.cpp, FSYSstuff.cpp
-bool DSMRfileExist(const char *fileName, const char* funcName, bool doDisplay);
-//-- from wifiEvents.h -----------
-//-- Used in: DSMRlogger32.cpp, wifiEvents.cpp
-void WiFiEvent(WiFiEvent_t event);                          
-//-- from neoPixelStuff.h -----------
-//-- Used in: DSMRlogger32.cpp, networkStuff.cpp, FSYSstuff.cpp
-void neoPixOff(int neoPixNr);                               
-//-- Used in: handleTestdata.cpp, DSMRlogger32.cpp, networkStuff.cpp, FSYSstuff.cpp, helperStuff.cpp, handleSlimmeMeter.cpp
-void neoPixOn(int neoPixNr, neoPixColor color);             
-//-- Used in: DSMRlogger32.cpp, menuStuff.cpp
-void blinkNeoPixels(uint8_t times, uint16_t speed);         
+
 //-- from safeTimers.h -----------
 uint32_t __Due__(uint32_t &timer_due, uint32_t timer_interval, byte timerType);
 uint32_t __TimeLeft__(uint32_t timer_due);                  

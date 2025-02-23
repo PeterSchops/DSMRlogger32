@@ -8,7 +8,9 @@
 **  TERMS OF USE: MIT License. See bottom of file.
 ***************************************************************************
 */
+#include "arduinoGlue.h"
 #include "DSMRsetupStuff.h"
+#include "FSYSstuff.h"
 
 //===========================================================================================
 void setupFileSystem()

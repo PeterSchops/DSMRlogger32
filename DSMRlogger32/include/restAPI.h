@@ -30,5 +30,4 @@ void listFieldsArray(char inArray[][35]);
 void sendApiNotFound(const char *URI);                      
 
 
-//============ Added by Convertor ==========
 #endif // RESTAPI_H

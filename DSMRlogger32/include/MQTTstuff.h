@@ -3,8 +3,10 @@
 
 //============ Includes ====================
 #include "arduinoGlue.h"
+#include "safeTimers.h"
 
 DECLARE_TIMER_EXTERN(reconnectMQTTtimer);
 
-//============ Added by Convertor ==========
+enum states_of_MQTT { MQTT_STATE_INIT, MQTT_STATE_TRY_TO_CONNECT, MQTT_STATE_IS_CONNECTED, MQTT_STATE_ERROR };
+
 #endif // MQTTSTUFF_H

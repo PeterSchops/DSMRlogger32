@@ -8,7 +8,12 @@
 **  TERMS OF USE: MIT License. See bottom of file.
 ***************************************************************************
 */
+#include "arduinoGlue.h"
 #include "FSYSstuff.h"
+#include "timeStuff.h"
+#include "helperStuff.h"
+#include "neoPixelStuff.h"
+
 /*				*** struct moved to arduinoGlue.h ***
 struct listFileStruct
 {

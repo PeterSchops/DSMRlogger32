@@ -17,5 +17,4 @@ DECLARE_TIMER_EXTERN(oledSleepTimer);
 void showDevSettings();   
 void showShieldSettings();   
 
-//============ Added by Convertor ==========
 #endif // SETTINGSSTUFF_H

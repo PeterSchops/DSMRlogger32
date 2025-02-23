@@ -4,6 +4,8 @@
 **
 */
 //============ Includes ====================
+
+#include "arduinoGlue.h"
 #include "wifiEvents.h"
 
 //============ Added by Convertor ==========

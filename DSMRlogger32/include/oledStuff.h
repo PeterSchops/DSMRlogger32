@@ -6,5 +6,4 @@
 
 DECLARE_TIMER_EXTERN(oledSleepTimer);
 
-//============ Added by Convertor ==========
 #endif // OLEDSTUFF_H

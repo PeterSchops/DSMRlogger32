@@ -25,5 +25,4 @@ void reBootESP();
 void doRedirect(String msg, int wait, const char *URL, bool reboot);
 String getContentType(String filename);                     
 
-//============ Added by Convertor ==========
 #endif // FSMANAGER_H

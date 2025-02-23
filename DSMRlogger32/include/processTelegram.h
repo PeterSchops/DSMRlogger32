@@ -6,5 +6,4 @@
 
 DECLARE_TIMER_EXTERN(publishMQTTtimer);
 
-//============ Added by Convertor ==========
 #endif // PROCESSTELEGRAM_H

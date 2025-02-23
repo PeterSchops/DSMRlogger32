@@ -9,6 +9,8 @@
 ***************************************************************************
 */
 #include "handleSlimmeMeter.h"
+#include "helperStuff.h"
+#include "neoPixelStuff.h"
 
 //==================================================================================
 void handleSlimmemeter()
@@ -124,7 +126,7 @@ void processSlimmemeter()
 
       snprintf (gMsg,  _GMSG_LEN, "%02d%02d%02d%02d%02d%02d\0\0",
                 (tstruct.tm_year - 2000), tstruct.tm_mon, tstruct.tm_mday, tstruct.tm_hour, tstruct.tm_min, tstruct.tm_sec);
-      if (localtime(&now)->tm_isdst > 0) {
+      if (tstruct.tm_isdst > 0) {
         strlcat(gMsg, "S", _GMSG_LEN);
       } else {
         strlcat(gMsg, "W", _GMSG_LEN);

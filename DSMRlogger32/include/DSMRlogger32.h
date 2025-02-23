@@ -27,6 +27,7 @@
 #include "helperStuff.h"
 #include "wifiEvents.h"
 #include "Shield32.h"
+#include "safeTimers.h"
 
 Shield32 relay0;
 Shield32 relay1;

@@ -9,6 +9,8 @@
 ***************************************************************************
 */
 #include "networkStuff.h"
+#include "helperStuff.h"
+#include "neoPixelStuff.h"
 
 //-- gets called when WiFiManager enters configuration mode
 //===========================================================================================

@@ -10,6 +10,8 @@
 */
 #include "processTelegram.h"
 #include "timeStuff.h"
+#include "FSYSstuff.h"
+#include "helperStuff.h"
 
 //==================================================================================
 void processTelegram()

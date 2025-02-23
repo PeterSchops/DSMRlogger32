@@ -9,6 +9,8 @@
 ***************************************************************************
 */
 #include "MQTTstuff.h"
+#include "helperStuff.h"
+#include "safeTimers.h"
 
 // Declare some variables within global scope
 

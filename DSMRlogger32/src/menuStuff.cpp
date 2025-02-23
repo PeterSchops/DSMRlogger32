@@ -9,6 +9,9 @@
 ***************************************************************************
 */
 #include "menuStuff.h"
+#include "helperStuff.h"
+#include "FSYSstuff.h"
+#include "neoPixelStuff.h"
 
 //===========================================================================================
 void displayHoursHist(bool Telnet)

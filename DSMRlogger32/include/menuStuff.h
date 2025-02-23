@@ -2,7 +2,8 @@
 #define MENUSTUFF_H
 
 //============ Includes ====================
-#include "arduinoGlue.h"
 
-//============ Added by Convertor ==========
+//-- Used in: DSMRlogger32.cpp, menuStuff.cpp
+void wait4KeyInput();                                       
+
 #endif // MENUSTUFF_H
