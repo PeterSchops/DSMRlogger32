@@ -6,18 +6,24 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
 
-#define UPDATE_FEEDBACK_OK 			0
-#define UPDATE_FEEDBACK_UPDATE_OK 		1
-#define UPDATE_FEEDBACK_UPDATE_ERROR 	2
 
 typedef std::function<void(u_int8_t progress)> ProgressCallback;
 
 class UpdateManager {
   public:
+    enum updateFeedback {
+      UPDATE_FEEDBACK_OK = 0,
+	  UPDATE_FEEDBACK_UPDATE_OK = 1,
+	  UPDATE_FEEDBACK_UPDATE_ERROR = 2
+    };
+	enum class update {
+	  FIRMWARE, 
+	  SPIFFS
+	};
+  
 	UpdateManager();
 	void setProgressCallback(ProgressCallback callback);
     bool feedback(int8_t);
-
 	void updateFirmware(const char *url, ProgressCallback callback = nullptr);
     void updateSpiffs(const char *url, ProgressCallback callback = nullptr);
 
@@ -33,8 +39,7 @@ class UpdateManager {
 	void onProgress(unsigned int progress, unsigned int total);
 	void onEnd();
 	void onError(ota_error_t error);
-	bool httpUpdateFirmware(const char *url);
-    bool httpUpdateSpiffs(const char *url);
+	bool httpUpdate(update data, const char *url);
 };
 
 /**********************************************************************************

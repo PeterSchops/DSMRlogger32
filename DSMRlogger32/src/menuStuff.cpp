@@ -19,7 +19,7 @@ void displayHoursHist(bool Telnet)
 {
   char dummy[DATA_RECLEN] = {0};
   
-  readAllSlots(dummy, RNG_HOURS, HOURS_FILE, lastTlgrmTime);
+  readAllSlots(dummy, RingType::HOURS, HOURS_FILE, lastTlgrmTime);
 } // displayHoursHist()
 
 
@@ -28,7 +28,7 @@ void displayDaysHist(bool Telnet)
 {
   char dummy[DATA_RECLEN] = {0};
   
-  readAllSlots(dummy, RNG_DAYS, DAYS_FILE, lastTlgrmTime);
+  readAllSlots(dummy, RingType::DAYS, DAYS_FILE, lastTlgrmTime);
 } // displayDaysHist()
 
 
@@ -37,7 +37,7 @@ void displayMonthsHist(bool Telnet)
 {
   char dummy[DATA_RECLEN] = {0};
 
-  readAllSlots(dummy, RNG_MONTHS, MONTHS_FILE, lastTlgrmTime);
+  readAllSlots(dummy, RingType::MONTHS, MONTHS_FILE, lastTlgrmTime);
 } // displayMonthsHist()
 
 

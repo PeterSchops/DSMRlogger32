@@ -4,6 +4,7 @@
 //============ Includes ====================
 #include "arduinoGlue.h"
 #include <WString.h>
+#include "FSYSstuff.h"
 
 //-- Used in: DSMRlogger32.cpp, timeStuff.cpp
 void logNtpTime();                                          
@@ -12,7 +13,7 @@ void saveTimestamp(const char *timeStamp);
 //-- Used in: timeStuff.cpp, FSYSstuff.cpp
 timeStruct buildTimeStruct(const char *timeStamp, uint16_t hourSlots , uint16_t daySlots , uint16_t monthSlots);
 //-- Used in: timeStuff.cpp, FSYSstuff.cpp
-timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType);
+timeStruct calculateTime(timeStruct useTime, int16_t units, RingType ringType);
 //-- Used in: processTelegram.cpp, timeStuff.cpp
 // format: YYMMDDHHMMSS
 String buildDateTimeString(const char *timeStamp, int len); 

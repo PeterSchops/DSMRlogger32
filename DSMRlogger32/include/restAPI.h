@@ -4,6 +4,7 @@
 //============ Includes ====================
 #include "arduinoGlue.h"
 #include "Shield32.h"
+#include "FSYSstuff.h"
 
 DECLARE_TIMER_EXTERN(antiWearTimer);
    
@@ -21,7 +22,7 @@ void sendDeviceDebug(const char *URI, String tail);
 void sendShieldInfo();
 void sendJsonV2smApi(const char *firstLevel);               
 void sendJsonActualHist();                                  
-void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uint8_t limit, bool sortDesc);
+void sendJsonHist(RingType ringType, const char *fileName, timeStruct useTime, uint8_t limit, bool sortDesc);
 void listFieldsArray(char inArray[][35]);                   
 void sendApiNotFound(const char *URI);                      
 //-- Used in: DSMRlogger32.cpp, restAPI.cpp

@@ -47,7 +47,7 @@ void processSlimmemeterRaw()
 
   if (slimmeMeter.available()) {
     if (millis() > (glowTimer1 + _GLOW_TIME)) {
-      neoPixOn(1, neoPixGreen);
+      neoPixOn(1, NeoPixColor::green);
       glowTimer1 = millis();
     }
     tlgrmData = {};
@@ -97,7 +97,7 @@ void processSlimmemeter()
       delay(1000);
     }
     if (millis() > (glowTimer1 + _GLOW_TIME)) {
-      neoPixOn(1, neoPixGreen);
+      neoPixOn(1, NeoPixColor::green);
       glowTimer1 = millis();
     }
     digitalWrite(LED_BUILTIN, LED_OFF);
@@ -145,7 +145,7 @@ void processSlimmemeter()
       tlgrmData.applyEach(showValues());
     }
   } else {               // Parser error, print error
-    neoPixOn(1, neoPixRed);
+    neoPixOn(1, NeoPixColor::red);
     glowTimer1 = millis() + 5000;
     delay(1000);
     telegramErrors++;

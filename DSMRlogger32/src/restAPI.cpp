@@ -253,7 +253,7 @@ void processApiV2Dev(const char *URI, const char *apiId, const char *word5, cons
     return;
   }
 
-  if (strcmp(apiId, "shield") == 0) {
+  if (strcmp(apiId, "shield") == 0) {//double code, can be removed. shiled moved to /api/v2/shield/settings ?
     DebugTln("Handle /api/v2/dev/shield..");
     if ((httpServer.method() == HTTP_PUT) or (httpServer.method() == HTTP_POST)) {
       //------------------------------------------------------------
@@ -277,8 +277,8 @@ void processApiV2Dev(const char *URI, const char *apiId, const char *word5, cons
         fieldValue = doc["value"].as<String>();
         // Split the string into hours and minutes
         int separatorIndex = fieldValue.indexOf(':');
-        uint8_t hours = static_cast<uint8_t>(fieldValue.substring(0, separatorIndex).toInt());    // Extract hours part
-        uint8_t minutes = static_cast<uint8_t>(fieldValue.substring(separatorIndex + 1).toInt()); // Extract minutes part
+        uint8_t hours = fieldValue.substring(0, separatorIndex).toInt();    // Extract hours part
+        uint8_t minutes = fieldValue.substring(separatorIndex + 1).toInt(); // Extract minutes part
         // Convert HH:MM back to minutes
         uint16_t tmpValue = (hours * 60) + minutes;
         doc["value"] = String(tmpValue);
@@ -347,7 +347,7 @@ void processApiV2Shield(const char *URI, const char *apiId, const char *word5, c
 
   if (strcmp(apiId, "settings") == 0) {
     DebugTln("Handle /api/v2/shield/settings..");
-    if (httpServer.method() == HTTP_PUT || httpServer.method() == HTTP_POST) {
+    if ((httpServer.method() == HTTP_PUT) or (httpServer.method() == HTTP_POST)) {
       DebugTln(httpServer.arg(0));
       //-- Allocate the JsonDocument
       SpiRamJsonDocument doc(3000);
@@ -476,7 +476,7 @@ void processApiV2Shield(const char *URI, const char *apiId, const char *word5, c
 //----------------------------------------------------
 void processApiV2Hist(const char *URI, const char *apiId, const char *word5, const char *word6)
 {
-  int8_t ringType = 0;
+  RingType ringType = RingType::NONE;
   char fileName[20] = "";
   uint16_t recSlot;
   uint8_t limit = 0;
@@ -505,13 +505,13 @@ void processApiV2Hist(const char *URI, const char *apiId, const char *word5, con
     sendJsonActualHist();
     return;
   } else if (strcmp(apiId, "hours") == 0) {
-    ringType = RNG_HOURS;
+    ringType = RingType::HOURS;
     strlcpy(fileName, HOURS_FILE, sizeof(fileName));
   } else if (strcmp(apiId, "days") == 0) {
-    ringType = RNG_DAYS;
+    ringType = RingType::DAYS;
     strlcpy(fileName, DAYS_FILE, sizeof(fileName));
   } else if (strcmp(apiId, "months") == 0) {
-    ringType = RNG_MONTHS;
+    ringType = RingType::MONTHS;
     if (httpServer.method() == HTTP_PUT || httpServer.method() == HTTP_POST) {
       //------------------------------------------------------------
       // json string: {"recid":"29013023"
@@ -1313,7 +1313,7 @@ void sendJsonActualHist()
 //    {"recnr": 3, "recid": "22112114", "slot": 33,"edt1": 325.262, "edt2": 751.726,"ert1": 128.196, "ert2": 84.024,"gdt": 241.074},
 //  ]}
 //=======================================================================
-void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uint8_t limit, bool sortDesc)
+void sendJsonHist(RingType ringType, const char *fileName, timeStruct useTime, uint8_t limit, bool sortDesc)
 {
   uint16_t startSlot, offset, readSlot, slot, nrSlots, maxSlots, recNr = 0;
   char typeApi[10] = {0};
@@ -1329,19 +1329,19 @@ void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uin
   }
 
   switch (ringType) {
-    case RNG_HOURS:
+    case RingType::HOURS:
       startSlot = (useTime.Hours % devSetting->NoHourSlots);
       nrSlots = devSetting->NoHourSlots;
       maxSlots = devSetting->NoHourSlots;
       strlcpy(typeApi, "hours", 9);
       break;
-    case RNG_DAYS:
+    case RingType::DAYS:
       startSlot = (useTime.Days % devSetting->NoDaySlots);
       nrSlots = devSetting->NoDaySlots;
       maxSlots = devSetting->NoDaySlots;
       strlcpy(typeApi, "days", 9);
       break;
-    case RNG_MONTHS:
+    case RingType::MONTHS:
       startSlot = (useTime.Months % devSetting->NoMonthSlots);
       nrSlots = devSetting->NoMonthSlots;
       maxSlots = devSetting->NoMonthSlots;

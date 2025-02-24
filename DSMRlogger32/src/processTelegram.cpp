@@ -63,9 +63,9 @@ void processTelegram()
                   prevTlgrmTime.Year,
                   lastTlgrmTime.Year);
     //-- Update all three RING files
-    writeDataToRingFile(HOURS_FILE,  RNG_HOURS,  record, prevTlgrmTime);
-    writeDataToRingFile(DAYS_FILE,   RNG_DAYS,   record, prevTlgrmTime);
-    writeDataToRingFile(MONTHS_FILE, RNG_MONTHS, record, prevTlgrmTime);
+    writeDataToRingFile(HOURS_FILE,  RingType::HOURS,  record, prevTlgrmTime);
+    writeDataToRingFile(DAYS_FILE,   RingType::DAYS,   record, prevTlgrmTime);
+    writeDataToRingFile(MONTHS_FILE, RingType::MONTHS, record, prevTlgrmTime);
   } else if (lastTlgrmTime.Month != prevTlgrmTime.Month) {
     buildDataRecordFromSM(record, prevTlgrmTime);
     DebugTf("Update MONTHS, DAYS & HOURS RING-files..[%04d-%02d-%02d (%02d)] Changed Month! [%d/%d]\r\n",
@@ -83,9 +83,9 @@ void processTelegram()
                   prevTlgrmTime.Month,
                   lastTlgrmTime.Month);
     //-- If the Month changes update all three RING files
-    writeDataToRingFile(HOURS_FILE,  RNG_HOURS,  record, prevTlgrmTime);
-    writeDataToRingFile(DAYS_FILE,   RNG_DAYS,   record, prevTlgrmTime);
-    writeDataToRingFile(MONTHS_FILE, RNG_MONTHS, record, prevTlgrmTime);
+    writeDataToRingFile(HOURS_FILE,  RingType::HOURS,  record, prevTlgrmTime);
+    writeDataToRingFile(DAYS_FILE,   RingType::DAYS,   record, prevTlgrmTime);
+    writeDataToRingFile(MONTHS_FILE, RingType::MONTHS, record, prevTlgrmTime);
   } else if (lastTlgrmTime.Day   != prevTlgrmTime.Day) {
     buildDataRecordFromSM(record, prevTlgrmTime);
     DebugTf("Update DAYS & HOURS RING-files..[%02d-%02d-%02d (%02d)] Changed Day! [%d/%d]\r\n",
@@ -103,8 +103,8 @@ void processTelegram()
                   prevTlgrmTime.Day,
                   lastTlgrmTime.Day);
     //-- If the Day changes update only these two RING files
-    writeDataToRingFile(HOURS_FILE, RNG_HOURS,  record, prevTlgrmTime);
-    writeDataToRingFile(DAYS_FILE,  RNG_DAYS,   record, prevTlgrmTime);
+    writeDataToRingFile(HOURS_FILE, RingType::HOURS,  record, prevTlgrmTime);
+    writeDataToRingFile(DAYS_FILE,  RingType::DAYS,   record, prevTlgrmTime);
   } else if (lastTlgrmTime.Hour != prevTlgrmTime.Hour) {
     buildDataRecordFromSM(record, prevTlgrmTime);
     DebugTf("Update HOURS RING-files..[%02d-%02d-%02d (%02d)] Changed Hour! [%d/%d]\r\n",
@@ -124,18 +124,18 @@ void processTelegram()
                                                             , lastTlgrmTime.Hour);
     */
     //-- update all three on every hour change!
-    writeDataToRingFile(HOURS_FILE,  RNG_HOURS,  record, prevTlgrmTime);
-    writeDataToRingFile(DAYS_FILE,   RNG_DAYS,   record, prevTlgrmTime);
-    writeDataToRingFile(MONTHS_FILE, RNG_MONTHS, record, prevTlgrmTime);
+    writeDataToRingFile(HOURS_FILE,  RingType::HOURS,  record, prevTlgrmTime);
+    writeDataToRingFile(DAYS_FILE,   RingType::DAYS,   record, prevTlgrmTime);
+    writeDataToRingFile(MONTHS_FILE, RingType::MONTHS, record, prevTlgrmTime);
   }
   DebugTf("prevHour[%02d] -- lastHour[%02d] ", prevTlgrmTime.Hour, lastTlgrmTime.Hour);
   if (prevTlgrmTime.Hour != lastTlgrmTime.Hour) {
     Debugln("Changed!!");
     buildDataRecordFromSM(record, lastTlgrmTime);
     //-- update all three on every hour change!
-    writeDataToRingFile(HOURS_FILE,  RNG_HOURS,  record, lastTlgrmTime);
-    writeDataToRingFile(DAYS_FILE,   RNG_DAYS,   record, lastTlgrmTime);
-    writeDataToRingFile(MONTHS_FILE, RNG_MONTHS, record, lastTlgrmTime);
+    writeDataToRingFile(HOURS_FILE,  RingType::HOURS,  record, lastTlgrmTime);
+    writeDataToRingFile(DAYS_FILE,   RingType::DAYS,   record, lastTlgrmTime);
+    writeDataToRingFile(MONTHS_FILE, RingType::MONTHS, record, lastTlgrmTime);
     DebugTln("write last status..");
     writeLastStatus();
   } else {

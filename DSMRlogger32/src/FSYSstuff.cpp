@@ -166,7 +166,7 @@ uint16_t buildDataRecordFromJson(char *recIn, int recLen, String jsonIn)
 } // buildDataRecordFromJson()
 
 //===========================================================================================
-void writeDataToRingFile(char *fileName, int8_t ringType, char *record, timeStruct slotTime)
+void writeDataToRingFile(char *fileName, RingType ringType, char *record, timeStruct slotTime)
 {
   uint16_t offset = 0;
   uint16_t slotNr = 0;
@@ -187,15 +187,15 @@ void writeDataToRingFile(char *fileName, int8_t ringType, char *record, timeStru
     writeToSysLog("RING bestand [%s] niet gevonden --> create!", fileName);
 
     switch (ringType) {
-      case RNG_HOURS:
+      case RingType::HOURS:
         DebugTf("slotTime.Hours[%3d], devSetting->NoHourSlots[%3d]\r\n", slotTime.Hours, devSetting->NoHourSlots);
         createRingFile(fileName, slotTime, ringType, devSetting->NoHourSlots);
         break;
-      case RNG_DAYS:
+      case RingType::DAYS:
         DebugTf("slotTime.Days[%3d], devSetting[%3d]\r\n", slotTime.Days, devSetting->NoDaySlots);
         createRingFile(fileName, slotTime, ringType, devSetting->NoDaySlots);
         break;
-      case RNG_MONTHS:
+      case RingType::MONTHS:
         DebugTf("slotTime.Months[%3d], devSetting[%3d]\r\n", slotTime.Months, devSetting->NoMonthSlots);
         createRingFile(fileName, slotTime, ringType, devSetting->NoMonthSlots);
         break;
@@ -211,17 +211,17 @@ void writeDataToRingFile(char *fileName, int8_t ringType, char *record, timeStru
 
   //-- do some logging
   switch (ringType) {
-    case RNG_HOURS:
+    case RingType::HOURS:
       slotNr = slotTime.hourSlot;
       DebugTf("HOURS:  Write [%-8.8s] to slot[%02d]\r\n", slotTime.Timestamp, slotNr);
       // writeToSysLog("HOURS:  Write [%-8.8s] to slot[%02d]\r\n", slotTime.Timestamp, slotNr);
       break;
-    case RNG_DAYS:
+    case RingType::DAYS:
       slotNr = slotTime.daySlot;
       DebugTf("DAYS:   Write [%-6.6s] to slot[%02d]\r\n", slotTime.Timestamp, slotNr);
       // writeToSysLog("DAYS:   Write [%-6.6s]   to slot[%02d]\r\n", slotTime.Timestamp, slotNr);
       break;
-    case RNG_MONTHS:
+    case RingType::MONTHS:
       slotNr = slotTime.monthSlot;
       DebugTf("MONTHS: Write [%-4.4s]   to slot[%02d]\r\n", slotTime.Timestamp, slotNr);
       // writeToSysLog("MONTHS: Write [%-4.4s]     to slot[%02d]\r\n", slotTime.Timestamp, slotNr);
@@ -247,9 +247,9 @@ void writeDataToRingFiles(timeStruct useTime)
 
   buildDataRecordFromSM(record, useTime);
 
-  writeDataToRingFile(HOURS_FILE, RNG_HOURS, record, useTime);   //-- update HOURS
-  writeDataToRingFile(DAYS_FILE, RNG_DAYS, record, useTime);     //-- update DAYS
-  writeDataToRingFile(MONTHS_FILE, RNG_MONTHS, record, useTime); //-- update MONTHS
+  writeDataToRingFile(HOURS_FILE, RingType::HOURS, record, useTime);   //-- update HOURS
+  writeDataToRingFile(DAYS_FILE, RingType::DAYS, record, useTime);     //-- update DAYS
+  writeDataToRingFile(MONTHS_FILE, RingType::MONTHS, record, useTime); //-- update MONTHS
 } // writeDataToRingFiles(timeStruct useTime)
 
 //===========================================================================================
@@ -295,23 +295,23 @@ void readOneSlot(char *record, const char *fileName, uint16_t readSlot, uint16_t
 } // readOneSlot()
 
 //===========================================================================================
-void readAllSlots(char *record, int8_t ringType, const char *fileName, timeStruct thisTime)
+void readAllSlots(char *record, RingType ringType, const char *fileName, timeStruct thisTime)
 {
   int16_t startSlot, endSlot, nrSlots, recNr = 0;
   int16_t typeTime, typeHist, typeStart;
 
   switch (ringType) {
-    case RNG_HOURS:
+    case RingType::HOURS:
       typeHist = thisTime.hoursHist;
       typeTime = thisTime.Hour;
       typeStart = (thisTime.Hours + 1) % typeHist;
       break;
-    case RNG_DAYS:
+    case RingType::DAYS:
       typeHist = thisTime.daysHist;
       typeTime = thisTime.Day;
       typeStart = (thisTime.Days + 1) % typeHist;
       break;
-    case RNG_MONTHS:
+    case RingType::MONTHS:
       typeHist = thisTime.monthsHist;
       typeTime = thisTime.Month;
       typeStart = (thisTime.Months + 1) % typeHist;
@@ -327,7 +327,7 @@ void readAllSlots(char *record, int8_t ringType, const char *fileName, timeStruc
 } // readAllSlots()
 
 //===========================================================================================
-bool createRingFile(const char *fileName, timeStruct useTime, int8_t ringType)
+bool createRingFile(const char *fileName, timeStruct useTime, RingType ringType)
 {
   char record[DATA_RECLEN + 2] = {0};
   char dumpRec[DATA_RECLEN + 2] = {0}; //-- temp. for debugging
@@ -345,14 +345,14 @@ bool createRingFile(const char *fileName, timeStruct useTime, int8_t ringType)
   writeToSysLog("CREATE: fileName[%s], fileRecLen[%d]", fileName, DATA_RECLEN);
 
   switch (ringType) {
-    case RNG_HOURS:
+    case RingType::HOURS:
       noSlots = devSetting->NoHourSlots;
       break;
-    case RNG_DAYS:
+    case RingType::DAYS:
       noSlots = devSetting->NoDaySlots;
       break;
-    // case RNG_MONTHS:  noSlots = useTime.Months; break;
-    case RNG_MONTHS:
+    // case RingType::MONTHS:  noSlots = useTime.Months; break;
+    case RingType::MONTHS:
       noSlots = devSetting->NoMonthSlots;
       break;
     default:
@@ -407,17 +407,17 @@ bool createRingFile(const char *fileName, timeStruct useTime, int8_t ringType)
   tmpTime = useTime;
 
   switch (ringType) {
-    case RNG_MONTHS:
+    case RingType::MONTHS:
       newTime = tmpTime; // calculateTime(tmpTime, useTime.Months, ringType);
       useSlot = newTime.monthSlot;
       DebugTf("Start Year[%d], Month[%d] (slot[%d]of[%d])\r\n", newTime.Year, newTime.Month, useSlot, noSlots);
       break;
-    case RNG_DAYS:
+    case RingType::DAYS:
       newTime = tmpTime; // calculateTime(tmpTime, useTime.Days, ringType);
       useSlot = newTime.daySlot;
       DebugTf("Start Year[%02d], Month[%02d], Day[%02d] (slot[%d]of[%d])\r\n", newTime.Year, newTime.Month, newTime.Day, useSlot, noSlots);
       break;
-    case RNG_HOURS:
+    case RingType::HOURS:
       DebugTf("tmpTime: Timestamp[%s], Year[%02d], Month[%02d], Day[%02d], Hour[%02d]\r\n", tmpTime.Timestamp, tmpTime.Year, tmpTime.Month, tmpTime.Day, tmpTime.Hour);
       newTime = tmpTime; // calculateTime(tmpTime, useTime.Hours, ringType);
       useSlot = newTime.hourSlot;
@@ -446,7 +446,7 @@ bool createRingFile(const char *fileName, timeStruct useTime, int8_t ringType)
     }
     //-- change to next slot
     switch (ringType) {
-      case RNG_MONTHS:
+      case RingType::MONTHS:
         newTime = calculateTime(newTime, -1, ringType); //-- subtract one month
         snprintf(gMsg, 15, "%02d%02d00000000", (newTime.Year % 100), newTime.Month);
         newTime = buildTimeStruct(gMsg, useTime.Hours, useTime.Days, useTime.Months);
@@ -455,7 +455,7 @@ bool createRingFile(const char *fileName, timeStruct useTime, int8_t ringType)
         }
         useSlot = newTime.monthSlot;
         break;
-      case RNG_DAYS:
+      case RingType::DAYS:
         newTime = calculateTime(newTime, -1, ringType); //-- subtract one day
         snprintf(gMsg, 15, "%02d%02d%02d000000", (newTime.Year % 100), newTime.Month, newTime.Day);
         newTime = buildTimeStruct(gMsg, useTime.Hours, useTime.Days, useTime.Months);
@@ -464,7 +464,7 @@ bool createRingFile(const char *fileName, timeStruct useTime, int8_t ringType)
         }
         useSlot = newTime.daySlot;
         break;
-      case RNG_HOURS:
+      case RingType::HOURS:
         newTime = calculateTime(newTime, -1, ringType); //-- subtract one hour
         snprintf(gMsg, 15, "%02d%02d%02d%02d0000", (newTime.Year % 100), newTime.Month, newTime.Day, newTime.Hour);
         newTime = buildTimeStruct(gMsg, useTime.Hours, useTime.Days, useTime.Months);
@@ -497,7 +497,7 @@ bool createRingFile(const char *fileName, timeStruct useTime, int8_t ringType)
 } //  createRingFile()
 
 //===========================================================================================
-bool createRingFile(const char *fileName, timeStruct useTime, int8_t ringType, uint16_t noSlots)
+bool createRingFile(const char *fileName, timeStruct useTime, RingType ringType, uint16_t noSlots)
 {
   useTime.Hours = noSlots;
   useTime.Days = noSlots;
@@ -513,7 +513,7 @@ bool alterRingFile()
   char srcFileName[30] = {0};
   char dstFileName[] = "/RINGdest.csv";
   char altFileName[30] = {0};
-  int8_t ringType;
+  RingType ringType;
   char cType[10] = {0};
   char cKey[15] = {0};
   uint16_t offset;
@@ -523,7 +523,7 @@ bool alterRingFile()
   bool doExpand = true;
   char record[DATA_RECLEN + 1] = {0};
 
-  neoPixOn(1, neoPixWhite);
+  neoPixOn(1, NeoPixColor::white);
   glowTimer1 = millis() + 2000;
 
   //-- build record from last telegram --
@@ -532,11 +532,11 @@ bool alterRingFile()
   tmpNoMonthSlots = (tmpNoMonthSlots * 12) + 1;
 
   if ((tmpNoHourSlots >= _NO_HOUR_SLOTS_) && (devSetting->NoHourSlots != tmpNoHourSlots)) {
-    ringType = RNG_HOURS;
+    ringType = RingType::HOURS;
   } else if ((tmpNoDaySlots >= _NO_DAY_SLOTS_) && (devSetting->NoDaySlots != tmpNoDaySlots)) {
-    ringType = RNG_DAYS;
+    ringType = RingType::DAYS;
   } else if ((tmpNoMonthSlots >= _NO_MONTH_SLOTS_) && (devSetting->NoMonthSlots != tmpNoMonthSlots)) {
-    ringType = RNG_MONTHS;
+    ringType = RingType::MONTHS;
   } else {
     DebugTln("Did not change any RING file (not all conditions met)");
     writeToSysLog("Did not change any RING file (not all conditions met)");
@@ -548,7 +548,7 @@ bool alterRingFile()
   }
 
   switch (ringType) {
-    case RNG_HOURS: {
+    case RingType::HOURS: {
       writeDataToRingFile(HOURS_FILE, ringType, record, prevTlgrmTime);
       strlcpy(srcFileName, HOURS_FILE, sizeof(srcFileName));
       snprintf(altFileName, sizeof(altFileName), "/RINGhours_%d.csv", devSetting->NoHourSlots);
@@ -564,7 +564,7 @@ bool alterRingFile()
       dstLastSlot = dstLastTime.hourSlot;
     }
     break;
-    case RNG_DAYS: {
+    case RingType::DAYS: {
       writeDataToRingFile(DAYS_FILE, ringType, record, prevTlgrmTime);
       strlcpy(srcFileName, DAYS_FILE, sizeof(srcFileName));
       snprintf(altFileName, sizeof(altFileName), "/RINGdays_%d.csv", devSetting->NoDaySlots);
@@ -580,7 +580,7 @@ bool alterRingFile()
       dstLastSlot = dstLastTime.daySlot;
     }
     break;
-    case RNG_MONTHS: {
+    case RingType::MONTHS: {
       writeDataToRingFile(MONTHS_FILE, ringType, record, prevTlgrmTime);
       strlcpy(srcFileName, MONTHS_FILE, sizeof(srcFileName));
       snprintf(altFileName, sizeof(altFileName), "/RINGmonths_%d.csv", devSetting->NoMonthSlots);
@@ -655,13 +655,13 @@ bool alterRingFile()
       record[p] = dstTime.Timestamp[p];
     }
     switch (ringType) {
-      case RNG_HOURS:
+      case RingType::HOURS:
         dstActSlot = dstTime.hourSlot;
         break;
-      case RNG_DAYS:
+      case RingType::DAYS:
         dstActSlot = dstTime.daySlot;
         break;
-      case RNG_MONTHS:
+      case RingType::MONTHS:
         dstActSlot = dstTime.monthSlot;
         break;
     }
@@ -720,13 +720,13 @@ bool alterRingFile()
     //-- now: do the actual copying ----
     dstTime = buildTimeStruct(record, dstMaxSlots, dstMaxSlots, dstMaxSlots);
     switch (ringType) {
-      case RNG_HOURS:
+      case RingType::HOURS:
         dstActSlot = dstTime.hourSlot;
         break;
-      case RNG_DAYS:
+      case RingType::DAYS:
         dstActSlot = dstTime.daySlot;
         break;
-      case RNG_MONTHS:
+      case RingType::MONTHS:
         dstActSlot = dstTime.monthSlot;
         break;
     }
@@ -765,14 +765,14 @@ bool alterRingFile()
     writeToSysLog("ERROR renaming [%s] to [%s]", dstFileName, srcFileName);
   }
   switch (ringType) {
-    case RNG_HOURS:
+    case RingType::HOURS:
       devSetting->NoHourSlots = tmpNoHourSlots;
       break;
-    case RNG_DAYS:
+    case RingType::DAYS:
       snprintf(altFileName, sizeof(altFileName), "RINGdays_%d.csv", devSetting->NoDaySlots);
       devSetting->NoDaySlots = tmpNoDaySlots;
       break;
-    case RNG_MONTHS:
+    case RingType::MONTHS:
       snprintf(altFileName, sizeof(altFileName), "RINGmonths_%d.csv", devSetting->NoMonthSlots);
       devSetting->NoMonthSlots = tmpNoMonthSlots;
       break;
@@ -798,7 +798,7 @@ bool alterRingFile()
 } //  alterRingFile()
 
 //===========================================================================================
-uint16_t readRingHistoryDepth(const char *fileName, int8_t ringType)
+uint16_t readRingHistoryDepth(const char *fileName, RingType ringType)
 {
   char header[DATA_RECLEN + 2] = {0};
   char skipper[DATA_RECLEN + 2] = {0};
@@ -808,11 +808,11 @@ uint16_t readRingHistoryDepth(const char *fileName, int8_t ringType)
 
   if (!_FSYS.exists(fileName)) {
     switch (ringType) {
-      case RNG_HOURS:
+      case RingType::HOURS:
         return _NO_HOUR_SLOTS_;
-      case RNG_DAYS:
+      case RingType::DAYS:
         return _NO_DAY_SLOTS_;
-      case RNG_MONTHS:
+      case RingType::MONTHS:
         return _NO_MONTH_SLOTS_;
     }
   }
@@ -822,11 +822,11 @@ uint16_t readRingHistoryDepth(const char *fileName, int8_t ringType)
     DebugTf("Error opening [%s]\r\n", fileName);
     writeToSysLog("Error opening [%s]", fileName);
     switch (ringType) {
-      case RNG_HOURS:
+      case RingType::HOURS:
         return _NO_HOUR_SLOTS_;
-      case RNG_DAYS:
+      case RingType::DAYS:
         return _NO_DAY_SLOTS_;
-      case RNG_MONTHS:
+      case RingType::MONTHS:
         return _NO_MONTH_SLOTS_;
     }
   }
@@ -843,13 +843,13 @@ uint16_t readRingHistoryDepth(const char *fileName, int8_t ringType)
   }
   if (histDepth < 10) {
     switch (ringType) {
-      case RNG_HOURS:
+      case RingType::HOURS:
         histDepth = _NO_HOUR_SLOTS_;
         break;
-      case RNG_DAYS:
+      case RingType::DAYS:
         histDepth = _NO_DAY_SLOTS_;
         break;
-      case RNG_MONTHS:
+      case RingType::MONTHS:
         histDepth = _NO_MONTH_SLOTS_;
         break;
     }
@@ -857,7 +857,7 @@ uint16_t readRingHistoryDepth(const char *fileName, int8_t ringType)
 
   if (!needConversion) {
     switch (ringType) {
-      case RNG_HOURS: {
+      case RingType::HOURS: {
         if (devSetting->NoHourSlots != histDepth) {
           devSetting->NoHourSlots = histDepth;
           DebugTf("[HOURS]  History is [%d] hours\r\n", histDepth);
@@ -865,7 +865,7 @@ uint16_t readRingHistoryDepth(const char *fileName, int8_t ringType)
         }
       }
       break;
-      case RNG_DAYS: {
+      case RingType::DAYS: {
         if (devSetting->NoDaySlots != histDepth) {
           devSetting->NoDaySlots = histDepth;
           DebugTf("[DAYS]   History is [%d] days\r\n", histDepth);
@@ -873,7 +873,7 @@ uint16_t readRingHistoryDepth(const char *fileName, int8_t ringType)
         }
       }
       break;
-      case RNG_MONTHS: {
+      case RingType::MONTHS: {
         if (devSetting->NoMonthSlots != histDepth) {
           devSetting->NoMonthSlots = histDepth;
           DebugTf("[MONTHS] History is [%d] months\r\n", histDepth);
@@ -888,13 +888,13 @@ uint16_t readRingHistoryDepth(const char *fileName, int8_t ringType)
     DebugTf("file [%s] needs conversion ...", fileName);
     writeToSysLog("file [%s] needs conversion ...", fileName);
     switch (ringType) {
-      case RNG_HOURS:
+      case RingType::HOURS:
         maxSlots = _NO_HOUR_SLOTS_;
         break;
-      case RNG_DAYS:
+      case RingType::DAYS:
         maxSlots = _NO_DAY_SLOTS_;
         break;
-      case RNG_MONTHS:
+      case RingType::MONTHS:
         maxSlots = _NO_MONTH_SLOTS_;
         break;
     }
@@ -1106,7 +1106,7 @@ bool DSMRfileExist(const char *fileName, const char *funcName, bool doDisplay)
 
   if (!_FSYS.exists(fName)) {
     pulseHeart(true);
-    neoPixOn(1, neoPixRed);
+    neoPixOn(1, NeoPixColor::red);
     glowTimer1 = millis() + 1000;
     if (doDisplay) {
       // Debugln(F("NO! Error!!"));

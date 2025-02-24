@@ -100,13 +100,6 @@ const int _FSYS_MAX_FILES = 30;
 // #define _MQTT_BUFF_MAX         200
 const size_t _TIMESTAMP_LEN = 14; // yymmddhhmmssX\0
 const size_t _PSRAM_LIMIT = 100;
-enum ringType
-{
-  RNG_HOURS = 1,
-  RNG_DAYS = 2,
-  RNG_MONTHS = 3,
-  RNG_YEARS = 4,
-};
 
 #define DATA_FORMAT "%-8.8s;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;%10.3f;"
 #define DATA_CSV_HEADER   "YYMMDDHH;      EDT1;      EDT2;      ERT1;      ERT2;       GDT;       WDT;#%5d"

@@ -19,15 +19,15 @@
 extern Adafruit_NeoPixel neoPixels;               //-- from settingsStuff
 
 //-- from neoPixelStuff.h
-enum neoPixColor {
-  neoPixWhiteLow,
-  neoPixWhite,
-  neoPixRed,
-  neoPixGreenLow,
-  neoPixGreen,
-  neoPixBlue,
-  neoPixFade,
-  neoPixBlink,
+enum class NeoPixColor {
+  whiteLow,
+  white,
+  red,
+  greenLow,
+  green,
+  blue,
+  fade,
+  blink,
 };
 
 
@@ -35,7 +35,7 @@ enum neoPixColor {
 //-- Used in: DSMRlogger32.cpp, networkStuff.cpp, FSYSstuff.cpp
 void neoPixOff(int neoPixNr);                               
 //-- Used in: handleTestdata.cpp, DSMRlogger32.cpp, networkStuff.cpp, FSYSstuff.cpp, helperStuff.cpp, handleSlimmeMeter.cpp
-void neoPixOn(int neoPixNr, neoPixColor color);             
+void neoPixOn(int neoPixNr, NeoPixColor color);             
 //-- Used in: DSMRlogger32.cpp, menuStuff.cpp
 void blinkNeoPixels(uint8_t times, uint16_t speed);         
 

@@ -109,7 +109,7 @@ int daysSinceEpoch(int year, int month, int day)
 } // daysSinceEpoch()
 
 //===========================================================================================
-timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType)
+timeStruct calculateTime(timeStruct useTime, int16_t units, RingType ringType)
 {
   timeStruct newTime = useTime;  // Initialize newTime with useTime to keep all fields
 
@@ -129,7 +129,7 @@ timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType)
 
   // Adjust time based on units and ringType
   switch(ringType) {
-    case RNG_HOURS:
+    case RingType::HOURS:
       hour += units;
       while (hour >= 24) {
         hour -= 24;
@@ -157,7 +157,7 @@ timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType)
         }
       }
       break;
-    case RNG_DAYS:
+    case RingType::DAYS:
       day += units;
       while (day > daysInMonth(year, month - 1)) {
         day -= daysInMonth(year, month - 1);
@@ -176,7 +176,7 @@ timeStruct calculateTime(timeStruct useTime, int16_t units, int8_t ringType)
         day += daysInMonth(year, month - 1);
       }
       break;
-    case RNG_MONTHS:
+    case RingType::MONTHS:
       month += units;
       while (month > 12) {
         month -= 12;
@@ -279,7 +279,7 @@ timeStruct buildTimeStruct(const char *timeStamp, uint16_t maxHourSlots, uint16_
   localThisTime.Timestamp[_TIMESTAMP_LEN - 1] = '\0';
   fillMissingTimestamp(localThisTime.Timestamp);
 
-  localThisTime = calculateTime(localThisTime, 0, RNG_HOURS);
+  localThisTime = calculateTime(localThisTime, 0, RingType::HOURS);
 
   if (Verbose1) {
     DebugTf("returning.timeStamp[%s],    hourSlot[%2d],    daySlot[%2d],    monthSlot[%2d]\r\n",

@@ -90,7 +90,7 @@ float typecastValue(TimestampedFixedValue i);
 float typecastValue(FixedValue i);                          
 
 //     _FW_VERSION format "vx.y.z (dd-mm-yyyy)
-const char *_FW_VERSION = AUTO_VERSION;
+const char *_FW_VERSION = "v5.4.4 (24-02-2025)";//AUTO_VERSION;
 
 //=======================================================================
 float typecastValue(TimestampedFixedValue i)
@@ -179,8 +179,8 @@ void setup()
 
   DebugTln("blink Neo Pixels ..");
   blinkNeoPixels(5, 750);
-  neoPixOn(0, neoPixRed);
-  neoPixOn(1, neoPixRed);
+  neoPixOn(0, NeoPixColor::red);
+  neoPixOn(1, NeoPixColor::red);
 
   // for now 115200. Look at end of setup()
   SMserial.begin(115200, SERIAL_8N1, SMRX, SMTX);
@@ -206,7 +206,7 @@ void setup()
   resetWatchdog();
 
   pulseHeart(true);
-  neoPixOn(0, neoPixRed);
+  neoPixOn(0, NeoPixColor::red);
   neoPixOff(1);
 
   runAPmode = !digitalRead(_FLASH_BUTTON);
@@ -427,7 +427,7 @@ void setup()
   } //-- !runAPmode
 
   //-- OK, WiFi connected, time set
-  neoPixOn(0, neoPixGreen);
+  neoPixOn(0, NeoPixColor::green);
 
   //================ end NTP =========================================
 
@@ -491,7 +491,7 @@ void setup()
       oled_Print_Msg(2, "gevonden! (fout!)", 0);
       oled_Print_Msg(3, "Start FSmanager", 2000);
     }
-    neoPixOn(1, neoPixRed);
+    neoPixOn(1, NeoPixColor::red);
   }
 
   setupFSmanager();
@@ -560,7 +560,7 @@ void setup()
     slimmeMeter.doChecksum(false);
   }
 
-  neoPixOn(1, neoPixGreenLow);
+  neoPixOn(1, NeoPixColor::greenLow);
 
   updatedRINGfiles = false;
 
@@ -645,7 +645,7 @@ void doSystemTasks()
   }
 
   if ((millis() - glowTimer1) > _GLOW_TIME) {
-    neoPixOn(1, neoPixGreenLow);
+    neoPixOn(1, NeoPixColor::greenLow);
   }
   // if (ntpEventId == 0)
   //{
@@ -676,7 +676,7 @@ void loop()
 
   //--- if connection lost, try to reconnect to WiFi
   if (lostWiFiConnection) {
-    neoPixOn(0, neoPixRed);
+    neoPixOn(0, NeoPixColor::red);
     if (firstConnectionLost) {
       // writeToSysLog("Watchdog timer reset ...");
       firstConnectionLost = false;
@@ -710,7 +710,7 @@ void loop()
   else {
     //-- set NEO 0 to Green
     if ((millis() - glowTimer0) > _GLOW_TIME) {
-      neoPixOn(0, neoPixGreenLow);
+      neoPixOn(0, NeoPixColor::greenLow);
     }
   }
 

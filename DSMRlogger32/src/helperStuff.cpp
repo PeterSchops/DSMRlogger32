@@ -26,12 +26,12 @@ void pulseHeart(bool force)
     pulseTimer = millis();
     digitalWrite(_PIN_HEARTBEAT, !digitalRead(_PIN_HEARTBEAT));
     //-- neo 0 White
-    neoPixOn(0, neoPixWhiteLow);
+    neoPixOn(0, NeoPixColor::whiteLow);
     glowTimer0 = millis();
   }
   if ((millis() - glowTimer0) > _GLOW_TIME)
   {
-    neoPixOn(0, neoPixGreenLow);
+    neoPixOn(0, NeoPixColor::greenLow);
   }
   
 } //  pulseHeart()

@@ -386,11 +386,11 @@ void readDevSettings(bool show)
   if (doc["mqttInterval"])  { devSetting->MQTTinterval        = doc["mqttInterval"].as<int>(); }
   if (doc["mqttTopTopic"])  { strlcpy(devSetting->MQTTtopTopic, doc["mqttTopTopic"] | _DEFAULT_HOSTNAME, (_MQTT_TOPTOPIC_LEN -1)); }
 
-  devSetting->NoHourSlots  = readRingHistoryDepth(HOURS_FILE,  RNG_HOURS);
+  devSetting->NoHourSlots  = readRingHistoryDepth(HOURS_FILE,  RingType::HOURS);
   if (devSetting->NoHourSlots > 190) { devSetting->NoHourSlots  = 190; }
-  devSetting->NoDaySlots   = readRingHistoryDepth(DAYS_FILE,   RNG_DAYS);
+  devSetting->NoDaySlots   = readRingHistoryDepth(DAYS_FILE,   RingType::DAYS);
   if (devSetting->NoDaySlots  > 155) { devSetting->NoDaySlots   = 155; }
-  devSetting->NoMonthSlots = readRingHistoryDepth(MONTHS_FILE, RNG_MONTHS);
+  devSetting->NoMonthSlots = readRingHistoryDepth(MONTHS_FILE, RingType::MONTHS);
   if (devSetting->NoMonthSlots > 61) { devSetting->NoMonthSlots =  61; }
 
   //--- this will take some time to settle in

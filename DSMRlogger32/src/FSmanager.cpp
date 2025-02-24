@@ -734,14 +734,14 @@ void handleRemoteUpdate()
       return;
     }
 
-    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_ERROR)) {
+    if (updateManager.feedback(updateManager.UPDATE_FEEDBACK_UPDATE_ERROR)) {
       DebugTf("\r\n(%s) Update ERROR\r\n", __FUNCTION__);
       httpServer.send(200, "text/html", "Update ERROR!");
       delay(1000);
       ESP.restart();
       delay(3000);
     }
-    if (updateManager.feedback(UPDATE_FEEDBACK_UPDATE_OK)) {
+    if (updateManager.feedback(updateManager.UPDATE_FEEDBACK_UPDATE_OK)) {
       Debugf("\r\n(%s) Update OK\r\n", __FUNCTION__);
       httpServer.send(200, "text/html", "Update Succesfull!");
       delay(1000);

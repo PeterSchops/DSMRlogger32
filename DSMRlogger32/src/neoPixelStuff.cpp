@@ -18,29 +18,29 @@ void neoPixOff(int neoPixNr)
 } //  neoPixOff()
 
 //----------------------------------------------------------------
-void neoPixOn(int neoPixNr, neoPixColor color)
+void neoPixOn(int neoPixNr, NeoPixColor color)
 {
   if (neoPixNr >= _NEO_PIXELS_COUNT) {
     return;
   }
 
   switch(color) {
-    case neoPixRed:
+    case NeoPixColor::red:
       neoPixels.setPixelColor(neoPixNr, neoPixels.Color(255, 0, 0));
       break;
-    case neoPixGreenLow:
+    case NeoPixColor::greenLow:
       neoPixels.setPixelColor(neoPixNr, neoPixels.Color(0, 20, 0));
       break;
-    case neoPixGreen:
+    case NeoPixColor::green:
       neoPixels.setPixelColor(neoPixNr, neoPixels.Color(0, 255, 0));
       break;
-    case neoPixBlue:
+    case NeoPixColor::blue:
       neoPixels.setPixelColor(neoPixNr, neoPixels.Color(0, 0, 255));
       break;
-    case neoPixWhiteLow:
+    case NeoPixColor::whiteLow:
       neoPixels.setPixelColor(neoPixNr, neoPixels.Color(50, 50, 50));
       break;
-    default:  //-- neoPixWhite
+    default:  //-- NeoPixColor::white
       neoPixels.setPixelColor(neoPixNr, neoPixels.Color(255, 255, 255));
   }
   //-- Update neoPixels
@@ -66,48 +66,48 @@ void blinkNeoPixels(uint8_t times, uint16_t speed)
           neoPixOff(1);
           break;
         case 1:
-          neoPixOn(0, neoPixRed);
+          neoPixOn(0, NeoPixColor::red);
           neoPixOff(1);
           break;
         case 2:
-          neoPixOn(0, neoPixRed);
-          neoPixOn(1, neoPixRed);
+          neoPixOn(0, NeoPixColor::red);
+          neoPixOn(1, NeoPixColor::red);
           break;
         case 3:
-          neoPixOn(0, neoPixGreen);
-          neoPixOn(1, neoPixRed);
+          neoPixOn(0, NeoPixColor::green);
+          neoPixOn(1, NeoPixColor::red);
           break;
         case 4:
-          neoPixOn(0, neoPixGreen);
-          neoPixOn(1, neoPixGreen);
+          neoPixOn(0, NeoPixColor::green);
+          neoPixOn(1, NeoPixColor::green);
           break;
         case 5:
-          neoPixOn(0, neoPixBlue);
-          neoPixOn(1, neoPixGreen);
+          neoPixOn(0, NeoPixColor::blue);
+          neoPixOn(1, NeoPixColor::green);
           break;
         case 6:
-          neoPixOn(0, neoPixBlue);
-          neoPixOn(1, neoPixBlue);
+          neoPixOn(0, NeoPixColor::blue);
+          neoPixOn(1, NeoPixColor::blue);
           break;
         case 7:
-          neoPixOn(0, neoPixWhite);
-          neoPixOn(1, neoPixBlue);
+          neoPixOn(0, NeoPixColor::white);
+          neoPixOn(1, NeoPixColor::blue);
           break;
         case 8:
-          neoPixOn(0, neoPixWhite);
-          neoPixOn(1, neoPixWhite);
+          neoPixOn(0, NeoPixColor::white);
+          neoPixOn(1, NeoPixColor::white);
           break;
         case 9:
           neoPixOff(0);
-          neoPixOn(1, neoPixWhite);
+          neoPixOn(1, NeoPixColor::white);
           break;
         case 10:
           neoPixOff(0);
           neoPixOff(1);
           break;
         default:
-          neoPixOn(0, neoPixGreenLow);
-          neoPixOn(1, neoPixGreenLow);
+          neoPixOn(0, NeoPixColor::greenLow);
+          neoPixOn(1, NeoPixColor::greenLow);
           break;
 
       } //  switch

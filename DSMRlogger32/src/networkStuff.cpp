@@ -19,7 +19,7 @@ extern myWiFiStruct myWiFi;
 void configModeCallback (WiFiManager *myWiFiManager)
 {
   resetWatchdog(); //-- buy some time ..
-  neoPixOn(0, neoPixWhite);
+  neoPixOn(0, NeoPixColor::white);
   neoPixOff(1);
 
   DebugTln(F("Entered config mode\r"));
@@ -78,7 +78,7 @@ void startWiFi(const char *hostname, int timeOut, bool eraseCredentials)
     }
 
     DebugTf(" took [%d] milli-seconds ==> ERROR!\r\n", (millis() - lTime));
-    neoPixOn(0, neoPixRed);
+    neoPixOn(0, NeoPixColor::red);
   } else {
     DebugTf("Connected with IP-address [%s]\r\n\r\n", WiFi.localIP().toString().c_str());
   }
@@ -100,7 +100,7 @@ void startWiFi(const char *hostname, int timeOut, bool eraseCredentials)
 
   myWiFi.ipGateway = WiFi.gatewayIP();
 
-  neoPixOn(0, neoPixBlue);
+  neoPixOn(0, NeoPixColor::blue);
 
   pulseHeart(true);
 } // startWiFi()

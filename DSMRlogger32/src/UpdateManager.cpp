@@ -65,7 +65,7 @@ void UpdateManager::updateSpiffs(const char *url, ProgressCallback callback)
 
   _lastPercentage = 0;
 
-  if (httpUpdateSpiffs(_url)) {
+  if (httpUpdate(update::SPIFFS, _url)) {
     ESP_LOGI(TAG, "SPIFFS Update done!");
     Serial.printf("(%s) SPIFFS Update done!\r\n", __FUNCTION__);
     _feedback = UPDATE_FEEDBACK_UPDATE_OK;
@@ -86,7 +86,7 @@ void UpdateManager::startUpdate()
 
   _lastPercentage = 0;
 
-  if (httpUpdateFirmware(_url)) {
+  if (httpUpdate(update::FIRMWARE, _url)) {
     ESP_LOGI(TAG, "Update done!");
     Serial.printf("(%s) Update done!\r\n", __FUNCTION__);
     _feedback = UPDATE_FEEDBACK_UPDATE_OK;
@@ -145,6 +145,107 @@ void UpdateManager::onError(ota_error_t error)
 }
 
 /**
+ * @brief Update the FIRMWARE or SPIFFS via http
+ *
+ * @param url the url
+ * @return true if the update was successful
+ * @return false if the update was not successful
+ */
+//---------------------------------------------------------------------------------------------
+bool UpdateManager::httpUpdate(update data, const char *url)
+{
+  HTTPClient httpClient;
+  httpClient.useHTTP10(true);
+  httpClient.setTimeout(5000);
+
+  httpClient.begin(url);
+
+  int result = httpClient.GET();
+  if (result != HTTP_CODE_OK) {
+    ESP_LOGE(TAG, "HTTP ERROR CODE: %d\n", result);
+    Serial.printf("(%s) HTTP ERROR CODE: %d\n", __FUNCTION__, result);
+    _feedback = UPDATE_FEEDBACK_UPDATE_ERROR;
+    return false;
+  }
+  int httpSize = httpClient.getSize();
+
+  switch (data) {
+  case update::FIRMWARE:
+    if (!Update.begin(httpSize, U_FLASH)) {
+      ESP_LOGE(TAG, "ERROR: %s\n", httpClient.errorToString(httpClient.GET()));
+      Serial.printf("(%s) ERROR: %s\n", __FUNCTION__, httpClient.errorToString(httpClient.GET()));
+      _feedback = UPDATE_FEEDBACK_UPDATE_ERROR;
+      return false;
+    }
+    break;
+  case update::SPIFFS:
+    if (!Update.begin(httpSize, U_SPIFFS)) {
+      ESP_LOGE(TAG, "ERROR: %s\n", Update.errorString());
+      Serial.printf("(%s) ERROR: %s\n", __FUNCTION__, Update.errorString());
+      _feedback = UPDATE_FEEDBACK_UPDATE_ERROR;
+      return false;
+    }
+    break;
+  default:
+    _feedback = UPDATE_FEEDBACK_UPDATE_ERROR;
+    return false;
+    break;
+  }
+
+  uint8_t buff[1024] = {0};
+  size_t sizePack;
+
+  WiFiClient *stream = httpClient.getStreamPtr();
+  while (httpClient.connected() && (httpSize > 0 || httpSize == -1)) {
+    sizePack = stream->available();
+    if (sizePack) {
+      int c = stream->readBytes(buff, ((sizePack > sizeof(buff)) ? sizeof(buff) : sizePack));
+      Update.write(buff, c);
+      if (httpSize > 0) {
+        httpSize -= c;
+      }
+    }
+    int percent = int(Update.progress() * 100 / httpClient.getSize());
+    if (percent > _lastPercentage) {
+      _lastPercentage = percent;
+      if (_progressCallback) {
+        _progressCallback(percent);
+      }
+    }
+  }
+
+  switch (data) {
+  case update::FIRMWARE:
+    if (!Update.end()) {
+      ESP_LOGE(TAG, "ERROR: %s\n", Update.getError());
+      Serial.printf("(%s) ERROR: %s\n", __FUNCTION__, Update.getError());
+      _feedback = UPDATE_FEEDBACK_UPDATE_ERROR;
+      return false;
+    }
+    break;
+  case update::SPIFFS:
+    if (!Update.end()) {
+      ESP_LOGE(TAG, "ERROR: %s\n", Update.errorString());
+      Serial.printf("(%s) ERROR: %s\n", __FUNCTION__, Update.errorString());
+      _feedback = UPDATE_FEEDBACK_UPDATE_ERROR;
+      return false;
+    }
+    break;
+  default:
+    _feedback = UPDATE_FEEDBACK_UPDATE_ERROR;
+    return false;
+    break;
+  }
+
+  httpClient.end();
+  Serial.printf("(%s) OK!\r\n", __FUNCTION__);
+  _feedback = UPDATE_FEEDBACK_UPDATE_OK;
+
+  return true;
+}
+
+
+/**
  * @brief Update the firmware via http
  *
  * @param url the url
@@ -152,6 +253,7 @@ void UpdateManager::onError(ota_error_t error)
  * @return false if the update was not successful
  */
 //---------------------------------------------------------------------------------------------
+/*
 bool UpdateManager::httpUpdateFirmware(const char *url)
 {
   HTTPClient httpClient;
@@ -209,7 +311,7 @@ bool UpdateManager::httpUpdateFirmware(const char *url)
 
   return true;
 }
-
+*/
 /**
  * @brief Update the SPIFFS via http
  *
@@ -218,6 +320,7 @@ bool UpdateManager::httpUpdateFirmware(const char *url)
  * @return false if the update was not successful
  */
 //---------------------------------------------------------------------------------------------
+/*
 bool UpdateManager::httpUpdateSpiffs(const char *url)
 {
   HTTPClient httpClient;
@@ -275,6 +378,7 @@ bool UpdateManager::httpUpdateSpiffs(const char *url)
 
   return true;
 }
+*/
 
 //--------------------------------------------------------------------
 bool UpdateManager::feedback(int8_t check)
