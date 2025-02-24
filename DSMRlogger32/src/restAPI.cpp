@@ -544,7 +544,6 @@ void processApiV2Hist(const char *URI, const char *apiId, const char *word5, con
   DebugTf("apiId[%s], limit[%d], Sort[%s]\r\n", apiId, limit, (sorting ? "desc" : "asc"));
 
   sendJsonHist(ringType, fileName, lastTlgrmTime, limit, sorting);
-
 } // processApiV2Hist()
 
 //=======================================================================
@@ -1228,7 +1227,6 @@ void sendJsonV2smApi(const char *firstLevel)
   serializeJsonPretty(doc, jsonBuff, _JSONBUFF_LEN);
   // serializeJson(doc, jsonBuff, _JSONBUFF_LEN);
   httpServer.send(200, "application/json", jsonBuff);
-
 } // sendJsonV2smApi()
 
 //=======================================================================
@@ -1305,7 +1303,6 @@ void sendJsonActualHist()
     writeToSysLog("ERROR!!! jsonString > MAX_BUFF (%d > %d)!", strlen(jsonBuff), _JSONBUFF_LEN);
   }
   httpServer.send(200, "application/json", jsonBuff);
-
 } //  sendJsonActualHist()
 
 //=======================================================================
@@ -1350,6 +1347,9 @@ void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uin
       maxSlots = devSetting->NoMonthSlots;
       strlcpy(typeApi, "months", 9);
       break;
+    default: 
+      DebugTf("Error undefined ringType [%i]\r\n", ringType);
+    return;
   }
 
   if (!_FSYS.exists(fileName)) {
@@ -1387,80 +1387,41 @@ void sendJsonHist(int8_t ringType, const char *fileName, timeStruct useTime, uin
   }
 
   for (uint8_t s = 0; s < nrSlots; s++) {
-    if (sortDesc) {
+    if (sortDesc) { //  sort desc ...
       readSlot = (s + startSlot);
-      slot = (readSlot % maxSlots);
-      // slot goes from 0 to _NO_OF_SLOTS_
-      // we need to add 1 to slot to skip header record!
-      offset = ((slot + 1) * (DATA_RECLEN + 1));
-      if (Verbose1) {
-        DebugTf("s[%d], start[%d] -> slot[%d] (offset[%d])\r\n", s, startSlot, slot, offset);
-      }
-      dataFile.seek(offset, SeekSet);
-      int bytesRead = dataFile.readBytesUntil('\n', buffer, DATA_RECLEN);
-      // Debugln(buffer);
-      if (bytesRead != DATA_RECLEN) { // '\n' is skipped by readBytesUntil()
-        DebugTf("bytesRead[%d] != DATA_RECLEN[%d]\r\n", bytesRead, DATA_RECLEN);
-        if (!isValidTimestamp(buffer, 8)) { // first 8 bytes is YYMMDDHH
-          DebugTf("slot[%02d]==>timeStamp [%-8.8s] not valid!!\r\n", slot, buffer);
-          // esp32 writeToSysLog("slot[%02d]==>timeStamp [%-8.8s] not valid!!", slot, buffer);
-        }
-      } else { // all is OK
-        // Debug(" all OK ");
-        sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID,
-               &EDT1, &EDT2, &ERT1, &ERT2, &GDT, &WDT);
-        JsonObject nestedRec = doc[typeApi].createNestedObject();
-        nestedRec["recnr"] = recNr++;
-        nestedRec["recid"] = recID;
-        nestedRec["slot"] = slot;
-        nestedRec["edt1"] = round3(EDT1);
-        nestedRec["edt2"] = round3(EDT2);
-        nestedRec["ert1"] = round3(ERT1);
-        nestedRec["ert2"] = round3(ERT2);
-        nestedRec["gdt"] = round3(GDT); // gas delivered
-        nestedRec["wdt"] = round3(WDT); // water delivered
-      }
-
-    } //  desc ...
-    else { //  sort asc ...
+    } else {        //  sort asc ...
       readSlot = (startSlot - s);
-      slot = (readSlot % maxSlots);
-      // slot goes from 0 to _NO_OF_SLOTS_
-      // we need to add 1 to slot to skip header record!
-      offset = ((slot + 1) * (DATA_RECLEN + 1));
-      if (Verbose2) {
-        DebugTf("s[%d][%s], start[%d] -> slot[%d] (offset[%d])\r\n", s, typeApi, startSlot, slot, offset);
+    }
+    slot = (readSlot % maxSlots);
+    // slot goes from 0 to _NO_OF_SLOTS_
+    // we need to add 1 to slot to skip header record!
+    offset = ((slot + 1) * (DATA_RECLEN + 1));
+    if (Verbose1) {
+      DebugTf("s[%d], start[%d] -> slot[%d] (offset[%d])\r\n", s, startSlot, slot, offset);
+    }
+    dataFile.seek(offset, SeekSet);
+    int bytesRead = dataFile.readBytesUntil('\n', buffer, DATA_RECLEN);
+    // Debugln(buffer);
+    if (bytesRead != DATA_RECLEN) { // '\n' is skipped by readBytesUntil()
+      DebugTf("bytesRead[%d] != DATA_RECLEN[%d]\r\n", bytesRead, DATA_RECLEN);
+      if (!isValidTimestamp(buffer, 8)) { // first 8 bytes is YYMMDDHH
+        DebugTf("slot[%02d]==>timeStamp [%-8.8s] not valid!!\r\n", slot, buffer);
+        // esp32 writeToSysLog("slot[%02d]==>timeStamp [%-8.8s] not valid!!", slot, buffer);
       }
-      dataFile.seek(offset, SeekSet);
-      int bytesRead = dataFile.readBytesUntil('\n', buffer, DATA_RECLEN);
-      if (Verbose1) {
-        Debugln(buffer);
-      }
-
-      if (bytesRead != DATA_RECLEN) { // '\n' is skipped by readBytesUntil()
-        DebugTf("bytesRead[%d] != DATA_RECLEN[%d]\r\n", bytesRead, DATA_RECLEN);
-        if (!isValidTimestamp(buffer, 8)) { // first 8 bytes is YYMMDDHH
-          DebugTf("slot[%02d]==>timeStamp [%-13.13s] not valid!!\r\n", slot, buffer);
-          // esp32 writeToSysLog("slot[%02d]==>timeStamp [%-13.13s] not valid!!", slot, buffer);
-        }
-      } else { // all is OK
-        // Debug(" all OK ");
-        sscanf(buffer, "%[^;];%f;%f;%f;%f;%f;%f", recID,
-               &EDT1, &EDT2, &ERT1, &ERT2, &GDT, &WDT);
-        JsonObject nestedRec = doc[typeApi].createNestedObject();
-        nestedRec["recnr"] = recNr++;
-        nestedRec["recid"] = recID;
-        nestedRec["slot"] = slot;
-        nestedRec["edt1"] = round3(EDT1);
-        nestedRec["edt2"] = round3(EDT2);
-        nestedRec["ert1"] = round3(ERT1);
-        nestedRec["ert2"] = round3(ERT2);
-        nestedRec["gdt"] = round3(GDT); // gas delivered
-        nestedRec["wdt"] = round3(WDT); // water delivered
-      }
-
-    } //  asc ...
-
+    } else { // all is OK
+      // Debug(" all OK ");
+      sscanf(buffer, "%[^;];%f;%f;%f;%f;%f", recID, &EDT1, &EDT2, &ERT1, &ERT2, &GDT, &WDT);
+      JsonObject nestedRec = doc[typeApi].createNestedObject();
+      nestedRec["recnr"] = recNr++;
+      nestedRec["recid"] = recID;
+      nestedRec["slot"] = slot;
+      nestedRec["edt1"] = round3(EDT1);
+      nestedRec["edt2"] = round3(EDT2);
+      nestedRec["ert1"] = round3(ERT1);
+      nestedRec["ert2"] = round3(ERT2);
+      nestedRec["gdt"] = round3(GDT); // gas delivered
+      nestedRec["wdt"] = round3(WDT); // water delivered
+    }
   } //  for al slots ..
 
   dataFile.close();
