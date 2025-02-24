@@ -122,11 +122,10 @@ void processSlimmemeter()
 
     if (!tlgrmData.timestamp_present) {
       struct tm  tstruct;
-      extern time_t now;
+      time_t now = time(NULL);
       localtime_r(&now, &tstruct);
 
-      snprintf (gMsg,  _GMSG_LEN, "%02d%02d%02d%02d%02d%02d\0\0",
-                (tstruct.tm_year - 2000), tstruct.tm_mon, tstruct.tm_mday, tstruct.tm_hour, tstruct.tm_min, tstruct.tm_sec);
+      snprintf (gMsg,  _GMSG_LEN, "%02d%02d%02d%02d%02d%02d\0\0", (tstruct.tm_year - 2000), tstruct.tm_mon, tstruct.tm_mday, tstruct.tm_hour, tstruct.tm_min, tstruct.tm_sec);
       if (tstruct.tm_isdst > 0) {
         strlcat(gMsg, "S", _GMSG_LEN);
       } else {

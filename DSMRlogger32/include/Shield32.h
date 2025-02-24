@@ -16,18 +16,18 @@
 class Shield32 
 {
     public:
-        Shield32();
-        void setup(int pinNr, int8_t inversedLogic, int activeStart, int activeStop, int onValue, int offValue, uint32_t onDelay, uint32_t offDelay);
+        Shield32() = default;
+        void setup(int8_t pinNr, int8_t inversedLogic, int activeStart, int activeStop, int onValue, int offValue, uint32_t onDelay, uint32_t offDelay);
         void loop(int actualValue);
-        bool isActive(int thisTimeMinutes);
+        bool isActive(int thisTimeMinutes) const;
         void flipSwitch();
-        bool getRelayState();
+        bool getRelayState() const;
         void setRelayState(bool state);
 
     private:
         static int customTelnetVprintf(const char* fmt, va_list args);
         
-        int       _pinNr;
+        int8_t    _pinNr;
         int8_t    _inversedLogic;
         int       _activeStart;
         int       _activeStop;

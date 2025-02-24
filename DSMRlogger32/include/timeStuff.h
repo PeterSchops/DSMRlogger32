@@ -21,6 +21,6 @@ String buildDateTimeString(const char *timeStamp, int len);
 String currentDateTimeString();
 
 // number of minutes in current day (0..1439)
-int currentMinutes();
+uint16_t currentMinutes();
 
 #endif // TIMESTUFF_H

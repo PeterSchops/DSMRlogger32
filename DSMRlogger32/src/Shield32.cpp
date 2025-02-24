@@ -14,11 +14,8 @@
 
 static const char *TAG = "Shield32";
 
-// Constructor
-Shield32::Shield32() {}
-
 //--------------------------------------------------------------------------------------------
-void Shield32::setup(int pinNr, int8_t inversedLogic, int activeStart, int activeStop, int onValue, int offValue, uint32_t onDelay, uint32_t offDelay)
+void Shield32::setup(int8_t pinNr, int8_t inversedLogic, int activeStart, int activeStop, int onValue, int offValue, uint32_t onDelay, uint32_t offDelay)
 {
   esp_log_level_set("Shield32", ESP_LOG_INFO);
   Shield32::_pinNr          = pinNr;
@@ -45,11 +42,10 @@ void Shield32::setup(int pinNr, int8_t inversedLogic, int activeStart, int activ
     Shield32::_LOW  = LOW;
   }
 
-  ESP_LOGI(TAG, "====> setup(pinNr[%d], HIGH[%s], onValue[%d], offValue[%d], onDelay[%d], offDelay[%d])\r\n", Shield32::_pinNr
-           , (Shield32::_inversedLogic ? "LOW" : "HIGH")
-           , Shield32::_onValue, Shield32::_offValue
-           , Shield32::_onDelay
-           , Shield32::_offDelay);
+  ESP_LOGI(TAG, "====> setup(pinNr[%d], HIGH[%s], onValue[%d], offValue[%d], onDelay[%d], offDelay[%d])\r\n", Shield32::_pinNr,
+            (Shield32::_inversedLogic ? "LOW" : "HIGH"),
+             Shield32::_onValue, Shield32::_offValue,
+             Shield32::_onDelay, Shield32::_offDelay);
   if (Shield32::_pinNr >= 0) {
     digitalWrite(Shield32::_pinNr, Shield32::_LOW);
     pinMode(Shield32::_pinNr, OUTPUT);
@@ -164,7 +160,7 @@ void Shield32::loop(int actualValue)
 } //  loop()
 
 //--------------------------------------------------------------------------------------------
-bool Shield32::isActive(int thisTimeMinutes)
+bool Shield32::isActive(int thisTimeMinutes) const
 {
   //-- Case 0: GPIOpin not configured, altijd in-actief
   if (Shield32::_pinNr == -1) {
@@ -177,23 +173,19 @@ bool Shield32::isActive(int thisTimeMinutes)
   //-- Case 2: start <= eind, eenvoudig interval op dezelfde dag
   if (_activeStart <= _activeStop) {
     // Het actieve interval is tussen start en eind
-    return (bool)(thisTimeMinutes >= _activeStart && thisTimeMinutes < _activeStop);
+    return ((thisTimeMinutes >= _activeStart) && (thisTimeMinutes < _activeStop));
   }
   //-- Case 3: start > eind, het interval gaat over middernacht heen
   else {
     // Het actieve interval is van start tot middernacht, OF van middernacht tot eind
-    return (bool)(thisTimeMinutes >= _activeStart || thisTimeMinutes < _activeStop);
+    return ((thisTimeMinutes >= _activeStart) || (thisTimeMinutes < _activeStop));
   }
 } //  isActive()
 
 //--------------------------------------------------------------------------------------------
-bool Shield32::getRelayState()
+bool Shield32::getRelayState() const
 {
-  if (digitalRead(Shield32::_pinNr) == Shield32::_HIGH) {
-    return 1;
-  } else {
-    return 0;
-  }
+  return (digitalRead(Shield32::_pinNr) == Shield32::_HIGH);
 } // getRelayState()
 
 //--------------------------------------------------------------------------------------------

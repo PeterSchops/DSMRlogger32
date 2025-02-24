@@ -11,11 +11,10 @@
 #include "timeStuff.h"
 #include "helperStuff.h"
 
-extern time_t now;
-
 //===========================================================================================
 void logNtpTime()
 {
+  time_t now = time(NULL);
   DebugTf("log NTP Date/Time: %s\r\n", currentDateTimeString().c_str());
   if ((localtime(&now)->tm_hour == 12) || (ntpEventId == 0)) {
     writeToSysLog("NTP Date/Time: %s", currentDateTimeString().c_str());
@@ -422,23 +421,23 @@ time_t epoch(const char *timeStamp, int8_t len, bool syncTime)
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
 String currentDateTimeString()
 {
-  time_t     time_now = time(NULL);
+  time_t     now = time(NULL);
   struct tm  tstruct;
   char       buf[80];
 
-  localtime_r(&time_now, &tstruct);
+  localtime_r(&now, &tstruct);
   strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tstruct);
 
   return buf;
 }
 
-int currentMinutes ()
+uint16_t currentMinutes ()
 {
-  time_t     time_now = time(NULL);
+  time_t     now = time(NULL);
   struct tm  tstruct;
 
-  localtime_r(&time_now, &tstruct);
-  return (tstruct.tm_hour * 60) + tstruct.tm_min;
+  localtime_r(&now, &tstruct);
+  return static_cast<uint16_t>((tstruct.tm_hour * 60) + tstruct.tm_min);
 }
 
 /***************************************************************************

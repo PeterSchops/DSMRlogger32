@@ -31,7 +31,7 @@
 #define _FSYS SPIFFS
 
 #define writeToSysLog(...) ({ \
-        extern time_t now;   \
+        time_t now = time(NULL);   \
         struct tm  tstruct; \
         localtime_r(&now, &tstruct); \
         sysLog.writeDbg(sysLog.buildD("[%04d-%02d-%02d %02d:%02d:%02d][%-12.12s] ",  \
