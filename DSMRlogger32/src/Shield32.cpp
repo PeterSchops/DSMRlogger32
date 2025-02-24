@@ -12,8 +12,6 @@
 #include <esp_log.h>
 #include "Shield32.h"
 
-#define MAX_LOG_BUFFER_SIZE 512
-
 static const char *TAG = "Shield32";
 
 // Constructor
